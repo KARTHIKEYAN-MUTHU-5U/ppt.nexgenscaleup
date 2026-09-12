@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "nexgen-water-core"
+  },
+  "targets": {
+    "nexgen-water-core": {
+      "hosting": {
+        "ppt": [
+          "nexgen-ppt"
+        ]
+      }
+    }
+  }
+}
