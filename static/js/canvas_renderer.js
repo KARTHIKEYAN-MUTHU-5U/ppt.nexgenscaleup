@@ -182,13 +182,24 @@ class SlideCanvasRenderer {
 
   // Common Header Bar
   renderHeader(h, b, C, paletteKey) {
+    // Support flexible signature: renderHeader(data, C) or renderHeader(h, b, C, paletteKey)
+    if (h && (h.header || h.branding || h.template_id)) {
+      const dataObj = h;
+      h = dataObj.header || {};
+      b = dataObj.branding || {};
+      if (!C) C = this.resolvePalette(dataObj.palette);
+      if (!paletteKey) paletteKey = dataObj.palette;
+    }
+    h = h || {};
+    b = b || {};
+    C = C || this.resolvePalette(paletteKey);
     const logoSrc = `logos/${b.logo_key || "philips"}.png`;
     return `
       <g class="anim-grp anim-p1">
         <rect x="0" y="0" width="1333" height="62" fill="${C.hdr_bg}" />
         <rect x="0" y="62" width="1333" height="3" fill="${C.stripe}" />
-        <text x="40" y="34" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="25" font-weight="bold" fill="#FFFFFF">${this.escape(h.title || "EXECUTIVE ARCHITECTURE BLUEPRINT")}</text>
-        <text x="40" y="52" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.8" font-weight="normal" fill="${paletteKey === 'obsidian_dark' ? '#A3A3A3' : '#B0AFAF'}">${this.escape(h.subtitle || "PHILIPS  •  EXECUTIVE OPERATIONS")}</text>
+        <text x="40" y="34" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="25" font-weight="bold" fill="#FFFFFF">${this.escapeXml(h.title || "EXECUTIVE ARCHITECTURE BLUEPRINT")}</text>
+        <text x="40" y="52" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.8" font-weight="normal" fill="${paletteKey === 'obsidian_dark' ? '#A3A3A3' : '#B0AFAF'}">${this.escapeXml(h.subtitle || "PHILIPS  •  EXECUTIVE OPERATIONS")}</text>
         <rect x="1135" y="10" width="160" height="42" rx="4" fill="#FFFFFF" filter="url(#shadow-card)" />
         <image href="${logoSrc}" x="1145" y="15" width="140" height="32" preserveAspectRatio="xMidYMid meet" />
       </g>
@@ -1262,13 +1273,34 @@ class SlideCanvasRenderer {
     });
   }
 
-  escape(str) {
+  escapeXml(str) {
     if (!str) return "";
     return String(str)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  escape(str) {
+    return this.escapeXml(str);
+  }
+
+  wrapText(text, maxChars = 40) {
+    if (!text) return [""];
+    const words = String(text).split(/\s+/);
+    const lines = [];
+    let currentLine = "";
+    words.forEach(w => {
+      if ((currentLine + " " + w).trim().length <= maxChars) {
+        currentLine = (currentLine + " " + w).trim();
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = w;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines.length ? lines : [""];
   }
 
   // ══════════════════════════════════════════════════════════════════════════
