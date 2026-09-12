@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "public": true,
+  "framework": null,
   "cleanUrls": true,
   "outputDirectory": "static",
   "headers": [
@@ -11,5 +11,8 @@
         { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
