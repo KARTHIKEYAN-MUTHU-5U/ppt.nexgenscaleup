@@ -15,11 +15,11 @@
     ],
     "headers": [
       {
-        "source": "**/*.@(jpg|jpeg|gif|png|webp)",
+        "source": "**/*.html",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "public, max-age=7200"
+            "value": "no-cache, no-store, must-revalidate"
           }
         ]
       },
@@ -28,7 +28,16 @@
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "no-cache"
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|webp)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=7200"
           }
         ]
       }
