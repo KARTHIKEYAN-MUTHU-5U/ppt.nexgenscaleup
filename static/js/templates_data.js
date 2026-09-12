@@ -384,6 +384,11 @@ function getEmoteUrl(emoteId) {
   return `emotes/${info.filename}`;
 }
 
+function eUrl(emoteId) {
+  return getEmoteUrl(emoteId);
+}
+window.eUrl = getEmoteUrl;
+
 const TEMPLATES_CONFIG = {
 // ──────────────────────────────────────────────────────────────────────────
   // TEMPLATE 1: PHILIPS ICA RECONCILIATION AS-IS BLUEPRINT (FLAGSHIP)
@@ -1214,3 +1219,4 @@ window.EMOTES_CATALOG = EMOTES_CATALOG;
 window.TEMPLATES_CONFIG = TEMPLATES_CONFIG;
 window.getEmoteInfo = getEmoteInfo;
 window.getEmoteUrl = getEmoteUrl;
+window.eUrl = getEmoteUrl;
