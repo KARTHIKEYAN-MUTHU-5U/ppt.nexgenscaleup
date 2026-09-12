@@ -4,10 +4,6 @@
  * 24-emote catalog picker, OpenXML animation simulator, and PowerPoint export.
  */
 
-// Global Emote URL resolver helper
-const eUrl = (id) => (window.getEmoteUrl ? window.getEmoteUrl(id) : 'emotes/' + (id || 'spec') + '.gif');
-window.eUrl = eUrl;
-
 document.addEventListener("DOMContentLoaded", () => {
   const state = {
     activeTemplateId: "process_flow",
