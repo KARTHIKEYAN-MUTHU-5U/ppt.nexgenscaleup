@@ -3,32 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NexGen Slide Studio</title>
-  <meta name="description" content="Professional presentation engineering platform. Design and export executive-grade PPTX presentations with precise vector layouts and animated elements.">
+  <title>NexGen Slide Studio | Executive Blueprint Engine</title>
+  <meta name="description" content="Executive-Grade Presentation Studio. 2.0 pt DrawingML Connectors, Native OpenXML Sequencing, 46 Transparent Animated Emotes, and Pure Warm Executive Themes. Tuned for Philips Company.">
+  
   <link rel="icon" type="image/png" href="emotes/tb_robot.gif">
-  <link rel="stylesheet" href="css/style.css?v=3.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=4.0">
 </head>
 <body>
 
-  <!-- Top App Navigation Bar -->
-  <header class="app-navbar">
+  <!-- Top Global Header -->
+  <header class="studio-header">
     <div class="brand-section">
       <div class="brand-icon">N</div>
       <div>
         <div class="brand-title">NexGen Slide Studio</div>
-        <div class="brand-tagline">presentation engine</div>
+        <div class="brand-tagline">philips executive suite</div>
       </div>
     </div>
 
-    <!-- Center Template Switcher -->
+    <!-- Center Template Switcher with 10 Philips Executive Templates -->
     <div class="template-selector-wrapper">
       <label for="templateSelect" class="template-label">Template:</label>
       <select id="templateSelect" class="template-select">
-        <option value="process_flow">ICA Reconciliation As-Is Blueprint (Philips Flagship)</option>
-        <option value="strategic_roadmap">Strategic Transformation Roadmap (3 Horizons)</option>
-        <option value="operating_model">Target Operating Model (TOM 3-Tier RACI)</option>
-        <option value="data_pipeline">Enterprise AI & Data Architecture Pipeline</option>
-        <option value="kpi_scorecard">Executive Board KPI Scorecard</option>
+        <optgroup label="Philips Operations Architecture">
+          <option value="process_flow">01. ICA Reconciliation As-Is Blueprint (Philips Flagship)</option>
+          <option value="financial_close">02. Month-End Financial Close & Settlement Pipeline</option>
+          <option value="vendor_p2p">03. Procure-to-Pay (P2P) & Vendor Logistics Workflow</option>
+        </optgroup>
+        <optgroup label="Philips Strategy & Performance">
+          <option value="strategic_roadmap">04. Strategic Transformation Roadmap (3 Horizons)</option>
+          <option value="kpi_scorecard">05. Royal Philips Executive Board KPI Scorecard</option>
+        </optgroup>
+        <optgroup label="Philips Organization & ITIL">
+          <option value="operating_model">06. Target Operating Model (TOM 3-Tier Architecture)</option>
+          <option value="it_service">07. IT Service Management & Incident Resolution (ITIL)</option>
+        </optgroup>
+        <optgroup label="Philips Healthcare Risk & Experience">
+          <option value="data_pipeline">08. HealthSuite Data & Agentic AI Architecture</option>
+          <option value="risk_compliance">09. 5×5 Enterprise Risk & SOX Compliance Matrix</option>
+          <option value="customer_journey">10. Clinical Experience & Customer Journey Map</option>
+        </optgroup>
       </select>
     </div>
 
@@ -79,8 +96,8 @@
     <!-- Left Controls Sidebar -->
     <aside class="controls-sidebar">
       <div class="sidebar-tabs">
-        <button type="button" class="tab-btn active" data-tab="tab-editor">Editor & Nodes</button>
-        <button type="button" class="tab-btn" data-tab="tab-emotes">Emotes (24)</button>
+        <button type="button" class="tab-btn active" data-tab="tab-editor">Editor &amp; Nodes</button>
+        <button type="button" class="tab-btn" data-tab="tab-emotes">Emotes (46)</button>
         <button type="button" class="tab-btn" data-tab="tab-engine">DrawingML Specs</button>
       </div>
 
@@ -91,15 +108,15 @@
           
           <!-- Master Presentation Theme & Branding -->
           <div class="form-group-block">
-            <div class="form-group-title">Slide Theme & Executive Branding</div>
+            <div class="form-group-title">Slide Theme &amp; Executive Branding</div>
 
             <div class="input-group">
-              <label for="paletteSelect">Canvas Color Palette</label>
+              <label for="paletteSelect">Canvas Color Palette (Zero Blue)</label>
               <select id="paletteSelect" class="input-dark">
-                <option value="executive_blueprint">Executive Blueprint (Corporate White & Navy)</option>
-                <option value="obsidian_dark">Obsidian Dark Mode (Tech & Neon)</option>
-                <option value="emerald_fintech">Emerald FinTech (Clean Green & Platinum)</option>
-                <option value="royal_indigo">Royal Corporate Indigo (Executive Board)</option>
+                <option value="executive_blueprint">Executive Blueprint (Warm Professional)</option>
+                <option value="obsidian_dark">Obsidian Dark Mode (Warm Charcoal)</option>
+                <option value="emerald_fintech">Emerald FinTech (Clean Green &amp; Platinum)</option>
+                <option value="royal_indigo">Royal Corporate (Deep Plum)</option>
               </select>
             </div>
 
@@ -125,8 +142,8 @@
             </div>
 
             <div class="input-group">
-              <label for="subtitleInput">Subtitle & Operational Scope</label>
-              <textarea id="subtitleInput" class="input-dark" rows="2">PHILIPS  •  INTERCOMPANY ACCOUNTING PROCESS FLOW & GOVERNANCE</textarea>
+              <label for="subtitleInput">Subtitle &amp; Operational Scope</label>
+              <textarea id="subtitleInput" class="input-dark" rows="2">PHILIPS  •  INTERCOMPANY ACCOUNTING PROCESS FLOW &amp; GOVERNANCE</textarea>
             </div>
           </div>
 
@@ -137,11 +154,11 @@
 
         </div>
 
-        <!-- Tab 2: Curated 24 Animated Emotes Library -->
+        <!-- Tab 2: Curated 46 Animated Emotes Library -->
         <div id="tab-emotes" class="tab-content">
-          <div class="form-group-title">24 Curated Transparent Animated Emotes</div>
+          <div class="form-group-title">46 Curated Transparent Animated Emotes</div>
           <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
-            Curated open-source vector animated GIFs with clean alpha transparency, zero halo artifacts, and soft glow halos embedded natively into PowerPoint slides.
+            Curated vector animated GIFs with clean alpha transparency, zero halo artifacts, and pure warm executive tones embedded natively into PowerPoint slides.
           </p>
           <div id="sidebarEmoteGrid" class="emote-sidebar-grid">
             <!-- Populated dynamically -->
@@ -161,8 +178,8 @@
               Follows strict cognitive presentation sequencing: horizontal connectors wipe left-to-right, vertical drops wipe top-to-bottom, cards execute smooth entrance fades, and animated emotes expand dynamically with soft circular halos.
             </div>
             <div class="spec-card">
-              <strong>Widescreen 16:9 Geometry</strong>
-              Target canvas: 13.333″ × 7.50″ (1333 × 750 viewBox coordinates). Accurate point-to-pixel scaling ($1\text{ pt} = 1.389\text{ px}$) ensures bold executive presence and zero line wrapping or text truncation.
+              <strong>Zero Blue / Anti-AI Slop Aesthetic</strong>
+              Engineered with clean architectural warm slates, amber, coral, spruce green, and deep plum. Flat surfaces, precise typography, and mathematical alignment replace generic gradients and glassmorphism.
             </div>
           </div>
         </div>
@@ -170,33 +187,38 @@
       </div>
     </aside>
 
-    <!-- Right Canvas Viewport & Stage -->
-    <section class="canvas-viewport">
-      <div class="canvas-toolbar">
-        <div class="canvas-toolbar-left">
-          <span class="ratio-badge">16:9 WIDESCREEN</span>
-          <span id="activeTemplateBadge" class="template-active-badge">Philips ICA Blueprint</span>
-          <span class="canvas-dimensions-hint">13.33″ × 7.50″ Presentation Blueprint</span>
+    <!-- Main Canvas Viewport Area -->
+    <section class="viewport-area">
+      
+      <!-- Studio Toolbar Bar -->
+      <div class="stage-toolbar">
+        <div class="stage-info">
+          <span class="badge-status">16:9 Widescreen</span>
+          <span id="activeTemplateBadge" class="badge-category">Philips Flagship</span>
+          <span class="badge-dpi">1333 × 750 Vector ViewBox</span>
         </div>
 
-        <!-- OpenXML Animation Simulator Controls -->
-        <div class="canvas-toolbar-right">
-          <div class="anim-control-group">
-            <span id="animPhaseIndicator" class="phase-badge">Phase: All Visible</span>
-            <button type="button" id="btnResetAnim" class="btn btn-sm btn-secondary" title="Reset Slide View">Reset</button>
-            <button type="button" id="btnStepAnim" class="btn btn-sm btn-secondary" title="Step Next Phase">Step ›</button>
-            <button type="button" id="btnSimulate" class="btn btn-sm btn-anim" title="Simulate Sequential OpenXML Build">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Play Build</span>
-            </button>
-          </div>
-          <button type="button" id="btnFullscreen" class="btn btn-sm btn-secondary" title="Maximize Viewport">
+        <div class="simulator-controls">
+          <span id="animPhaseIndicator" class="anim-label">Phase: 0 / 5</span>
+          <button type="button" id="btnSimulate" class="btn btn-sm btn-secondary" title="Play OpenXML 5-Phase Sequence">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Play Flow</span>
+          </button>
+          <button type="button" id="btnStepAnim" class="btn btn-sm btn-secondary" title="Step through build sequence">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>Step</span>
+          </button>
+          <button type="button" id="btnResetAnim" class="btn btn-sm btn-secondary" title="Reset Viewport">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+          <button type="button" id="btnFullscreen" class="btn btn-sm btn-secondary" title="Toggle Fullscreen Canvas">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           </button>
         </div>
       </div>
 
-      <div class="canvas-stage" id="canvasStage">
+      <!-- Canvas Stage Center -->
+      <div id="canvasStage" class="canvas-stage">
         <!-- 16:9 Slide Canvas Render Target -->
         <div id="slideCanvas" class="slide-canvas">
           <!-- Rendered dynamically by SlideCanvasRenderer -->
@@ -210,11 +232,11 @@
   <div id="emoteModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-head">
-        <div class="modal-title">Select Transparent Animated Emote</div>
+        <div class="modal-title">Select Transparent Animated Emote (46 Curated)</div>
         <button type="button" id="closeEmoteModal" class="btn-close">&times;</button>
       </div>
       <div class="modal-filter-row">
-        <input type="text" id="emoteSearchInput" class="input-dark" placeholder="Search 24 emotes by name or category (e.g. audit, robot, cash)...">
+        <input type="text" id="emoteSearchInput" class="input-dark" placeholder="Search 46 emotes by name or category (e.g. calc, stamp, robot, cash)...">
       </div>
       <div id="emoteGrid" class="emote-picker-grid">
         <!-- Populated dynamically -->
@@ -226,11 +248,11 @@
   <script src="js/vendor/pptxgen.bundle.js"></script>
   <script src="js/vendor/html2canvas.min.js"></script>
 
-  <!-- Application Scripts -->
-  <script src="js/templates_data.js?v=3.0"></script>
-  <script src="js/canvas_renderer.js?v=3.0"></script>
-  <script src="js/pptx_client_generator.js?v=3.0"></script>
-  <script src="js/app.js?v=3.0"></script>
+  <!-- Application Scripts with cache-busting -->
+  <script src="js/templates_data.js?v=4.0"></script>
+  <script src="js/canvas_renderer.js?v=4.0"></script>
+  <script src="js/pptx_client_generator.js?v=4.0"></script>
+  <script src="js/app.js?v=4.0"></script>
 
 </body>
 </html>

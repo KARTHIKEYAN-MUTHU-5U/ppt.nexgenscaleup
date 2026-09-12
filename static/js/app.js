@@ -160,6 +160,16 @@ document.addEventListener("DOMContentLoaded", () => {
       buildDataPipelineForm(d);
     } else if (tid === "kpi_scorecard") {
       buildKpiScorecardForm(d);
+    } else if (tid === "financial_close") {
+      buildFinancialCloseForm(d);
+    } else if (tid === "vendor_p2p") {
+      buildVendorP2PForm(d);
+    } else if (tid === "it_service") {
+      buildITServiceForm(d);
+    } else if (tid === "risk_compliance") {
+      buildRiskComplianceForm(d);
+    } else if (tid === "customer_journey") {
+      buildCustomerJourneyForm(d);
     }
   }
 
@@ -498,6 +508,149 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="input-group">
             <label>Variance / Delta</label>
             <input type="text" class="input-dark node-field" data-path="kpis.${idx}.delta" value="${escapeHtml(k.delta)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  function buildFinancialCloseForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">FINANCIAL CLOSE RUNBOOK NODES</div>`;
+    (d.nodes || []).forEach((n, idx) => {
+      html += `
+        <div id="form-card-${n.id}" class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(n.title)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="nodes.${idx}.emote">
+              <img src="emotes/${n.emote}.gif" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Node Title</label>
+            <input type="text" class="input-dark node-field" data-path="nodes.${idx}.title" value="${escapeHtml(n.title)}">
+          </div>
+          <div class="input-group">
+            <label>Operational Task</label>
+            <input type="text" class="input-dark node-field" data-path="nodes.${idx}.desc" value="${escapeHtml(n.desc)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  function buildVendorP2PForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">PROCURE-TO-PAY (P2P) STAGES</div>`;
+    (d.steps || []).forEach((st, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">Step ${st.num}: ${escapeHtml(st.title)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="steps.${idx}.emote">
+              <img src="emotes/${st.emote}.gif" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Step Title</label>
+            <input type="text" class="input-dark node-field" data-path="steps.${idx}.title" value="${escapeHtml(st.title)}">
+          </div>
+          <div class="input-group">
+            <label>Subtext</label>
+            <input type="text" class="input-dark node-field" data-path="steps.${idx}.sub" value="${escapeHtml(st.sub)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  function buildITServiceForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">ITIL SUPPORT TIERS</div>`;
+    (d.tiers || []).forEach((t, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(t.level)}: ${escapeHtml(t.name)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="tiers.${idx}.emote">
+              <img src="emotes/${t.emote}.gif" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Name</label>
+            <input type="text" class="input-dark node-field" data-path="tiers.${idx}.name" value="${escapeHtml(t.name)}">
+          </div>
+          <div class="input-group">
+            <label>Service Scope</label>
+            <input type="text" class="input-dark node-field" data-path="tiers.${idx}.desc" value="${escapeHtml(t.desc)}">
+          </div>
+          <div class="input-group">
+            <label>SLA</label>
+            <input type="text" class="input-dark node-field" data-path="tiers.${idx}.sla" value="${escapeHtml(t.sla)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  function buildRiskComplianceForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">ENTERPRISE RISK VECTORS</div>`;
+    (d.risk_vectors || []).forEach((rv, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${rv.id}: ${escapeHtml(rv.name)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="risk_vectors.${idx}.emote">
+              <img src="emotes/${rv.emote}.gif" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Risk Name</label>
+            <input type="text" class="input-dark node-field" data-path="risk_vectors.${idx}.name" value="${escapeHtml(rv.name)}">
+          </div>
+          <div class="input-group">
+            <label>Owner</label>
+            <input type="text" class="input-dark node-field" data-path="risk_vectors.${idx}.owner" value="${escapeHtml(rv.owner)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  function buildCustomerJourneyForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">CUSTOMER JOURNEY STAGES</div>`;
+    (d.stages || []).forEach((st, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(st.phase)}: ${escapeHtml(st.title)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="stages.${idx}.emote">
+              <img src="emotes/${st.emote}.gif" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Stage Title</label>
+            <input type="text" class="input-dark node-field" data-path="stages.${idx}.title" value="${escapeHtml(st.title)}">
+          </div>
+          <div class="input-group">
+            <label>Customer Action</label>
+            <input type="text" class="input-dark node-field" data-path="stages.${idx}.action" value="${escapeHtml(st.action)}">
+          </div>
+          <div class="input-group">
+            <label>Experience Score</label>
+            <input type="text" class="input-dark node-field" data-path="stages.${idx}.score" value="${escapeHtml(st.score)}">
           </div>
         </div>
       `;
