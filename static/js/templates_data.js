@@ -1,7 +1,8 @@
 /**
  * Executive Slide Studio - Master Templates & Data Catalog
- * 10 Intricate, Executive-Grade Philips Templates & 46 Transparent Animated Emotes.
- * Absolutely ZERO Blue or Glassmorphic "AI Slop" — Professional Warm Executive Palette.
+ * 15 Intricate, Executive-Grade Philips Templates & 123 Real Authentic Corporate Assets.
+ * Real Assets Only: 46 Animated GIFs + 45 Google Material & Philips PNGs + 32 Lucide Vector SVGs.
+ * Absolutely ZERO Blue or Glassmorphic "AI Slop" — Professional Warm Executive Palettes.
  */
 
 const PALETTES = {
@@ -16,21 +17,21 @@ const PALETTES = {
     text_primary: "#1A1A2E",
     text_secondary: "#3D3D50",
     text_muted: "#6B6B7B",
-    blue_accent: "#2D3B4E",     // Primary dark slate accent (replaces harsh blue)
-    blue_bg: "#F0EFEB",         // Light neutral warm card tint
-    blue_border: "#D5D2CB",     // Clean warm slate border
+    blue_accent: "#2D3B4E",
+    blue_bg: "#F0EFEB",
+    blue_border: "#D5D2CB",
     amber_accent: "#C4621A",
     amber_bg: "#FBF3EC",
     amber_border: "#EDCFB3",
-    teal_accent: "#1A7A6D",     // Professional sage/spruce
+    teal_accent: "#1A7A6D",
     teal_border: "#B3D9D3",
-    rose_accent: "#B5395A",     // Deep executive rose
+    rose_accent: "#B5395A",
     rose_bg: "#FBF0F3",
     rose_border: "#E8BFC9",
     red_accent: "#C42B2B",
     red_bg: "#FBF0F0",
     red_border: "#E8C0C0",
-    purple_accent: "#5A4E8C",   // Deep warm slate plum
+    purple_accent: "#5A4E8C",
     dashed_border: "#D4D0C8"
   },
   obsidian_dark: {
@@ -44,7 +45,7 @@ const PALETTES = {
     text_primary: "#EDEDED",
     text_secondary: "#BABABA",
     text_muted: "#777777",
-    blue_accent: "#E8734A",     // Primary warm coral accent
+    blue_accent: "#E8734A",
     blue_bg: "rgba(232, 115, 74, 0.08)",
     blue_border: "rgba(232, 115, 74, 0.3)",
     amber_accent: "#E0A030",
@@ -68,46 +69,46 @@ const PALETTES = {
     hdr_bg: "#062A1E",
     stripe: "#10B981",
     card_bg: "#FFFFFF",
-    card_bd: "#D1E3DC",
-    text_primary: "#0D211A",
-    text_secondary: "#1F4236",
-    text_muted: "#5B7C71",
-    blue_accent: "#1A6B5A",
-    blue_bg: "#EDF5F2",
-    blue_border: "#B3D9CF",
-    amber_accent: "#C4621A",
-    amber_bg: "#FEF7EC",
+    card_bd: "#D5E3DD",
+    text_primary: "#062A1E",
+    text_secondary: "#1E4738",
+    text_muted: "#4D7364",
+    blue_accent: "#10B981",
+    blue_bg: "#E8F5F0",
+    blue_border: "#A7D7C5",
+    amber_accent: "#D97706",
+    amber_bg: "#FEF7EE",
     amber_border: "#F7D8A7",
-    teal_accent: "#059669",
-    teal_border: "#A7F3D0",
-    rose_accent: "#BE185D",
-    rose_bg: "#FDF2F8",
-    rose_border: "#FBCFE8",
-    red_accent: "#E11D48",
-    red_bg: "#FFF1F2",
-    red_border: "#FECDD3",
-    purple_accent: "#4F46E5",
-    dashed_border: "#A7D7C5"
-  },
-  royal_indigo: {
-    id: "royal_indigo",
-    name: "Royal Corporate (Deep Plum)",
-    canvas_bg: "#F6F5F8",
-    hdr_bg: "#1E1830",
-    stripe: "#8B5CF6",
-    card_bg: "#FFFFFF",
-    card_bd: "#DDD8E6",
-    text_primary: "#1E1830",
-    text_secondary: "#3D3555",
-    text_muted: "#6E6680",
-    blue_accent: "#5A4E8C",
-    blue_bg: "#F3F1F8",
-    blue_border: "#CFCBE0",
-    amber_accent: "#C4621A",
-    amber_bg: "#FBF5EE",
-    amber_border: "#EDCFB3",
     teal_accent: "#0D9488",
     teal_border: "#99F6E4",
+    rose_accent: "#E11D48",
+    rose_bg: "#FEF2F2",
+    rose_border: "#FECDD3",
+    red_accent: "#DC2626",
+    red_bg: "#FEF2F2",
+    red_border: "#FECACA",
+    purple_accent: "#7C3AED",
+    dashed_border: "#B2CEC2"
+  },
+  royal_slate: {
+    id: "royal_slate",
+    name: "Royal Slate (Warm Corporate Slate)",
+    canvas_bg: "#F5F5F7",
+    hdr_bg: "#1E1E28",
+    stripe: "#E8734A",
+    card_bg: "#FFFFFF",
+    card_bd: "#DDDDE2",
+    text_primary: "#1E1E28",
+    text_secondary: "#3A3A4A",
+    text_muted: "#66667A",
+    blue_accent: "#3A3A4A",
+    blue_bg: "#EDEDF2",
+    blue_border: "#CBCBD4",
+    amber_accent: "#C4621A",
+    amber_bg: "#FBF3EC",
+    amber_border: "#EDCFB3",
+    teal_accent: "#2A7A6D",
+    teal_border: "#B3D9D3",
     rose_accent: "#B5395A",
     rose_bg: "#FBF0F3",
     rose_border: "#E8BFC9",
@@ -116,63 +117,275 @@ const PALETTES = {
     red_border: "#E8C0C0",
     purple_accent: "#7C3AED",
     dashed_border: "#D4CEE0"
+  },
+  carbon_executive: {
+    id: "carbon_executive",
+    name: "Carbon Executive (Warm Graphite & Coral)",
+    canvas_bg: "#141416",
+    hdr_bg: "#1D1D21",
+    stripe: "#E8734A",
+    card_bg: "#222228",
+    card_bd: "rgba(255, 255, 255, 0.08)",
+    text_primary: "#F3F3F5",
+    text_secondary: "#A0A0AA",
+    text_muted: "#71717A",
+    blue_accent: "#E8734A",
+    blue_bg: "rgba(232, 115, 74, 0.1)",
+    blue_border: "rgba(232, 115, 74, 0.3)",
+    amber_accent: "#F59E0B",
+    amber_bg: "rgba(245, 158, 11, 0.1)",
+    amber_border: "rgba(245, 158, 11, 0.3)",
+    teal_accent: "#10B981",
+    teal_border: "rgba(16, 185, 129, 0.3)",
+    rose_accent: "#F43F5E",
+    rose_bg: "rgba(244, 63, 94, 0.1)",
+    rose_border: "rgba(244, 63, 94, 0.3)",
+    red_accent: "#EF4444",
+    red_bg: "rgba(239, 68, 68, 0.1)",
+    red_border: "rgba(239, 68, 68, 0.3)",
+    purple_accent: "#8B5CF6",
+    dashed_border: "rgba(255, 255, 255, 0.12)"
+  },
+  terracotta_warm: {
+    id: "terracotta_warm",
+    name: "Terracotta & Sandstone (Warm Editorial)",
+    canvas_bg: "#FAF7F2",
+    hdr_bg: "#2A1810",
+    stripe: "#C4622A",
+    card_bg: "#FFFFFF",
+    card_bd: "#E8DFD5",
+    text_primary: "#261710",
+    text_secondary: "#5C4638",
+    text_muted: "#8A7364",
+    blue_accent: "#C4622A",
+    blue_bg: "#FDF5EE",
+    blue_border: "#E8CBB8",
+    amber_accent: "#D97706",
+    amber_bg: "#FEF9EE",
+    amber_border: "#F7DBA7",
+    teal_accent: "#2D6A4F",
+    teal_border: "#A3C4B2",
+    rose_accent: "#9D0208",
+    rose_bg: "#FDF0EE",
+    rose_border: "#EBB3AD",
+    red_accent: "#B00020",
+    red_bg: "#FDF0EE",
+    red_border: "#EBB3AD",
+    purple_accent: "#6B4C5E",
+    dashed_border: "#DACDC0"
+  },
+  sage_botanical: {
+    id: "sage_botanical",
+    name: "Sage Botanical (Clean Nordic Green)",
+    canvas_bg: "#F4F6F3",
+    hdr_bg: "#1A2318",
+    stripe: "#5A7A5C",
+    card_bg: "#FFFFFF",
+    card_bd: "#DCE3DA",
+    text_primary: "#1A2318",
+    text_secondary: "#3D4F3B",
+    text_muted: "#6B7D68",
+    blue_accent: "#3D6B50",
+    blue_bg: "#EEF3EF",
+    blue_border: "#C2D4C6",
+    amber_accent: "#C89B3C",
+    amber_bg: "#FDF8ED",
+    amber_border: "#E8D8A8",
+    teal_accent: "#2E6F5E",
+    teal_border: "#A5CEC3",
+    rose_accent: "#8B4A5E",
+    rose_bg: "#F7EEF2",
+    rose_border: "#D9B8C5",
+    red_accent: "#A83232",
+    red_bg: "#FDF0F0",
+    red_border: "#E8B8B8",
+    purple_accent: "#564D6E",
+    dashed_border: "#CFD8CD"
+  },
+  slate_platinum: {
+    id: "slate_platinum",
+    name: "Slate & Platinum (Executive Precision)",
+    canvas_bg: "#F8F9FA",
+    hdr_bg: "#16181D",
+    stripe: "#6366F1",
+    card_bg: "#FFFFFF",
+    card_bd: "#E2E4E8",
+    text_primary: "#0F172A",
+    text_secondary: "#334155",
+    text_muted: "#64748B",
+    blue_accent: "#475569",
+    blue_bg: "#F1F5F9",
+    blue_border: "#CBD5E1",
+    amber_accent: "#B45309",
+    amber_bg: "#FFFBEB",
+    amber_border: "#FDE68A",
+    teal_accent: "#0F766E",
+    teal_border: "#99F6E4",
+    rose_accent: "#BE123C",
+    rose_bg: "#FFF1F2",
+    rose_border: "#FECDD3",
+    red_accent: "#B91C1C",
+    red_bg: "#FEF2F2",
+    red_border: "#FECACA",
+    purple_accent: "#4338CA",
+    dashed_border: "#CBD5E1"
   }
 };
 
 const EMOTES_CATALOG = [
-  // Original 24 Emotes
-  { id: "spec", name: "Accounting Specialist", category: "Operations", filename: "spec.gif" },
-  { id: "qlik", name: "Qlik Sense Analytics", category: "Data", filename: "qlik.gif" },
-  { id: "filter", name: "Filter by Entity", category: "Data", filename: "filter.gif" },
-  { id: "list", name: "Open Items Classification", category: "Operations", filename: "list.gif" },
-  { id: "pnf", name: "Posting Not Found", category: "Exceptions", filename: "pnf.gif" },
-  { id: "idoc", name: "IDoc / OCR Issue", category: "Integration", filename: "idoc.gif" },
-  { id: "hwi", name: "Troubleshoot Using HWI", category: "Resolution", filename: "hwi.gif" },
-  { id: "no_edi", name: "No EDI / Non-SAP", category: "Exceptions", filename: "no_edi.gif" },
-  { id: "inv", name: "Retrieve Invoice Copy", category: "Resolution", filename: "inv.gif" },
-  { id: "ap_ar", name: "AP-AR Sign Issue", category: "Exceptions", filename: "ap_ar.gif" },
-  { id: "review", name: "Review & Analyze Discrepancy", category: "Resolution", filename: "review.gif" },
-  { id: "cash", name: "Cash Allocated / AP Paid", category: "Exceptions", filename: "cash.gif" },
-  { id: "waiting", name: "Waiting Counterparty Action", category: "Resolution", filename: "waiting.gif" },
-  { id: "gap", name: "Reconciliation Gap", category: "Governance", filename: "gap.gif" },
-  { id: "notif", name: "Action Notification Email", category: "Governance", filename: "notif.gif" },
-  { id: "esc", name: "Multi-Tier Escalation Siren", category: "Governance", filename: "esc.gif" },
-  { id: "tb_robot", name: "Autonomous Bot", category: "Automation", filename: "tb_robot.gif" },
-  { id: "tb_dash", name: "Executive Cockpit", category: "Analytics", filename: "tb_dash.gif" },
-  { id: "tb_audit", name: "Audit & Compliance", category: "Governance", filename: "tb_audit.gif" },
-  { id: "tb_rules", name: "Rules Engine", category: "Logic", filename: "tb_rules.gif" },
-  { id: "tb_rbac", name: "RBAC Access Control", category: "Security", filename: "tb_rbac.gif" },
-  { id: "tb_email", name: "Dispatch Email", category: "Alerts", filename: "tb_email.gif" },
-  { id: "tb_ageing", name: "SLA Aging Watcher", category: "Time", filename: "tb_ageing.gif" },
-  { id: "tb_write", name: "Document Authoring", category: "Operations", filename: "tb_write.gif" },
+  // ─── 46 AUTHENTIC ANIMATED GIFS ───
+  { id: "spec", name: "Accounting Specialist", category: "Operations", type: "animated", filename: "spec.gif" },
+  { id: "qlik", name: "Qlik Sense Analytics", category: "Data", type: "animated", filename: "qlik.gif" },
+  { id: "filter", name: "Filter by Entity", category: "Data", type: "animated", filename: "filter.gif" },
+  { id: "list", name: "Open Items Classification", category: "Operations", type: "animated", filename: "list.gif" },
+  { id: "pnf", name: "Posting Not Found", category: "Exceptions", type: "animated", filename: "pnf.gif" },
+  { id: "idoc", name: "IDoc / OCR Issue", category: "Integration", type: "animated", filename: "idoc.gif" },
+  { id: "hwi", name: "Troubleshoot Using HWI", category: "Resolution", type: "animated", filename: "hwi.gif" },
+  { id: "no_edi", name: "No EDI / Non-SAP", category: "Exceptions", type: "animated", filename: "no_edi.gif" },
+  { id: "inv", name: "Retrieve Invoice Copy", category: "Resolution", type: "animated", filename: "inv.gif" },
+  { id: "ap_ar", name: "AP-AR Sign Issue", category: "Exceptions", type: "animated", filename: "ap_ar.gif" },
+  { id: "review", name: "Review & Analyze Discrepancy", category: "Resolution", type: "animated", filename: "review.gif" },
+  { id: "cash", name: "Cash Allocated / AP Paid", category: "Exceptions", type: "animated", filename: "cash.gif" },
+  { id: "waiting", name: "Waiting Counterparty Action", category: "Resolution", type: "animated", filename: "waiting.gif" },
+  { id: "gap", name: "Reconciliation Gap", category: "Governance", type: "animated", filename: "gap.gif" },
+  { id: "notif", name: "Action Notification Email", category: "Governance", type: "animated", filename: "notif.gif" },
+  { id: "esc", name: "Multi-Tier Escalation Siren", category: "Governance", type: "animated", filename: "esc.gif" },
+  { id: "tb_robot", name: "Autonomous Bot", category: "Automation", type: "animated", filename: "tb_robot.gif" },
+  { id: "tb_dash", name: "Executive Cockpit", category: "Analytics", type: "animated", filename: "tb_dash.gif" },
+  { id: "tb_audit", name: "Audit & Compliance", category: "Governance", type: "animated", filename: "tb_audit.gif" },
+  { id: "tb_rules", name: "Rules Engine", category: "Logic", type: "animated", filename: "tb_rules.gif" },
+  { id: "tb_rbac", name: "RBAC Access Control", category: "Security", type: "animated", filename: "tb_rbac.gif" },
+  { id: "tb_email", name: "Dispatch Email", category: "Alerts", type: "animated", filename: "tb_email.gif" },
+  { id: "tb_ageing", name: "SLA Aging Watcher", category: "Time", type: "animated", filename: "tb_ageing.gif" },
+  { id: "tb_write", name: "Document Authoring", category: "Operations", type: "animated", filename: "tb_write.gif" },
+  { id: "calc", name: "Month-End Calculator", category: "Finance", type: "animated", filename: "calc.gif" },
+  { id: "ledger", name: "General Ledger & Accruals", category: "Finance", type: "animated", filename: "ledger.gif" },
+  { id: "stamp", name: "Executive Sign-Off & Stamp", category: "Governance", type: "animated", filename: "stamp.gif" },
+  { id: "chart_up", name: "Financial Trajectory & Growth", category: "Analytics", type: "animated", filename: "chart_up.gif" },
+  { id: "currency", name: "Multi-Currency & FX Settlement", category: "Finance", type: "animated", filename: "currency.gif" },
+  { id: "handshake", name: "Vendor Partnership & Contract", category: "Vendor", type: "animated", filename: "handshake.gif" },
+  { id: "po_doc", name: "Purchase Order Agreement", category: "Procurement", type: "animated", filename: "po_doc.gif" },
+  { id: "truck", name: "Logistics & Goods Receipt", category: "Supply Chain", type: "animated", filename: "truck.gif" },
+  { id: "scan_doc", name: "OCR Invoice Scanner", category: "Operations", type: "animated", filename: "scan_doc.gif" },
+  { id: "payment", name: "Payment Release & Wire", category: "Finance", type: "animated", filename: "payment.gif" },
+  { id: "server", name: "HealthSuite Cloud Infrastructure", category: "IT & Cloud", type: "animated", filename: "server.gif" },
+  { id: "ticket", name: "ITIL Support Incident", category: "Operations", type: "animated", filename: "ticket.gif" },
+  { id: "monitor", name: "System Telemetry & Health", category: "IT & Cloud", type: "animated", filename: "monitor.gif" },
+  { id: "shield", name: "Enterprise Risk & SOX Shield", category: "Governance", type: "animated", filename: "shield.gif" },
+  { id: "warning", name: "KRI Critical Alert", category: "Risk", type: "animated", filename: "warning.gif" },
+  { id: "checkmark", name: "Audit Compliance Pass", category: "Governance", type: "animated", filename: "checkmark.gif" },
+  { id: "radar", name: "Continuous Risk Radar", category: "Risk", type: "animated", filename: "radar.gif" },
+  { id: "user", name: "Clinical Practitioner / Persona", category: "Customer", type: "animated", filename: "user.gif" },
+  { id: "cart", name: "Procurement Catalog Cart", category: "Procurement", type: "animated", filename: "cart.gif" },
+  { id: "chat", name: "Clinical Support Chat", category: "Operations", type: "animated", filename: "chat.gif" },
+  { id: "heart", name: "Patient & Clinician Satisfaction", category: "Experience", type: "animated", filename: "heart.gif" },
+  { id: "gear", name: "Process Automation Engine", category: "Automation", type: "animated", filename: "gear.gif" },
 
-  // 22 New Curated Emotes (Total: 46)
-  { id: "calc", name: "Month-End Calculator", category: "Finance", filename: "calc.gif" },
-  { id: "ledger", name: "General Ledger & Accruals", category: "Finance", filename: "ledger.gif" },
-  { id: "stamp", name: "Executive Sign-Off & Stamp", category: "Governance", filename: "stamp.gif" },
-  { id: "chart_up", name: "Financial Trajectory & Growth", category: "Analytics", filename: "chart_up.gif" },
-  { id: "currency", name: "Multi-Currency & FX Settlement", category: "Finance", filename: "currency.gif" },
-  { id: "handshake", name: "Vendor Partnership & Contract", category: "Vendor", filename: "handshake.gif" },
-  { id: "po_doc", name: "Purchase Order Agreement", category: "Procurement", filename: "po_doc.gif" },
-  { id: "truck", name: "Logistics & Goods Receipt", category: "Supply Chain", filename: "truck.gif" },
-  { id: "scan_doc", name: "OCR Invoice Scanner", category: "Operations", filename: "scan_doc.gif" },
-  { id: "payment", name: "Payment Release & Wire", category: "Finance", filename: "payment.gif" },
-  { id: "server", name: "HealthSuite Cloud Infrastructure", category: "IT & Cloud", filename: "server.gif" },
-  { id: "ticket", name: "ITIL Support Incident", category: "Operations", filename: "ticket.gif" },
-  { id: "monitor", name: "System Telemetry & Health", category: "IT & Cloud", filename: "monitor.gif" },
-  { id: "shield", name: "Enterprise Risk & SOX Shield", category: "Governance", filename: "shield.gif" },
-  { id: "warning", name: "KRI Critical Alert", category: "Risk", filename: "warning.gif" },
-  { id: "checkmark", name: "Audit Compliance Pass", category: "Governance", filename: "checkmark.gif" },
-  { id: "radar", name: "Continuous Risk Radar", category: "Risk", filename: "radar.gif" },
-  { id: "user", name: "Clinical Practitioner / Persona", category: "Customer", filename: "user.gif" },
-  { id: "cart", name: "Procurement Catalog Cart", category: "Procurement", filename: "cart.gif" },
-  { id: "chat", name: "Clinical Support Chat", category: "Operations", filename: "chat.gif" },
-  { id: "heart", name: "Patient & Clinician Satisfaction", category: "Experience", filename: "heart.gif" },
-  { id: "gear", name: "Process Automation Engine", category: "Automation", filename: "gear.gif" }
+  // ─── 30 OFFICIAL GOOGLE MATERIAL DESIGN STATIC PNG ICONS ───
+  { id: "m_trend_up", name: "Trend Upward Trajectory", category: "Analytics", type: "static", filename: "m_trend_up.png" },
+  { id: "m_bank_gl", name: "General Ledger & Banking", category: "Finance", type: "static", filename: "m_bank_gl.png" },
+  { id: "m_verified_shield", name: "Verified Security Shield", category: "Security", type: "static", filename: "m_verified_shield.png" },
+  { id: "m_warning_alert", name: "Critical Warning Triangle", category: "Risk", type: "static", filename: "m_warning_alert.png" },
+  { id: "m_schedule_clock", name: "Schedule & SLA Clock", category: "Time", type: "static", filename: "m_schedule_clock.png" },
+  { id: "m_audit_approved", name: "Audit Approved Stamp", category: "Governance", type: "static", filename: "m_audit_approved.png" },
+  { id: "m_document", name: "Executive Runbook & Contract", category: "Operations", type: "static", filename: "m_document.png" },
+  { id: "m_bar_chart", name: "Performance Bar Chart", category: "Analytics", type: "static", filename: "m_bar_chart.png" },
+  { id: "m_settings", name: "Configuration & Rules", category: "Automation", type: "static", filename: "m_settings.png" },
+  { id: "m_lock_security", name: "Cryptographic Security Lock", category: "Security", type: "static", filename: "m_lock_security.png" },
+  { id: "m_search_filter", name: "Scope Search & Filter", category: "Data", type: "static", filename: "m_search_filter.png" },
+  { id: "m_person_lead", name: "Executive Lead Persona", category: "People", type: "static", filename: "m_person_lead.png" },
+  { id: "m_groups_team", name: "Cross-Functional Team", category: "People", type: "static", filename: "m_groups_team.png" },
+  { id: "m_cloud_infra", name: "Cloud Infrastructure", category: "IT & Cloud", type: "static", filename: "m_cloud_infra.png" },
+  { id: "m_database", name: "Enterprise Database & CDC", category: "Data", type: "static", filename: "m_database.png" },
+  { id: "m_workflow_route", name: "Alternative Route & Fork", category: "Operations", type: "static", filename: "m_workflow_route.png" },
+  { id: "m_email_notice", name: "Bilateral Email Notice", category: "Alerts", type: "static", filename: "m_email_notice.png" },
+  { id: "m_phone_call", name: "Escalation Call Hotline", category: "Alerts", type: "static", filename: "m_phone_call.png" },
+  { id: "m_flag_milestone", name: "Strategic Milestone Flag", category: "Strategy", type: "static", filename: "m_flag_milestone.png" },
+  { id: "m_star_target", name: "Target Objective Star", category: "Strategy", type: "static", filename: "m_star_target.png" },
+  { id: "m_trophy_award", name: "Excellence Award Trophy", category: "Strategy", type: "static", filename: "m_trophy_award.png" },
+  { id: "m_lightbulb_idea", name: "Innovation & Idea", category: "Transformation", type: "static", filename: "m_lightbulb_idea.png" },
+  { id: "m_tools_config", name: "Engineering Tools", category: "Operations", type: "static", filename: "m_tools_config.png" },
+  { id: "m_sync_pipeline", name: "Sync & Data Pipeline", category: "Integration", type: "static", filename: "m_sync_pipeline.png" },
+  { id: "m_fact_check", name: "Fact Check & Verification", category: "Governance", type: "static", filename: "m_fact_check.png" },
+  { id: "m_folder_scope", name: "Legal Entity Scope Folder", category: "Operations", type: "static", filename: "m_folder_scope.png" },
+  { id: "m_timeline", name: "Milestone Timeline", category: "Strategy", type: "static", filename: "m_timeline.png" },
+  { id: "m_rule_policy", name: "Statutory Policy & Gavel", category: "Governance", type: "static", filename: "m_rule_policy.png" },
+  { id: "m_share_dist", name: "Board Distribution & Share", category: "Operations", type: "static", filename: "m_share_dist.png" },
+  { id: "m_key_access", name: "VPN & Security Access Key", category: "Security", type: "static", filename: "m_key_access.png" },
+
+  // ─── 15 PHILIPS ICA ENTERPRISE PNG ICONS ───
+  { id: "icon_ageing_alert", name: "SLA Aging Alert Beacon", category: "Time", type: "static", filename: "icon_ageing_alert.png" },
+  { id: "icon_badge_1", name: "Stage 01 Scope Badge", category: "Strategy", type: "static", filename: "icon_badge_1.png" },
+  { id: "icon_badge_2", name: "Stage 02 Triage Badge", category: "Strategy", type: "static", filename: "icon_badge_2.png" },
+  { id: "icon_badge_3", name: "Stage 03 Resolution Badge", category: "Strategy", type: "static", filename: "icon_badge_3.png" },
+  { id: "icon_clearing_success", name: "Clearing Success Gate", category: "Governance", type: "static", filename: "icon_clearing_success.png" },
+  { id: "icon_decision_gate", name: "Bilateral Decision Gate", category: "Operations", type: "static", filename: "icon_decision_gate.png" },
+  { id: "icon_email_call", name: "Bilateral Action Dispatch", category: "Alerts", type: "static", filename: "icon_email_call.png" },
+  { id: "icon_funnel_filter", name: "Entity Scope Funnel", category: "Data", type: "static", filename: "icon_funnel_filter.png" },
+  { id: "icon_gr_box", name: "Goods Receipt Container", category: "Supply Chain", type: "static", filename: "icon_gr_box.png" },
+  { id: "icon_ir_invoice", name: "Invoice Document Match", category: "Procurement", type: "static", filename: "icon_ir_invoice.png" },
+  { id: "icon_matched_balance", name: "Matched Balance Scale", category: "Finance", type: "static", filename: "icon_matched_balance.png" },
+  { id: "icon_report_start", name: "Qlik Extraction Report", category: "Data", type: "static", filename: "icon_report_start.png" },
+  { id: "icon_sap_ledger", name: "SAP S/4HANA Master Ledger", category: "Finance", type: "static", filename: "icon_sap_ledger.png" },
+  { id: "icon_stakeholder", name: "Executive Stakeholder Lead", category: "People", type: "static", filename: "icon_stakeholder.png" },
+  { id: "icon_validate", name: "System Validation Checkmark", category: "Governance", type: "static", filename: "icon_validate.png" },
+
+  // ─── 32 OFFICIAL LUCIDE VECTOR SVG ICONS ───
+  { id: "activity", name: "Real-time Activity Telemetry", category: "Analytics", type: "vector", filename: "activity.svg" },
+  { id: "award", name: "Quality & Compliance Award", category: "Governance", type: "vector", filename: "award.svg" },
+  { id: "bar-chart-3", name: "Executive Analytics Chart", category: "Analytics", type: "vector", filename: "bar-chart-3.svg" },
+  { id: "briefcase", name: "Corporate Enterprise Portfolio", category: "Strategy", type: "vector", filename: "briefcase.svg" },
+  { id: "check-circle", name: "Verified Completion Check", category: "Governance", type: "vector", filename: "check-circle.svg" },
+  { id: "clock", name: "SLA Cutoff & Countdown", category: "Time", type: "vector", filename: "clock.svg" },
+  { id: "compass", name: "Strategic Architecture Compass", category: "Strategy", type: "vector", filename: "compass.svg" },
+  { id: "cpu", name: "AI Engine & Processor", category: "IT & Cloud", type: "vector", filename: "cpu.svg" },
+  { id: "database", name: "High-Speed Parquet Lakehouse", category: "Data", type: "vector", filename: "database.svg" },
+  { id: "dollar-sign", name: "Treasury & Capital Settlement", category: "Finance", type: "vector", filename: "dollar-sign.svg" },
+  { id: "file-text", name: "Statutory Financial Statement", category: "Finance", type: "vector", filename: "file-text.svg" },
+  { id: "flag", name: "Delivery Milestone Target", category: "Strategy", type: "vector", filename: "flag.svg" },
+  { id: "gauge", name: "Latency & SLA Speedometer", category: "Analytics", type: "vector", filename: "gauge.svg" },
+  { id: "globe", name: "Global Business Services Grid", category: "Strategy", type: "vector", filename: "globe.svg" },
+  { id: "layers", name: "3-Tier Architecture Layers", category: "Operations", type: "vector", filename: "layers.svg" },
+  { id: "line-chart", name: "Growth & Variance Trajectory", category: "Analytics", type: "vector", filename: "line-chart.svg" },
+  { id: "lock", name: "Zero Trust Cryptographic Vault", category: "Security", type: "vector", filename: "lock.svg" },
+  { id: "network", name: "Intercompany Mesh Network", category: "Integration", type: "vector", filename: "network.svg" },
+  { id: "pie-chart", name: "Budget & Portfolio Allocation", category: "Finance", type: "vector", filename: "pie-chart.svg" },
+  { id: "scale", name: "Forensic Accounting Balance", category: "Finance", type: "vector", filename: "scale.svg" },
+  { id: "send", name: "Dispatch & Notification Queue", category: "Alerts", type: "vector", filename: "send.svg" },
+  { id: "server", name: "High-Availability Cluster", category: "IT & Cloud", type: "vector", filename: "server.svg" },
+  { id: "shield-alert", name: "SOX Deficiency Alert Shield", category: "Risk", type: "vector", filename: "shield-alert.svg" },
+  { id: "shield-check", name: "Audit-Certified Shield", category: "Governance", type: "vector", filename: "shield-check.svg" },
+  { id: "sliders", name: "Rule Engine Calibration", category: "Automation", type: "vector", filename: "sliders.svg" },
+  { id: "target", name: "Strategic KPI Objective", category: "Strategy", type: "vector", filename: "target.svg" },
+  { id: "terminal", name: "Automated CLI Script Engine", category: "Operations", type: "vector", filename: "terminal.svg" },
+  { id: "trending-up", name: "Exponential Performance ROI", category: "Analytics", type: "vector", filename: "trending-up.svg" },
+  { id: "user-check", name: "Authorized Sign-Off Officer", category: "People", type: "vector", filename: "user-check.svg" },
+  { id: "users", name: "Global Steering Committee", category: "People", type: "vector", filename: "users.svg" },
+  { id: "workflow", name: "Autonomous Orchestration Flow", category: "Operations", type: "vector", filename: "workflow.svg" },
+  { id: "zap", name: "Straight-Through Instant Match", category: "Automation", type: "vector", filename: "zap.svg" }
 ];
 
+function getEmoteInfo(emoteId) {
+  if (!emoteId) return { id: "spec", filename: "spec.gif", type: "animated" };
+  const found = EMOTES_CATALOG.find(e => e.id === emoteId);
+  if (found) return found;
+  if (emoteId.includes(".")) {
+    const ext = emoteId.split(".").pop();
+    return { id: emoteId, filename: emoteId, type: ext === "gif" ? "animated" : (ext === "svg" ? "vector" : "static") };
+  }
+  if (emoteId.startsWith("m_") || emoteId.startsWith("icon_") || emoteId.startsWith("badge_")) {
+    return { id: emoteId, filename: `${emoteId}.png`, type: "static" };
+  }
+  return { id: emoteId, filename: `${emoteId}.gif`, type: "animated" };
+}
+
+function getEmoteUrl(emoteId) {
+  const info = getEmoteInfo(emoteId);
+  return `emotes/${info.filename}`;
+}
+
 const TEMPLATES_CONFIG = {
-  // ──────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
   // TEMPLATE 1: PHILIPS ICA RECONCILIATION AS-IS BLUEPRINT (FLAGSHIP)
   // ──────────────────────────────────────────────────────────────────────────
   process_flow: {
@@ -650,5 +863,354 @@ const TEMPLATES_CONFIG = {
         { label: "RETENTION", val: "99.1%", sub: "Annual Renewals" }
       ]
     }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 11: PHILIPS CHANGE MANAGEMENT & ADKAR TRANSFORMATION
+  // ──────────────────────────────────────────────────────────────────────────
+  change_mgmt: {
+    id: "change_mgmt",
+    name: "Change Management & ADKAR Transformation Architecture",
+    category: "Transformation & Strategy",
+    description: "5-phase ADKAR journey (Awareness, Desire, Knowledge, Ability, Reinforcement) with 3 cross-functional workstream lanes and executive steering governance.",
+    defaultData: {
+      template_id: "change_mgmt",
+      palette: "terracotta_warm",
+      branding: {
+        company_name: "PHILIPS ENTERPRISE TRANSFORMATION",
+        category_subtitle: "GLOBAL ADKAR CHANGE MANAGEMENT & ADOPTION BLUEPRINT",
+        logo_key: "philips"
+      },
+      header: {
+        title: "ENTERPRISE CHANGE MANAGEMENT  |  ADKAR TRANSFORMATION BLUEPRINT",
+        subtitle: "PHILIPS GLOBAL BUSINESS SERVICES  •  ORGANIZATIONAL READINESS & ADOPTION RUNBOOK",
+        date: "2026",
+        slide_no: "11",
+        status_text: "ADOPT RUNBOOK"
+      },
+      phases: [
+        { phase: "PHASE 01", title: "AWARENESS", sub: "Why Change & Strategic Need", emote: "m_lightbulb_idea", status: "COMPLETE", progress: "100%" },
+        { phase: "PHASE 02", title: "DESIRE", sub: "WIIFM & Leadership Alignment", emote: "heart", status: "COMPLETE", progress: "100%" },
+        { phase: "PHASE 03", title: "KNOWLEDGE", sub: "Operational Training & HWI", emote: "m_document", status: "IN PROGRESS", progress: "75%" },
+        { phase: "PHASE 04", title: "ABILITY", sub: "Superuser Coaching & Pilot", emote: "m_tools_config", status: "ACTIVE", progress: "60%" },
+        { phase: "PHASE 05", title: "REINFORCEMENT", sub: "KPI Audit & Sustained Close", emote: "m_trophy_award", status: "PLANNED", progress: "20%" }
+      ],
+      workstreams: [
+        {
+          lane: "LANE A: PEOPLE & CULTURE",
+          emote: "m_person_lead",
+          initiatives: [
+            { title: "Change Champions Network", desc: "48 local entity change ambassadors deployed across global delivery hubs", owner: "VP People & Org" },
+            { title: "Stakeholder Impact Assessment", desc: "Detailed persona friction maps for accounting controllers and shared service leads", owner: "Change Lead" }
+          ]
+        },
+        {
+          lane: "LANE B: PROCESS & PLAYBOOKS",
+          emote: "workflow",
+          initiatives: [
+            { title: "Standard Operating Procedures 2.0", desc: "Digital interactive HWI playbooks published for SAP S/4HANA exception handling", owner: "Process CoE" },
+            { title: "Bilateral SLA Harmonization", desc: "Standardized 48h/96h escalation commitments agreed across all operating units", owner: "GBS Director" }
+          ]
+        },
+        {
+          lane: "LANE C: TECH & AUTOMATION",
+          emote: "cpu",
+          initiatives: [
+            { title: "HealthSuite Agent Sandbox", desc: "Hands-on guided walkthroughs for autonomous exception triage and auto-matching", owner: "AI Tech Lead" },
+            { title: "Real-Time Telemetry Cockpit", desc: "Live adoption tracker monitoring transaction straight-through rate by entity", owner: "Analytics Lead" }
+          ]
+        }
+      ],
+      governance: {
+        readiness_score: "88.4%",
+        trained_staff: "1,420 / 1,600",
+        superusers_active: "64 Leads",
+        sentiment_index: "+74 NPS"
+      }
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 12: STRATEGIC SWOT MATRIX & CAPABILITY GRID
+  // ──────────────────────────────────────────────────────────────────────────
+  swot_analysis: {
+    id: "swot_analysis",
+    name: "Strategic SWOT Matrix & Executive Capability Grid",
+    category: "Strategy & Executive",
+    description: "Executive 4-quadrant SWOT matrix (Strengths, Weaknesses, Opportunities, Threats) with strategic alignment synthesis and priority impact ratings.",
+    defaultData: {
+      template_id: "swot_analysis",
+      palette: "carbon_executive",
+      branding: {
+        company_name: "ROYAL PHILIPS STRATEGY",
+        category_subtitle: "EXECUTIVE CAPABILITY MATRIX & STRATEGIC ASSESSMENT",
+        logo_key: "philips"
+      },
+      header: {
+        title: "EXECUTIVE STRATEGIC SWOT MATRIX  |  RECONCILIATION CAPABILITY GRID",
+        subtitle: "PHILIPS ENTERPRISE GOVERNANCE  •  GLOBAL COMPETITIVE BENCHMARK & RISK APPRAISAL",
+        date: "Fiscal Year 2026",
+        slide_no: "12",
+        status_text: "STRATEGY REVIEW"
+      },
+      quadrants: {
+        strengths: {
+          title: "STRENGTHS (INTERNAL ADVANTAGES)",
+          tag: "LEVERAGE",
+          color: "#10B981",
+          emote: "shield-check",
+          items: [
+            { code: "S1", title: "SAP S/4HANA Clean Core Architecture", impact: "HIGH", desc: "Single enterprise ledger standard enabling real-time bilateral data extraction." },
+            { code: "S2", title: "Proprietary Autonomous Agentic Matcher", impact: "HIGH", desc: "96.4% touchless reconciliation rate across recurring intercompany balances." },
+            { code: "S3", title: "Global GBS CoE Talent Density", impact: "MED", desc: "Centralized hubs in Amsterdam, Panama, and Chennai with deep domain expertise." }
+          ]
+        },
+        weaknesses: {
+          title: "WEAKNESSES (INTERNAL GAPS)",
+          tag: "REMEDIATE",
+          color: "#F59E0B",
+          emote: "m_warning_alert",
+          items: [
+            { code: "W1", title: "Legacy Non-SAP Entity Integration", impact: "HIGH", desc: "Paper invoices and unstructured PDFs still require manual OCR fallback." },
+            { code: "W2", title: "Heterogeneous HWI Workaround Instructions", impact: "MED", desc: "Regional variance in hand work instructions causes resolution friction." },
+            { code: "W3", title: "Unallocated Cash Latency in Sub-Ledgers", impact: "MED", desc: "Cross-border payment clearing delays trigger false aged alerts." }
+          ]
+        },
+        opportunities: {
+          title: "OPPORTUNITIES (EXTERNAL VALUE)",
+          tag: "ACCELERATE",
+          color: "#E8734A",
+          emote: "trending-up",
+          items: [
+            { code: "O1", title: "Cross-Entity Autonomous Escrow Settlement", impact: "HIGH", desc: "Zero-touch bilateral net clearing via real-time ERP API triggers." },
+            { code: "O2", title: "Multi-Agent Generative Root Cause Analysis", impact: "HIGH", desc: "AI-driven forensic explanations for persistent disputed line items." },
+            { code: "O3", title: "Federated Shared Services Commercialization", impact: "MED", desc: "Exporting Philips reconciliation engine to joint venture health entities." }
+          ]
+        },
+        threats: {
+          title: "THREATS (EXTERNAL RISKS)",
+          tag: "DEFEND",
+          color: "#EF4444",
+          emote: "shield-alert",
+          items: [
+            { code: "T1", title: "Cross-Border FX Volatility & Regulations", impact: "HIGH", desc: "Emerging statutory compliance barriers in high-inflation operating jurisdictions." },
+            { code: "T2", title: "Tightening SOX & ESG Reporting Audits", impact: "MED", desc: "Mandatory zero-tolerance threshold for un-cleared aged balance deltas." },
+            { code: "T3", title: "Cybersecurity & Intercompany EDI Breaches", impact: "CRITICAL", desc: "Sophisticated vendor impersonation and wire redirect fraud vectors." }
+          ]
+        }
+      },
+      strategic_summary: {
+        core_verdict: "Accelerate autonomous S/4HANA matching (S2+O1) to remediate non-SAP invoice gaps (W1) while hardening cyber defenses (T3).",
+        priority_focus: "Horizon 1 Clean Core + Agentic Exception Resolution"
+      }
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 13: PROJECT GANTT TIMELINE & DELIVERY MILESTONES
+  // ──────────────────────────────────────────────────────────────────────────
+  project_timeline: {
+    id: "project_timeline",
+    name: "Project Gantt Timeline & Delivery Milestones",
+    category: "Program & Delivery",
+    description: "4-quarter delivery roadmap across 4 engineering lanes (Architecture, Core Build, Pilot UAT, Global Rollout) with critical milestones and dependencies.",
+    defaultData: {
+      template_id: "project_timeline",
+      palette: "sage_botanical",
+      branding: {
+        company_name: "PHILIPS PROGRAM MANAGEMENT",
+        category_subtitle: "ENTERPRISE S/4HANA & AI RECONCILIATION DELIVERY",
+        logo_key: "philips"
+      },
+      header: {
+        title: "PROGRAM GANTT TIMELINE  |  GLOBAL DELIVERY ROADMAP",
+        subtitle: "PHILIPS IT & FINANCIAL TRANSFORMATION  •  MULTI-PHASE MILESTONE TRACKER",
+        date: "2026–2027",
+        slide_no: "13",
+        status_text: "ON TRACK"
+      },
+      quarters: [
+        { qtr: "Q1 2026", months: "Jan - Mar", status: "COMPLETE", highlight: false },
+        { qtr: "Q2 2026", months: "Apr - Jun", status: "IN PROGRESS", highlight: true },
+        { qtr: "Q3 2026", months: "Jul - Sep", status: "PLANNED", highlight: false },
+        { qtr: "Q4 2026", months: "Oct - Dec", status: "PLANNED", highlight: false }
+      ],
+      lanes: [
+        {
+          name: "LANE 1: ARCHITECTURE & CORE DISCOVERY",
+          emote: "compass",
+          bars: [
+            { title: "Clean Core Scope & Data Schema", start: 0.05, span: 0.25, color: "#5A7A5C", status: "100%" },
+            { title: "API Gateway & CDC Pipelines", start: 0.20, span: 0.30, color: "#3D6B50", status: "85%" }
+          ]
+        },
+        {
+          name: "LANE 2: S/4HANA & AGENTIC AI BUILD",
+          emote: "cpu",
+          bars: [
+            { title: "Autonomous Match Engine Sprint", start: 0.25, span: 0.35, color: "#2E6F5E", status: "60%" },
+            { title: "HWI Rule Automation Engine", start: 0.45, span: 0.30, color: "#C89B3C", status: "30%" }
+          ]
+        },
+        {
+          name: "LANE 3: PILOT VALIDATION & UAT TRIAGE",
+          emote: "m_fact_check",
+          bars: [
+            { title: "Pilot Run: Amsterdam & Panama Hubs", start: 0.50, span: 0.25, color: "#5A7A5C", status: "PLANNED" },
+            { title: "Bilateral Mock Month-End Close", start: 0.65, span: 0.20, color: "#3D6B50", status: "PLANNED" }
+          ]
+        },
+        {
+          name: "LANE 4: GLOBAL SCALE & HYPERCARE",
+          emote: "globe",
+          bars: [
+            { title: "Cutover to 48 Operating Entities", start: 0.75, span: 0.22, color: "#2E6F5E", status: "PLANNED" }
+          ]
+        }
+      ],
+      milestones: [
+        { id: "M1", title: "M1: Architecture Sign-Off", date: "Feb 15", pos: 0.18, rag: "green", emote: "check-circle" },
+        { id: "M2", title: "M2: AI Engine Beta", date: "May 30", pos: 0.45, rag: "green", emote: "m_star_target" },
+        { id: "M3", title: "M3: Pilot Sign-Off", date: "Aug 20", pos: 0.70, rag: "amber", emote: "m_flag_milestone" },
+        { id: "M4", title: "M4: Global Go-Live", date: "Nov 15", pos: 0.92, rag: "green", emote: "m_trophy_award" }
+      ]
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 14: EXECUTIVE ORGANIZATION HIERARCHY
+  // ──────────────────────────────────────────────────────────────────────────
+  org_chart: {
+    id: "org_chart",
+    name: "Executive Organization Hierarchy & Functional Governance",
+    category: "Organization & Governance",
+    description: "3-tier corporate hierarchy structure (Executive Leadership → Functional VPs → Hub Delivery Leads) with headcount, mandate, and reporting connectors.",
+    defaultData: {
+      template_id: "org_chart",
+      palette: "slate_platinum",
+      branding: {
+        company_name: "PHILIPS GLOBAL BUSINESS SERVICES",
+        category_subtitle: "OPERATING LEADERSHIP & FUNCTIONAL GOVERNANCE",
+        logo_key: "philips"
+      },
+      header: {
+        title: "EXECUTIVE ORGANIZATION HIERARCHY  |  FUNCTIONAL GOVERNANCE",
+        subtitle: "PHILIPS GLOBAL BUSINESS SERVICES  •  OPERATIONAL ACCOUNTABILITY & REPORTING RAILS",
+        date: "2026",
+        slide_no: "14",
+        status_text: "LEADERSHIP STRUCTURE"
+      },
+      leader: {
+        role: "CHIEF OPERATING OFFICER & CFO",
+        name: "Executive Steering Committee",
+        mandate: "Directs global financial posture, capital allocation, and statutory enterprise compliance.",
+        hc: "Group Oversight",
+        emote: "m_person_lead"
+      },
+      divisions: [
+        {
+          id: "div_ops",
+          title: "VP Global Business Services",
+          owner: "Global Operations Lead",
+          mandate: "Oversees 48 entity shared services, bilateral SLA enforcement, and daily reconciliation hubs.",
+          hc: "Headcount: 820",
+          emote: "briefcase",
+          color: "#475569",
+          teams: [
+            { name: "EMEA & Americas Hub", lead: "Amsterdam / Panama Lead", emote: "globe", hc: "420 Staff" },
+            { name: "APAC & India CoE", lead: "Chennai Delivery Director", emote: "users", hc: "400 Staff" }
+          ]
+        },
+        {
+          id: "div_tech",
+          title: "VP Healthcare AI & Platforms",
+          owner: "Chief Digital Architect",
+          mandate: "Architects SAP S/4HANA Clean Core, high-throughput lakehouses, and autonomous triage bots.",
+          hc: "Headcount: 240",
+          emote: "cpu",
+          color: "#0F766E",
+          teams: [
+            { name: "Agentic AI Engineering", lead: "Principal AI Scientist", emote: "tb_robot", hc: "110 Engineers" },
+            { name: "ERP & Data Pipelines", lead: "SAP Enterprise Architect", emote: "database", hc: "130 Engineers" }
+          ]
+        },
+        {
+          id: "div_risk",
+          title: "VP Quality, SOX & Risk",
+          owner: "Group Compliance Officer",
+          mandate: "Ensures zero material accounting deficiencies, FDA/CE compliance, and continuous audit trails.",
+          hc: "Headcount: 160",
+          emote: "shield-check",
+          color: "#B45309",
+          teams: [
+            { name: "Statutory Audit & SOX", lead: "Internal Audit Director", emote: "m_audit_approved", hc: "95 Auditors" },
+            { name: "Fraud & Security Radar", lead: "CISO Risk Officer", emote: "lock", hc: "65 Analysts" }
+          ]
+        }
+      ],
+      summary_kpis: [
+        { label: "TOTAL WORKFORCE", val: "1,220 FTE", sub: "Global Operations" },
+        { label: "SPAN OF CONTROL", val: "1 : 7.2", sub: "Target Ratio Achieved" },
+        { label: "SUCCESSION DEPTH", val: "94%", sub: "Critical Role Coverage" }
+      ]
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 15: FINANCIAL BUDGET WATERFALL & COST VARIANCE
+  // ──────────────────────────────────────────────────────────────────────────
+  budget_waterfall: {
+    id: "budget_waterfall",
+    name: "Financial Budget Waterfall & Cost Variance Analysis",
+    category: "Finance & Strategy",
+    description: "Multi-driver waterfall analysis stepping from Baseline Operating Budget through inflation, tech investments, and autonomous AI savings to Target Budget.",
+    defaultData: {
+      template_id: "budget_waterfall",
+      palette: "executive_blueprint",
+      branding: {
+        company_name: "ROYAL PHILIPS FINANCE",
+        category_subtitle: "ANNUAL OPERATING EXPENSE (OPEX) BRIDGE & ROI",
+        logo_key: "philips"
+      },
+      header: {
+        title: "FINANCIAL BUDGET WATERFALL  |  COST VARIANCE ANALYSIS",
+        subtitle: "PHILIPS GROUP CONTROLLERSHIP  •  OPEX RESTRUCTURING & AUTOMATION DIVIDEND",
+        date: "Fiscal Year 2026",
+        slide_no: "15",
+        status_text: "BUDGET APPROVED"
+      },
+      baseline: {
+        title: "FY25 OPERATING BASELINE",
+        amount: "€42.8M",
+        val: 42.8,
+        emote: "m_bank_gl",
+        sub: "Prior Year Base Opex"
+      },
+      drivers: [
+        { title: "Statutory Wage Inflation", amount: "+€2.2M", val: 2.2, type: "increase", color: "#C42B2B", emote: "m_trend_up", desc: "Global collective bargaining adjustments across 48 entities" },
+        { title: "Cloud & S/4HANA Migration", amount: "+€1.6M", val: 1.6, type: "increase", color: "#C4621A", emote: "m_cloud_infra", desc: "Clean core SAP cloud subscription and CDC streaming infrastructure" },
+        { title: "Autonomous AI Match Savings", amount: "-€4.4M", val: -4.4, type: "decrease", color: "#1A7A6D", emote: "tb_robot", desc: "Touchless straight-through matching reducing manual triage hours by 68%" },
+        { title: "Vendor IT & EDI Consolidation", amount: "-€2.1M", val: -2.1, type: "decrease", color: "#1A7A6D", emote: "handshake", desc: "Retiring redundant legacy OCR tool licenses and paper EDI gateways" },
+        { title: "GBS Hub Footprint Optimization", amount: "-€1.3M", val: -1.3, type: "decrease", color: "#1A7A6D", emote: "globe", desc: "Streamlining regional shared services into 3 tier-1 delivery centers" }
+      ],
+      target: {
+        title: "FY26 TARGET BUDGET",
+        amount: "€38.8M",
+        val: 38.8,
+        emote: "m_trophy_award",
+        sub: "Net -€4.0M (-9.3%) Reduction"
+      },
+      scorecards: [
+        { label: "NET SAVINGS", val: "€4.0M", sub: "Annual Recurring OPEX", emote: "trending-up" },
+        { label: "AI ROI MULTIPLE", val: "3.4x", sub: "Payback in 11 Months", emote: "zap" },
+        { label: "HEADCOUNT REDEPLOY", val: "142 FTE", sub: "Shifted to High-Value Work", emote: "users" }
+      ]
+    }
   }
 };
+
+window.PALETTES = PALETTES;
+window.EMOTES_CATALOG = EMOTES_CATALOG;
+window.TEMPLATES_CONFIG = TEMPLATES_CONFIG;
+window.getEmoteInfo = getEmoteInfo;
+window.getEmoteUrl = getEmoteUrl;

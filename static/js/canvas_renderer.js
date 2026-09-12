@@ -14,6 +14,14 @@ class SlideCanvasRenderer {
     this.onNodeClickCallback = null;
   }
 
+  resolveEmote(emoteId) {
+    if (window.getEmoteUrl) return window.getEmoteUrl(emoteId);
+    if (!emoteId) return "emotes/spec.gif";
+    if (emoteId.includes(".")) return `emotes/${emoteId}`;
+    if (emoteId.startsWith("m_") || emoteId.startsWith("icon_") || emoteId.startsWith("badge_")) return `emotes/${emoteId}.png`;
+    return `emotes/${emoteId}.gif`;
+  }
+
   setNodeClickListener(cb) {
     this.onNodeClickCallback = cb;
   }
@@ -63,6 +71,21 @@ class SlideCanvasRenderer {
         break;
       case "customer_journey":
         svgContent = this.renderCustomerJourney(data);
+        break;
+      case "change_mgmt":
+        svgContent = this.renderChangeMgmt(data);
+        break;
+      case "swot_analysis":
+        svgContent = this.renderSwotAnalysis(data);
+        break;
+      case "project_timeline":
+        svgContent = this.renderProjectTimeline(data);
+        break;
+      case "org_chart":
+        svgContent = this.renderOrgChart(data);
+        break;
+      case "budget_waterfall":
+        svgContent = this.renderBudgetWaterfall(data);
         break;
       case "process_flow":
       default:
@@ -1214,5 +1237,469 @@ class SlideCanvasRenderer {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 11: CHANGE MANAGEMENT & ADKAR TRANSFORMATION
+  // ══════════════════════════════════════════════════════════════════════════
+  renderChangeMgmt(data) {
+    const C = this.resolvePalette(data.palette);
+    const phases = data.phases || [];
+    const workstreams = data.workstreams || [];
+    const gov = data.governance || {};
+
+    let phasesHtml = "";
+    phases.forEach((p, idx) => {
+      const x = 40 + idx * 252;
+      const isComplete = p.status === "COMPLETE";
+      const badgeBg = isComplete ? C.teal_accent : C.amber_accent;
+      phasesHtml += `
+        <g class="anim-node anim-p1 interactive-card" data-node-id="phases.${idx}" transform="translate(${x}, 72)">
+          <rect width="244" height="42" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="4" height="42" rx="2" fill="${badgeBg}"/>
+          <rect x="10" y="8" width="34" height="26" rx="4" fill="${badgeBg}" fill-opacity="0.15"/>
+          <text x="27" y="24" text-anchor="middle" fill="${badgeBg}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">0${idx+1}</text>
+          <text x="52" y="21" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">${this.escapeXml(p.title)}</text>
+          <text x="52" y="33" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="9">${this.escapeXml(p.sub)}</text>
+          <image href="${this.resolveEmote(p.emote)}" x="208" y="10" width="22" height="22"/>
+          ${idx < 4 ? `<path d="M 248 21 L 252 21" stroke="${C.dashed_border}" stroke-width="2"/>` : ""}
+        </g>
+      `;
+    });
+
+    let wsHtml = "";
+    workstreams.forEach((ws, wIdx) => {
+      const y = 126 + wIdx * 158;
+      let initsHtml = "";
+      (ws.initiatives || []).forEach((init, iIdx) => {
+        const ix = 320 + iIdx * 480;
+        initsHtml += `
+          <g class="interactive-card" data-node-id="workstreams.${wIdx}.initiatives.${iIdx}" transform="translate(${ix}, ${y})">
+            <rect width="460" height="142" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+            <rect width="5" height="142" rx="2" fill="${C.stripe}"/>
+            <text x="18" y="26" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700">${this.escapeXml(init.title)}</text>
+            <rect x="340" y="12" width="104" height="20" rx="4" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1"/>
+            <text x="392" y="26" text-anchor="middle" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="9" font-weight="600">${this.escapeXml(init.owner)}</text>
+            <text x="18" y="52" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="11" width="424">
+              ${this.wrapText(init.desc, 58).map((line, lIdx) => `<tspan x="18" dy="${lIdx === 0 ? 0 : 16}">${this.escapeXml(line)}</tspan>`).join("")}
+            </text>
+          </g>
+        `;
+      });
+
+      wsHtml += `
+        <g class="anim-node anim-p2" transform="translate(40, ${y})">
+          <rect width="260" height="142" rx="8" fill="${C.hdr_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="6" height="142" rx="2" fill="${C.stripe}"/>
+          <image href="${this.resolveEmote(ws.emote)}" x="18" y="16" width="34" height="34"/>
+          <text x="60" y="32" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">${this.escapeXml(ws.lane)}</text>
+          <text x="18" y="72" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10">CROSS-FUNCTIONAL WORKSTREAM</text>
+          <text x="18" y="92" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="10">Adoption & Governance Lead</text>
+          <path d="M 300 71 L 320 71" stroke="${C.stripe}" stroke-width="2" marker-end="url(#arrow-head)"/>
+        </g>
+        ${initsHtml}
+      `;
+    });
+
+    return `
+      <svg viewBox="0 0 1333 750" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        ${this.getStandardDefs(C)}
+        <rect width="1333" height="750" fill="${C.canvas_bg}"/>
+        ${this.renderHeader(data, C)}
+        ${phasesHtml}
+        ${wsHtml}
+        <!-- Bottom Governance Metrics Bar -->
+        <g class="anim-node anim-p5" transform="translate(40, 616)">
+          <rect width="1253" height="98" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="6" height="98" rx="2" fill="${C.teal_accent}"/>
+          
+          <g transform="translate(30, 20)">
+            <text x="0" y="14" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">READINESS INDEX</text>
+            <text x="0" y="44" fill="${C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">${this.escapeXml(gov.readiness_score || "88.4%")}</text>
+            <text x="0" y="62" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="10">Target: > 85%</text>
+          </g>
+          <line x1="280" y1="16" x2="280" y2="82" stroke="${C.dashed_border}" stroke-width="1"/>
+          <g transform="translate(320, 20)">
+            <text x="0" y="14" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">STAFF CERTIFIED</text>
+            <text x="0" y="44" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">${this.escapeXml(gov.trained_staff || "1,420 / 1,600")}</text>
+            <text x="0" y="62" fill="${C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="10">88.8% Coverage</text>
+          </g>
+          <line x1="600" y1="16" x2="600" y2="82" stroke="${C.dashed_border}" stroke-width="1"/>
+          <g transform="translate(640, 20)">
+            <text x="0" y="14" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">ACTIVE SUPERUSERS</text>
+            <text x="0" y="44" fill="${C.amber_accent}" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">${this.escapeXml(gov.superusers_active || "64 Leads")}</text>
+            <text x="0" y="62" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="10">Deployed Across 48 Entities</text>
+          </g>
+          <line x1="920" y1="16" x2="920" y2="82" stroke="${C.dashed_border}" stroke-width="1"/>
+          <g transform="translate(960, 20)">
+            <text x="0" y="14" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">USER SENTIMENT</text>
+            <text x="0" y="44" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">${this.escapeXml(gov.sentiment_index || "+74 NPS")}</text>
+            <text x="0" y="62" fill="${C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="10">Top Decile Adoption</text>
+          </g>
+        </g>
+      </svg>
+    `;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 12: STRATEGIC SWOT MATRIX & CAPABILITY GRID
+  // ══════════════════════════════════════════════════════════════════════════
+  renderSwotAnalysis(data) {
+    const C = this.resolvePalette(data.palette);
+    const quads = data.quadrants || {};
+    const sum = data.strategic_summary || {};
+
+    const renderQuadrant = (qData, x, y, accentColor) => {
+      let itemsHtml = "";
+      (qData.items || []).forEach((item, idx) => {
+        const iy = 56 + idx * 78;
+        itemsHtml += `
+          <g class="interactive-card" data-node-id="quadrant.item.${item.code}" transform="translate(14, ${iy})">
+            <rect width="588" height="68" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+            <rect width="4" height="68" rx="2" fill="${accentColor}"/>
+            <rect x="14" y="12" width="28" height="18" rx="4" fill="${accentColor}" fill-opacity="0.15"/>
+            <text x="28" y="25" text-anchor="middle" fill="${accentColor}" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700">${this.escapeXml(item.code)}</text>
+            <text x="50" y="24" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">${this.escapeXml(item.title)}</text>
+            <rect x="520" y="10" width="54" height="18" rx="4" fill="${item.impact === 'HIGH' || item.impact === 'CRITICAL' ? C.rose_bg : C.blue_bg}"/>
+            <text x="547" y="22" text-anchor="middle" fill="${item.impact === 'HIGH' || item.impact === 'CRITICAL' ? C.rose_accent : C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700">${this.escapeXml(item.impact)}</text>
+            <text x="14" y="48" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="10">${this.escapeXml(item.desc)}</text>
+          </g>
+        `;
+      });
+
+      return `
+        <g transform="translate(${x}, ${y})">
+          <rect width="616" height="300" rx="8" fill="${C.blue_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="616" height="42" rx="8" fill="${C.hdr_bg}"/>
+          <rect y="38" width="616" height="4" fill="${accentColor}"/>
+          <text x="20" y="26" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">${this.escapeXml(qData.title || "")}</text>
+          <rect x="490" y="10" width="80" height="22" rx="4" fill="${accentColor}"/>
+          <text x="530" y="25" text-anchor="middle" fill="#FFFFFF" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700">${this.escapeXml(qData.tag || "")}</text>
+          <image href="${this.resolveEmote(qData.emote)}" x="580" y="10" width="22" height="22"/>
+          ${itemsHtml}
+        </g>
+      `;
+    };
+
+    return `
+      <svg viewBox="0 0 1333 750" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        ${this.getStandardDefs(C)}
+        <rect width="1333" height="750" fill="${C.canvas_bg}"/>
+        ${this.renderHeader(data, C)}
+        <!-- 2x2 SWOT Matrix -->
+        <g class="anim-node anim-p1">
+          ${renderQuadrant(quads.strengths || {}, 40, 72, "#10B981")}
+          ${renderQuadrant(quads.weaknesses || {}, 676, 72, "#F59E0B")}
+          ${renderQuadrant(quads.opportunities || {}, 40, 386, "#E8734A")}
+          ${renderQuadrant(quads.threats || {}, 676, 386, "#EF4444")}
+        </g>
+        <!-- Bottom Strategic Summary Bar -->
+        <g class="anim-node anim-p5" transform="translate(40, 698)">
+          <rect width="1252" height="42" rx="6" fill="${C.hdr_bg}" stroke="${C.card_bd}" stroke-width="1"/>
+          <text x="20" y="26" fill="${C.stripe}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">EXECUTIVE STRATEGIC VERDICT:</text>
+          <text x="220" y="26" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="10">${this.escapeXml(sum.core_verdict || "")}</text>
+          <text x="1100" y="26" text-anchor="end" fill="${C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">${this.escapeXml(sum.priority_focus || "")}</text>
+        </g>
+      </svg>
+    `;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 13: PROJECT GANTT TIMELINE & DELIVERY MILESTONES
+  // ══════════════════════════════════════════════════════════════════════════
+  renderProjectTimeline(data) {
+    const C = this.resolvePalette(data.palette);
+    const quarters = data.quarters || [];
+    const lanes = data.lanes || [];
+    const milestones = data.milestones || [];
+
+    // Header quarters
+    let qHtml = "";
+    quarters.forEach((q, idx) => {
+      const x = 320 + idx * 240;
+      qHtml += `
+        <g transform="translate(${x}, 72)">
+          <rect width="234" height="48" rx="6" fill="${q.highlight ? C.blue_bg : C.card_bg}" stroke="${q.highlight ? C.stripe : C.card_bd}" stroke-width="${q.highlight ? 1.5 : 1}" filter="url(#shadow-card)"/>
+          <text x="18" y="22" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">${this.escapeXml(q.qtr)}</text>
+          <text x="18" y="38" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10">${this.escapeXml(q.months)}</text>
+          <rect x="154" y="14" width="70" height="20" rx="4" fill="${q.status === 'COMPLETE' ? C.teal_accent : (q.status === 'IN PROGRESS' ? C.stripe : C.card_bd)}"/>
+          <text x="189" y="28" text-anchor="middle" fill="#FFFFFF" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700">${this.escapeXml(q.status)}</text>
+        </g>
+      `;
+    });
+
+    // Gantt Lanes
+    let lanesHtml = "";
+    lanes.forEach((lane, lIdx) => {
+      const y = 132 + lIdx * 118;
+      let barsHtml = "";
+      (lane.bars || []).forEach((bar, bIdx) => {
+        const bx = 320 + bar.start * 960;
+        const bw = bar.span * 960;
+        const by = 16 + bIdx * 46;
+        barsHtml += `
+          <g class="interactive-card" data-node-id="lanes.${lIdx}.bars.${bIdx}" transform="translate(${bx}, ${by})">
+            <rect width="${bw}" height="38" rx="6" fill="${bar.color || C.stripe}" filter="url(#shadow-card)"/>
+            <text x="14" y="23" fill="#FFFFFF" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">${this.escapeXml(bar.title)}</text>
+            <rect x="${bw - 54}" y="9" width="44" height="20" rx="4" fill="rgba(0,0,0,0.25)"/>
+            <text x="${bw - 32}" y="23" text-anchor="middle" fill="#FFFFFF" font-family="Segoe UI, sans-serif" font-size="9" font-weight="600">${this.escapeXml(bar.status)}</text>
+          </g>
+        `;
+      });
+
+      lanesHtml += `
+        <g class="anim-node anim-p2" transform="translate(40, ${y})">
+          <rect width="268" height="106" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="5" height="106" rx="2" fill="${C.stripe}"/>
+          <image href="${this.resolveEmote(lane.emote)}" x="16" y="16" width="30" height="30"/>
+          <text x="54" y="32" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">${this.escapeXml(lane.name)}</text>
+          <text x="54" y="48" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="9">Delivery Stream Phase</text>
+          
+          <!-- Background Gantt grid line -->
+          <rect x="280" y="0" width="960" height="106" rx="8" fill="${C.card_bg}" fill-opacity="0.5" stroke="${C.card_bd}" stroke-width="1" stroke-dasharray="4 4"/>
+          ${barsHtml}
+        </g>
+      `;
+    });
+
+    // Milestone Diamonds
+    let mHtml = "";
+    milestones.forEach((m, idx) => {
+      const mx = 360 + m.pos * 900;
+      mHtml += `
+        <g class="anim-node anim-p4 interactive-card" data-node-id="milestones.${idx}" transform="translate(${mx}, 620)">
+          <path d="M 0 0 L 14 14 L 0 28 L -14 14 Z" fill="${m.rag === 'green' ? C.teal_accent : C.amber_accent}" filter="url(#shadow-card)"/>
+          <line x1="0" y1="-480" x2="0" y2="0" stroke="${m.rag === 'green' ? C.teal_accent : C.amber_accent}" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <rect x="-70" y="34" width="140" height="48" rx="6" fill="${C.hdr_bg}" filter="url(#shadow-card)"/>
+          <text x="0" y="52" text-anchor="middle" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">${this.escapeXml(m.title)}</text>
+          <text x="0" y="68" text-anchor="middle" fill="${C.stripe}" font-family="Segoe UI, sans-serif" font-size="9">${this.escapeXml(m.date)}</text>
+        </g>
+      `;
+    });
+
+    return `
+      <svg viewBox="0 0 1333 750" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        ${this.getStandardDefs(C)}
+        <rect width="1333" height="750" fill="${C.canvas_bg}"/>
+        ${this.renderHeader(data, C)}
+        <!-- Timeline Lane 1 Header -->
+        <g class="anim-node anim-p1">
+          <rect x="40" y="72" width="268" height="48" rx="6" fill="${C.hdr_bg}" filter="url(#shadow-card)"/>
+          <text x="24" y="100" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">EXECUTION WORKSTREAM</text>
+          ${qHtml}
+        </g>
+        ${lanesHtml}
+        ${mHtml}
+      </svg>
+    `;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 14: EXECUTIVE ORGANIZATION HIERARCHY
+  // ══════════════════════════════════════════════════════════════════════════
+  renderOrgChart(data) {
+    const C = this.resolvePalette(data.palette);
+    const leader = data.leader || {};
+    const divisions = data.divisions || [];
+    const kpis = data.summary_kpis || [];
+
+    // Leader Box
+    const leaderHtml = `
+      <g class="anim-node anim-p1 interactive-card" data-node-id="leader" transform="translate(466, 76)">
+        <rect width="400" height="92" rx="8" fill="${C.hdr_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+        <rect width="6" height="92" rx="2" fill="${C.stripe}"/>
+        <image href="${this.resolveEmote(leader.emote)}" x="20" y="18" width="44" height="44"/>
+        <text x="76" y="32" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="800">${this.escapeXml(leader.role)}</text>
+        <text x="76" y="50" fill="${C.stripe}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="600">${this.escapeXml(leader.name)}</text>
+        <text x="76" y="68" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="9">${this.escapeXml(leader.mandate)}</text>
+      </g>
+      <!-- Trunk Line Down -->
+      <line x1="666" y1="168" x2="666" y2="200" stroke="${C.stripe}" stroke-width="2"/>
+      <!-- Cross Bar Across 3 Divisions -->
+      <line x1="240" y1="200" x2="1092" y2="200" stroke="${C.stripe}" stroke-width="2"/>
+      <line x1="240" y1="200" x2="240" y2="220" stroke="${C.stripe}" stroke-width="2"/>
+      <line x1="666" y1="200" x2="666" y2="220" stroke="${C.stripe}" stroke-width="2"/>
+      <line x1="1092" y1="200" x2="1092" y2="220" stroke="${C.stripe}" stroke-width="2"/>
+    `;
+
+    // 3 VP Divisions
+    let divHtml = "";
+    divisions.forEach((div, idx) => {
+      const dx = 40 + idx * 426;
+      let teamsHtml = "";
+      (div.teams || []).forEach((tm, tIdx) => {
+        const ty = 370 + tIdx * 102;
+        teamsHtml += `
+          <g class="interactive-card" data-node-id="divisions.${idx}.teams.${tIdx}" transform="translate(${dx}, ${ty})">
+            <line x1="200" y1="-20" x2="200" y2="0" stroke="${div.color || C.stripe}" stroke-width="1.5"/>
+            <rect width="400" height="88" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+            <rect width="4" height="88" rx="2" fill="${div.color || C.stripe}"/>
+            <image href="${this.resolveEmote(tm.emote)}" x="16" y="16" width="32" height="32"/>
+            <text x="58" y="32" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">${this.escapeXml(tm.name)}</text>
+            <text x="58" y="50" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="10">${this.escapeXml(tm.lead)}</text>
+            <rect x="290" y="14" width="94" height="20" rx="4" fill="${C.blue_bg}"/>
+            <text x="337" y="28" text-anchor="middle" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="9" font-weight="600">${this.escapeXml(tm.hc)}</text>
+          </g>
+        `;
+      });
+
+      divHtml += `
+        <g class="anim-node anim-p2" transform="translate(${dx}, 220)">
+          <rect width="400" height="110" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="5" height="110" rx="2" fill="${div.color || C.stripe}"/>
+          <image href="${this.resolveEmote(div.emote)}" x="16" y="16" width="36" height="36"/>
+          <text x="60" y="32" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="12" font-weight="800">${this.escapeXml(div.title)}</text>
+          <text x="60" y="50" fill="${div.color || C.stripe}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="600">${this.escapeXml(div.owner)}</text>
+          <text x="16" y="76" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="9" width="368">
+            ${this.wrapText(div.mandate, 54).map((line, lIdx) => `<tspan x="16" dy="${lIdx === 0 ? 0 : 13}">${this.escapeXml(line)}</tspan>`).join("")}
+          </text>
+          <rect x="290" y="14" width="94" height="20" rx="4" fill="${C.hdr_bg}"/>
+          <text x="337" y="28" text-anchor="middle" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700">${this.escapeXml(div.hc)}</text>
+          <!-- Line to Subteams -->
+          <line x1="200" y1="110" x2="200" y2="150" stroke="${div.color || C.stripe}" stroke-width="1.5"/>
+        </g>
+        ${teamsHtml}
+      `;
+    });
+
+    // Bottom KPIs
+    let kpiHtml = "";
+    kpis.forEach((k, idx) => {
+      const kx = 40 + idx * 426;
+      kpiHtml += `
+        <g transform="translate(${kx}, 596)">
+          <rect width="400" height="68" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="4" height="68" rx="2" fill="${C.teal_accent}"/>
+          <text x="20" y="26" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">${this.escapeXml(k.label)}</text>
+          <text x="20" y="52" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="20" font-weight="800">${this.escapeXml(k.val)}</text>
+          <text x="200" y="52" fill="${C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="600">${this.escapeXml(k.sub)}</text>
+        </g>
+      `;
+    });
+
+    return `
+      <svg viewBox="0 0 1333 750" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        ${this.getStandardDefs(C)}
+        <rect width="1333" height="750" fill="${C.canvas_bg}"/>
+        ${this.renderHeader(data, C)}
+        ${leaderHtml}
+        ${divHtml}
+        <g class="anim-node anim-p5">
+          ${kpiHtml}
+        </g>
+      </svg>
+    `;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 15: FINANCIAL BUDGET WATERFALL & COST VARIANCE
+  // ══════════════════════════════════════════════════════════════════════════
+  renderBudgetWaterfall(data) {
+    const C = this.resolvePalette(data.palette);
+    const base = data.baseline || {};
+    const drivers = data.drivers || [];
+    const target = data.target || {};
+    const scorecards = data.scorecards || [];
+
+    // Waterfall columns calculation
+    // Total 7 columns across 1253px: width 165px, gap 16px
+    const colW = 162;
+    const colGap = 16;
+    const chartBottomY = 560;
+    const chartTopY = 160;
+    const chartH = chartBottomY - chartTopY; // 400px height for range 35M to 45M
+    const scale = chartH / 12; // 1M = ~33.3px
+
+    let runningVal = base.val || 42.8;
+    const baseY = chartBottomY - (runningVal - 35) * scale;
+    const baseH = chartBottomY - baseY;
+
+    let barsHtml = `
+      <!-- Base Bar -->
+      <g class="anim-node anim-p1 interactive-card" data-node-id="baseline" transform="translate(40, ${baseY})">
+        <rect width="${colW}" height="${baseH}" rx="6" fill="${C.hdr_bg}" filter="url(#shadow-card)"/>
+        <text x="${colW/2}" y="-16" text-anchor="middle" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="16" font-weight="800">${this.escapeXml(base.amount)}</text>
+        <image href="${this.resolveEmote(base.emote)}" x="${colW/2 - 16}" y="16" width="32" height="32"/>
+        <text x="${colW/2}" y="70" text-anchor="middle" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">FY25 BASELINE</text>
+        <text x="${colW/2}" y="88" text-anchor="middle" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="9">Prior Year Base</text>
+      </g>
+    `;
+
+    drivers.forEach((drv, idx) => {
+      const x = 40 + (idx + 1) * (colW + colGap);
+      const isIncrease = drv.val > 0;
+      const prevVal = runningVal;
+      runningVal += drv.val;
+
+      const topVal = Math.max(prevVal, runningVal);
+      const botVal = Math.min(prevVal, runningVal);
+      const barY = chartBottomY - (topVal - 35) * scale;
+      const barH = Math.max(16, (topVal - botVal) * scale);
+      const prevY = chartBottomY - (prevVal - 35) * scale;
+
+      barsHtml += `
+        <!-- Dashed connector from prev -->
+        <line x1="${x - colGap}" y1="${prevY}" x2="${x}" y2="${prevY}" stroke="${C.dashed_border}" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <!-- Driver Bar -->
+        <g class="anim-node anim-p2 interactive-card" data-node-id="drivers.${idx}" transform="translate(${x}, ${barY})">
+          <rect width="${colW}" height="${barH}" rx="6" fill="${drv.color || (isIncrease ? C.rose_accent : C.teal_accent)}" filter="url(#shadow-card)"/>
+          <text x="${colW/2}" y="-12" text-anchor="middle" fill="${isIncrease ? C.rose_accent : C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="800">${this.escapeXml(drv.amount)}</text>
+          <image href="${this.resolveEmote(drv.emote)}" x="${colW/2 - 12}" y="${Math.max(6, barH/2 - 12)}" width="24" height="24"/>
+          <!-- Label below chart axis -->
+          <g transform="translate(0, ${chartBottomY - barY + 14})">
+            <rect width="${colW}" height="76" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+            <text x="${colW/2}" y="20" text-anchor="middle" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">${this.escapeXml(drv.title)}</text>
+            <text x="${colW/2}" y="36" text-anchor="middle" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="8" width="${colW - 16}">
+              ${this.wrapText(drv.desc, 24).slice(0, 2).map((line, lIdx) => `<tspan x="${colW/2}" dy="${lIdx === 0 ? 0 : 12}">${this.escapeXml(line)}</tspan>`).join("")}
+            </text>
+          </g>
+        </g>
+      `;
+    });
+
+    // Target Bar
+    const targetX = 40 + 6 * (colW + colGap);
+    const targetY = chartBottomY - (target.val - 35) * scale;
+    const targetH = chartBottomY - targetY;
+    barsHtml += `
+      <line x1="${targetX - colGap}" y1="${targetY}" x2="${targetX}" y2="${targetY}" stroke="${C.dashed_border}" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <g class="anim-node anim-p3 interactive-card" data-node-id="target" transform="translate(${targetX}, ${targetY})">
+        <rect width="${colW}" height="${targetH}" rx="6" fill="${C.stripe}" filter="url(#shadow-card)"/>
+        <text x="${colW/2}" y="-16" text-anchor="middle" fill="${C.stripe}" font-family="Segoe UI, sans-serif" font-size="16" font-weight="800">${this.escapeXml(target.amount)}</text>
+        <image href="${this.resolveEmote(target.emote)}" x="${colW/2 - 16}" y="16" width="32" height="32"/>
+        <text x="${colW/2}" y="70" text-anchor="middle" fill="#FFFFFF" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">FY26 TARGET</text>
+        <text x="${colW/2}" y="88" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.8" font-family="Segoe UI, sans-serif" font-size="9">${this.escapeXml(target.sub)}</text>
+      </g>
+    `;
+
+    // Bottom Summary Scorecards
+    let scHtml = "";
+    scorecards.forEach((sc, idx) => {
+      const scX = 40 + idx * 426;
+      scHtml += `
+        <g transform="translate(${scX}, 670)">
+          <rect width="400" height="56" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
+          <rect width="4" height="56" rx="2" fill="${C.teal_accent}"/>
+          <image href="${this.resolveEmote(sc.emote)}" x="16" y="14" width="28" height="28"/>
+          <text x="56" y="24" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700">${this.escapeXml(sc.label)}</text>
+          <text x="56" y="44" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="16" font-weight="800">${this.escapeXml(sc.val)}</text>
+          <text x="200" y="44" fill="${C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="600">${this.escapeXml(sc.sub)}</text>
+        </g>
+      `;
+    });
+
+    return `
+      <svg viewBox="0 0 1333 750" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        ${this.getStandardDefs(C)}
+        <rect width="1333" height="750" fill="${C.canvas_bg}"/>
+        ${this.renderHeader(data, C)}
+        <!-- Axis Line -->
+        <line x1="40" y1="${chartBottomY}" x2="1292" y2="${chartBottomY}" stroke="${C.card_bd}" stroke-width="2"/>
+        ${barsHtml}
+        <g class="anim-node anim-p5">
+          ${scHtml}
+        </g>
+      </svg>
+    `;
   }
 }

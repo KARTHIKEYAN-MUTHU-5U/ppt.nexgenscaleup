@@ -811,3 +811,166 @@ textarea.input-dark {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+
+/* ==========================================================================
+   v5.0 ENHANCEMENTS: PALETTE SWATCHES, CATEGORY CHIPS, ASSET BADGES
+   ========================================================================== */
+.palette-swatches {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: var(--bg-surface);
+  border-radius: 4px;
+  width: fit-content;
+  border: 1px solid var(--border-default);
+}
+
+.swatch-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease;
+}
+
+.swatch-dot:hover {
+  transform: scale(1.25);
+}
+
+/* Category Filter Chips in Sidebar */
+.category-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.filter-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: 0.70rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s ease;
+}
+
+.filter-chip:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.filter-chip.active {
+  background: var(--accent-muted);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Modal Filter Tabs */
+.modal-filter-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.modal-tab-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s ease;
+}
+
+.modal-tab-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.modal-tab-btn.active {
+  background: var(--accent-muted);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Emote Card Type Badges */
+.emote-pick-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+}
+
+.emote-pick-type-pill {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-tertiary);
+}
+
+.emote-pick-type-pill.animated {
+  background: rgba(232, 115, 74, 0.15);
+  color: var(--accent);
+}
+
+.emote-pick-type-pill.static {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+}
+
+.emote-pick-type-pill.vector {
+  background: rgba(139, 92, 246, 0.15);
+  color: #A78BFA;
+}
+
+.emote-pick-cat {
+  font-size: 0.58rem;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* Stage Info Toolbar Badges */
+.stage-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-info .badge-status,
+.stage-info .badge-category,
+.stage-info .badge-dpi {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.70rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.stage-info .badge-category {
+  color: var(--accent);
+  background: var(--accent-muted);
+  border-color: var(--accent-border);
+  font-weight: 600;
+}

@@ -170,6 +170,16 @@ document.addEventListener("DOMContentLoaded", () => {
       buildRiskComplianceForm(d);
     } else if (tid === "customer_journey") {
       buildCustomerJourneyForm(d);
+    } else if (tid === "change_mgmt") {
+      buildChangeMgmtForm(d);
+    } else if (tid === "swot_analysis") {
+      buildSwotAnalysisForm(d);
+    } else if (tid === "project_timeline") {
+      buildProjectTimelineForm(d);
+    } else if (tid === "org_chart") {
+      buildOrgChartForm(d);
+    } else if (tid === "budget_waterfall") {
+      buildBudgetWaterfallForm(d);
     }
   }
 
@@ -190,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Node ${idx + 1}: ${escapeHtml(node.title)}</span>
             <button type="button" class="btn-emote-trigger" data-target="ingestion_track.${idx}.emote">
-              <img src="emotes/${node.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(node.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -215,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Decision Root (Track 1): ${escapeHtml(df.root?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.root.emote">
-              <img src="emotes/${df.root?.emote || 'pnf'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.root?.emote || 'pnf')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -233,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Track 1A: ${escapeHtml(df.sub_branch_1a?.cause?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.sub_branch_1a.cause.emote">
-              <img src="emotes/${df.sub_branch_1a?.cause?.emote || 'idoc'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.sub_branch_1a?.cause?.emote || 'idoc')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -246,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">1A Action: ${escapeHtml(df.sub_branch_1a?.action?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.sub_branch_1a.action.emote">
-              <img src="emotes/${df.sub_branch_1a?.action?.emote || 'hwi'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.sub_branch_1a?.action?.emote || 'hwi')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -260,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Track 1B: ${escapeHtml(df.sub_branch_1b?.cause?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.sub_branch_1b.cause.emote">
-              <img src="emotes/${df.sub_branch_1b?.cause?.emote || 'no_edi'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.sub_branch_1b?.cause?.emote || 'no_edi')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -273,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">1B Action: ${escapeHtml(df.sub_branch_1b?.action?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.sub_branch_1b.action.emote">
-              <img src="emotes/${df.sub_branch_1b?.action?.emote || 'inv'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.sub_branch_1b?.action?.emote || 'inv')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -287,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Track 2: ${escapeHtml(df.track_2?.cause?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.track_2.cause.emote">
-              <img src="emotes/${df.track_2?.cause?.emote || 'ap_ar'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.track_2?.cause?.emote || 'ap_ar')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -300,7 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Track 2 Action: ${escapeHtml(df.track_2?.action?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.track_2.action.emote">
-              <img src="emotes/${df.track_2?.action?.emote || 'review'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.track_2?.action?.emote || 'review')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -314,7 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Track 3: ${escapeHtml(df.track_3?.cause?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.track_3.cause.emote">
-              <img src="emotes/${df.track_3?.cause?.emote || 'cash'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.track_3?.cause?.emote || 'cash')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -327,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Track 3 Action: ${escapeHtml(df.track_3?.action?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="decision_fork.track_3.action.emote">
-              <img src="emotes/${df.track_3?.action?.emote || 'waiting'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(df.track_3?.action?.emote || 'waiting')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -345,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Gap Card: ${escapeHtml(gov.gap_card?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="governance_column.gap_card.emote">
-              <img src="emotes/${gov.gap_card?.emote || 'gap'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(gov.gap_card?.emote || 'gap')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -359,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Notification Card: ${escapeHtml(gov.notif_card?.title || '')}</span>
             <button type="button" class="btn-emote-trigger" data-target="governance_column.notif_card.emote">
-              <img src="emotes/${gov.notif_card?.emote || 'notif'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(gov.notif_card?.emote || 'notif')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -373,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Escalation Matrix</span>
             <button type="button" class="btn-emote-trigger" data-target="governance_column.escalation_card.emote">
-              <img src="emotes/${gov.escalation_card?.emote || 'esc'}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(gov.escalation_card?.emote || 'esc')}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -397,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">${escapeHtml(ws.name)}</span>
             <button type="button" class="btn-emote-trigger" data-target="workstreams.${idx}.emote">
-              <img src="emotes/${ws.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(ws.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -432,7 +442,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">${escapeHtml(t.level)}</span>
             <button type="button" class="btn-emote-trigger" data-target="tiers.${idx}.emote">
-              <img src="emotes/${t.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(t.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -463,7 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Stage ${st.num}: ${escapeHtml(st.name)}</span>
             <button type="button" class="btn-emote-trigger" data-target="stages.${idx}.emote">
-              <img src="emotes/${st.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(st.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -494,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">${escapeHtml(k.label)}</span>
             <button type="button" class="btn-emote-trigger" data-target="kpis.${idx}.emote">
-              <img src="emotes/${k.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(k.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -525,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">${escapeHtml(n.title)}</span>
             <button type="button" class="btn-emote-trigger" data-target="nodes.${idx}.emote">
-              <img src="emotes/${n.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(n.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -552,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">Step ${st.num}: ${escapeHtml(st.title)}</span>
             <button type="button" class="btn-emote-trigger" data-target="steps.${idx}.emote">
-              <img src="emotes/${st.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(st.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -579,7 +589,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">${escapeHtml(t.level)}: ${escapeHtml(t.name)}</span>
             <button type="button" class="btn-emote-trigger" data-target="tiers.${idx}.emote">
-              <img src="emotes/${t.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(t.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -610,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">${rv.id}: ${escapeHtml(rv.name)}</span>
             <button type="button" class="btn-emote-trigger" data-target="risk_vectors.${idx}.emote">
-              <img src="emotes/${rv.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(rv.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -637,7 +647,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="node-card-head">
             <span class="node-card-title">${escapeHtml(st.phase)}: ${escapeHtml(st.title)}</span>
             <button type="button" class="btn-emote-trigger" data-target="stages.${idx}.emote">
-              <img src="emotes/${st.emote}.gif" width="16" height="16" alt=""> Change Emote
+              <img src="${eUrl(st.emote)}" width="16" height="16" alt=""> Change Emote
             </button>
           </div>
           <div class="input-group">
@@ -679,6 +689,320 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
+  // Form 11: Change Management & ADKAR
+  function buildChangeMgmtForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">ADKAR TRANSFORMATION PHASES</div>`;
+    (d.phases || []).forEach((p, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(p.phase)}: ${escapeHtml(p.title)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="phases.${idx}.emote">
+              <img src="${eUrl(p.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Phase Title</label>
+            <input type="text" class="input-dark node-field" data-path="phases.${idx}.title" value="${escapeHtml(p.title)}">
+          </div>
+          <div class="input-group">
+            <label>Strategic Intent</label>
+            <input type="text" class="input-dark node-field" data-path="phases.${idx}.sub" value="${escapeHtml(p.sub)}">
+          </div>
+          <div class="input-group">
+            <label>Status</label>
+            <input type="text" class="input-dark node-field" data-path="phases.${idx}.status" value="${escapeHtml(p.status)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+
+    html += `<div class="form-group-block"><div class="form-group-title">READINESS & GOVERNANCE METRICS</div>`;
+    const gov = d.governance || {};
+    html += `
+      <div class="node-edit-card">
+        <div class="input-group">
+          <label>Readiness Score</label>
+          <input type="text" class="input-dark node-field" data-path="governance.readiness_score" value="${escapeHtml(gov.readiness_score || '')}">
+        </div>
+        <div class="input-group">
+          <label>Staff Certified</label>
+          <input type="text" class="input-dark node-field" data-path="governance.trained_staff" value="${escapeHtml(gov.trained_staff || '')}">
+        </div>
+        <div class="input-group">
+          <label>Active Superusers</label>
+          <input type="text" class="input-dark node-field" data-path="governance.superusers_active" value="${escapeHtml(gov.superusers_active || '')}">
+        </div>
+        <div class="input-group">
+          <label>User Sentiment</label>
+          <input type="text" class="input-dark node-field" data-path="governance.sentiment_index" value="${escapeHtml(gov.sentiment_index || '')}">
+        </div>
+      </div>
+    </div>`;
+
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  // Form 12: Strategic SWOT Analysis
+  function buildSwotAnalysisForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">SWOT QUADRANTS & CAPABILITIES</div>`;
+    const quads = d.quadrants || {};
+    ["strengths", "weaknesses", "opportunities", "threats"].forEach(qKey => {
+      const q = quads[qKey] || {};
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(q.title || qKey.toUpperCase())}</span>
+            <button type="button" class="btn-emote-trigger" data-target="quadrants.${qKey}.emote">
+              <img src="${eUrl(q.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Quadrant Title</label>
+            <input type="text" class="input-dark node-field" data-path="quadrants.${qKey}.title" value="${escapeHtml(q.title || '')}">
+          </div>
+          <div class="input-group">
+            <label>Strategic Action Tag</label>
+            <input type="text" class="input-dark node-field" data-path="quadrants.${qKey}.tag" value="${escapeHtml(q.tag || '')}">
+          </div>
+        </div>
+      `;
+      (q.items || []).forEach((item, idx) => {
+        html += `
+          <div class="node-edit-card" style="margin-left: 14px; border-left: 3px solid ${q.color || '#E8734A'};">
+            <div class="node-card-head">
+              <span class="node-card-title">${escapeHtml(item.code)}: ${escapeHtml(item.title)}</span>
+            </div>
+            <div class="input-group">
+              <label>Item Title</label>
+              <input type="text" class="input-dark node-field" data-path="quadrants.${qKey}.items.${idx}.title" value="${escapeHtml(item.title)}">
+            </div>
+            <div class="input-group">
+              <label>Impact Level (HIGH / MED / CRITICAL)</label>
+              <input type="text" class="input-dark node-field" data-path="quadrants.${qKey}.items.${idx}.impact" value="${escapeHtml(item.impact)}">
+            </div>
+            <div class="input-group">
+              <label>Description</label>
+              <input type="text" class="input-dark node-field" data-path="quadrants.${qKey}.items.${idx}.desc" value="${escapeHtml(item.desc)}">
+            </div>
+          </div>
+        `;
+      });
+    });
+    html += `</div>`;
+
+    const sum = d.strategic_summary || {};
+    html += `
+      <div class="form-group-block"><div class="form-group-title">STRATEGIC SYNTHESIS</div>
+        <div class="node-edit-card">
+          <div class="input-group">
+            <label>Executive Strategic Verdict</label>
+            <textarea class="input-dark node-field" data-path="strategic_summary.core_verdict" rows="2">${escapeHtml(sum.core_verdict || '')}</textarea>
+          </div>
+          <div class="input-group">
+            <label>Priority Focus</label>
+            <input type="text" class="input-dark node-field" data-path="strategic_summary.priority_focus" value="${escapeHtml(sum.priority_focus || '')}">
+          </div>
+        </div>
+      </div>
+    `;
+
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  // Form 13: Project Gantt Timeline
+  function buildProjectTimelineForm(d) {
+    let html = `<div class="form-group-block"><div class="form-group-title">DELIVERY WORKSTREAMS & LANES</div>`;
+    (d.lanes || []).forEach((lane, lIdx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(lane.name)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="lanes.${lIdx}.emote">
+              <img src="${eUrl(lane.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Lane Name</label>
+            <input type="text" class="input-dark node-field" data-path="lanes.${lIdx}.name" value="${escapeHtml(lane.name)}">
+          </div>
+        </div>
+      `;
+      (lane.bars || []).forEach((bar, bIdx) => {
+        html += `
+          <div class="node-edit-card" style="margin-left: 14px;">
+            <div class="input-group">
+              <label>Sprint / Bar Title</label>
+              <input type="text" class="input-dark node-field" data-path="lanes.${lIdx}.bars.${bIdx}.title" value="${escapeHtml(bar.title)}">
+            </div>
+            <div class="input-group">
+              <label>Status</label>
+              <input type="text" class="input-dark node-field" data-path="lanes.${lIdx}.bars.${bIdx}.status" value="${escapeHtml(bar.status)}">
+            </div>
+          </div>
+        `;
+      });
+    });
+    html += `</div>`;
+
+    html += `<div class="form-group-block"><div class="form-group-title">CRITICAL MILESTONES</div>`;
+    (d.milestones || []).forEach((m, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(m.title)} (${escapeHtml(m.date)})</span>
+            <button type="button" class="btn-emote-trigger" data-target="milestones.${idx}.emote">
+              <img src="${eUrl(m.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Milestone Title</label>
+            <input type="text" class="input-dark node-field" data-path="milestones.${idx}.title" value="${escapeHtml(m.title)}">
+          </div>
+          <div class="input-group">
+            <label>Target Date</label>
+            <input type="text" class="input-dark node-field" data-path="milestones.${idx}.date" value="${escapeHtml(m.date)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  // Form 14: Executive Org Chart
+  function buildOrgChartForm(d) {
+    const leader = d.leader || {};
+    let html = `
+      <div class="form-group-block"><div class="form-group-title">EXECUTIVE STEERING & LEADERSHIP</div>
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(leader.role)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="leader.emote">
+              <img src="${eUrl(leader.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Executive Role</label>
+            <input type="text" class="input-dark node-field" data-path="leader.role" value="${escapeHtml(leader.role)}">
+          </div>
+          <div class="input-group">
+            <label>Name / Body</label>
+            <input type="text" class="input-dark node-field" data-path="leader.name" value="${escapeHtml(leader.name)}">
+          </div>
+          <div class="input-group">
+            <label>Executive Mandate</label>
+            <input type="text" class="input-dark node-field" data-path="leader.mandate" value="${escapeHtml(leader.mandate)}">
+          </div>
+        </div>
+      </div>
+    `;
+
+    html += `<div class="form-group-block"><div class="form-group-title">FUNCTIONAL VP DIVISIONS</div>`;
+    (d.divisions || []).forEach((div, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(div.title)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="divisions.${idx}.emote">
+              <img src="${eUrl(div.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Division Title</label>
+            <input type="text" class="input-dark node-field" data-path="divisions.${idx}.title" value="${escapeHtml(div.title)}">
+          </div>
+          <div class="input-group">
+            <label>Leader / VP</label>
+            <input type="text" class="input-dark node-field" data-path="divisions.${idx}.owner" value="${escapeHtml(div.owner)}">
+          </div>
+          <div class="input-group">
+            <label>Headcount</label>
+            <input type="text" class="input-dark node-field" data-path="divisions.${idx}.hc" value="${escapeHtml(div.hc)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
+  // Form 15: Financial Budget Waterfall
+  function buildBudgetWaterfallForm(d) {
+    const base = d.baseline || {};
+    const target = d.target || {};
+    let html = `
+      <div class="form-group-block"><div class="form-group-title">WATERFALL BASELINE & TARGET</div>
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(base.title)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="baseline.emote">
+              <img src="${eUrl(base.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Baseline Amount</label>
+            <input type="text" class="input-dark node-field" data-path="baseline.amount" value="${escapeHtml(base.amount)}">
+          </div>
+        </div>
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(target.title)}</span>
+            <button type="button" class="btn-emote-trigger" data-target="target.emote">
+              <img src="${eUrl(target.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Target Amount</label>
+            <input type="text" class="input-dark node-field" data-path="target.amount" value="${escapeHtml(target.amount)}">
+          </div>
+          <div class="input-group">
+            <label>Net Reduction Subtext</label>
+            <input type="text" class="input-dark node-field" data-path="target.sub" value="${escapeHtml(target.sub)}">
+          </div>
+        </div>
+      </div>
+    `;
+
+    html += `<div class="form-group-block"><div class="form-group-title">COST & SAVINGS DRIVERS</div>`;
+    (d.drivers || []).forEach((drv, idx) => {
+      html += `
+        <div class="node-edit-card">
+          <div class="node-card-head">
+            <span class="node-card-title">${escapeHtml(drv.title)} (${escapeHtml(drv.amount)})</span>
+            <button type="button" class="btn-emote-trigger" data-target="drivers.${idx}.emote">
+              <img src="${eUrl(drv.emote)}" width="16" height="16" alt=""> Change Emote
+            </button>
+          </div>
+          <div class="input-group">
+            <label>Driver Title</label>
+            <input type="text" class="input-dark node-field" data-path="drivers.${idx}.title" value="${escapeHtml(drv.title)}">
+          </div>
+          <div class="input-group">
+            <label>Delta Amount (e.g. +€2.2M or -€4.4M)</label>
+            <input type="text" class="input-dark node-field" data-path="drivers.${idx}.amount" value="${escapeHtml(drv.amount)}">
+          </div>
+          <div class="input-group">
+            <label>Operational Rationale</label>
+            <input type="text" class="input-dark node-field" data-path="drivers.${idx}.desc" value="${escapeHtml(drv.desc)}">
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+
+    dynamicFormContainer.innerHTML = html;
+    attachFieldListeners();
+  }
+
   function setDeepValue(obj, path, value) {
     const parts = path.split(".");
     let curr = obj;
@@ -691,20 +1015,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // ══════════════════════════════════════════════════════════════════════════
   // EMOTE PICKER & SIDEBAR CATALOG
   // ══════════════════════════════════════════════════════════════════════════
-  function buildEmoteGrid(container, filter = "", onSelect = null) {
+  let activeEmoteCategory = "all";
+
+  function buildEmoteGrid(container, filter = "", onSelect = null, catFilter = null) {
     container.innerHTML = "";
     const cleanFilter = filter.toLowerCase().trim();
+    const effectiveCat = catFilter !== null ? catFilter : activeEmoteCategory;
 
-    EMOTES_CATALOG.forEach(em => {
+    (window.EMOTES_CATALOG || []).forEach(em => {
+      if (effectiveCat && effectiveCat !== "all") {
+        if (effectiveCat === "animated" && em.type !== "animated") return;
+        if (effectiveCat === "static" && em.type !== "static") return;
+        if (effectiveCat === "vector" && em.type !== "vector") return;
+        if (!["animated", "static", "vector"].includes(effectiveCat) && em.category.toLowerCase() !== effectiveCat.toLowerCase()) return;
+      }
+
       if (cleanFilter && !em.name.toLowerCase().includes(cleanFilter) && !em.category.toLowerCase().includes(cleanFilter) && !em.id.toLowerCase().includes(cleanFilter)) {
         return;
       }
 
       const card = document.createElement("div");
       card.className = "emote-pick-card";
+      const typeBadge = em.type === "animated" ? "GIF" : (em.type === "vector" ? "SVG" : "PNG");
       card.innerHTML = `
-        <img src="emotes/${em.filename}" alt="${em.name}" class="emote-pick-img">
-        <span class="emote-pick-name">${em.name}</span>
+        <div class="emote-pick-type-pill ${em.type}">${typeBadge}</div>
+        <img src="emotes/${em.filename}" alt="${escapeHtml(em.name)}" class="emote-pick-img">
+        <span class="emote-pick-name">${escapeHtml(em.name)}</span>
+        <span class="emote-pick-cat">${escapeHtml(em.category)}</span>
       `;
 
       if (onSelect) {
@@ -1018,6 +1355,53 @@ document.addEventListener("DOMContentLoaded", () => {
   if (emoteSearchInput) {
     emoteSearchInput.addEventListener("input", e => buildEmoteGrid(emoteGrid, e.target.value, applySelectedEmote));
   }
+
+  // Palette Swatches Renderer
+  function updatePaletteSwatches(paletteKey) {
+    const swatchesContainer = document.getElementById("paletteSwatches");
+    if (!swatchesContainer) return;
+    const p = window.PALETTES && window.PALETTES[paletteKey];
+    if (!p) return;
+    swatchesContainer.innerHTML = `
+      <span class="swatch-dot" style="background:${p.canvas_bg}; border: 1px solid ${p.card_bd};" title="Canvas: ${p.canvas_bg}"></span>
+      <span class="swatch-dot" style="background:${p.hdr_bg};" title="Header: ${p.hdr_bg}"></span>
+      <span class="swatch-dot" style="background:${p.stripe};" title="Accent: ${p.stripe}"></span>
+      <span class="swatch-dot" style="background:${p.teal_accent || '#10B981'};" title="Secondary: ${p.teal_accent}"></span>
+    `;
+  }
+
+  // Sidebar Emote Category Chips
+  document.querySelectorAll(".filter-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      const cat = chip.getAttribute("data-cat");
+      const searchVal = document.getElementById("sidebarEmoteSearch")?.value || "";
+      buildEmoteGrid(sidebarEmoteGrid, searchVal, null, cat);
+    });
+  });
+
+  // Sidebar Emote Search Input
+  const sidebarEmoteSearch = document.getElementById("sidebarEmoteSearch");
+  if (sidebarEmoteSearch) {
+    sidebarEmoteSearch.addEventListener("input", e => {
+      const activeChip = document.querySelector(".filter-chip.active");
+      const cat = activeChip ? activeChip.getAttribute("data-cat") : "all";
+      buildEmoteGrid(sidebarEmoteGrid, e.target.value, null, cat);
+    });
+  }
+
+  // Modal Category Tabs
+  let modalTypeFilter = "all";
+  document.querySelectorAll(".modal-tab-btn").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".modal-tab-btn").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      modalTypeFilter = tab.getAttribute("data-type") || "all";
+      const q = emoteSearchInput?.value || "";
+      buildEmoteGrid(emoteGrid, q, applySelectedEmote, modalTypeFilter);
+    });
+  });
 
   // Sidebar Tabs
   document.querySelectorAll(".tab-btn").forEach(btn => {

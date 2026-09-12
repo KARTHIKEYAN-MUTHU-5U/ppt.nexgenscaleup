@@ -82,6 +82,26 @@ class ClientPptxGenerator {
         filename = "Philips_Clinical_Customer_Journey.pptx";
         this.buildCustomerJourney(pptx, data, C);
         break;
+      case "change_mgmt":
+        filename = "Philips_Change_Management_ADKAR.pptx";
+        this.buildChangeMgmt(pptx, data, C);
+        break;
+      case "swot_analysis":
+        filename = "Philips_Executive_SWOT_Matrix.pptx";
+        this.buildSwotAnalysis(pptx, data, C);
+        break;
+      case "project_timeline":
+        filename = "Philips_Project_Gantt_Timeline.pptx";
+        this.buildProjectTimeline(pptx, data, C);
+        break;
+      case "org_chart":
+        filename = "Philips_Executive_Org_Hierarchy.pptx";
+        this.buildOrgChart(pptx, data, C);
+        break;
+      case "budget_waterfall":
+        filename = "Philips_Financial_Budget_Waterfall.pptx";
+        this.buildBudgetWaterfall(pptx, data, C);
+        break;
       case "process_flow":
       default:
         filename = "Philips_ICA_Executive_Blueprint.pptx";
@@ -802,8 +822,9 @@ class ClientPptxGenerator {
 
     if (emote) {
       try {
+        const emoteFilename = window.getEmoteInfo ? window.getEmoteInfo(emote).filename : (emote.includes(".") ? emote : (emote.startsWith("m_") || emote.startsWith("icon_") ? `${emote}.png` : `${emote}.gif`));
         slide.addImage({
-          path: `emotes/${emote}.gif`,
+          path: `emotes/${emoteFilename}`,
           x: x + w - 0.50,
           y: y + h/2 - 0.22,
           w: 0.44,
@@ -840,6 +861,546 @@ class ClientPptxGenerator {
       w: x2 - x1,
       h: y2 - y1,
       line: { color: color, width: 2.0 }
+    });
+  }
+
+  static getEmotePath(emote) {
+    if (!emote) return "emotes/spec.gif";
+    if (window.getEmoteInfo) return `emotes/${window.getEmoteInfo(emote).filename}`;
+    if (emote.includes(".")) return `emotes/${emote}`;
+    if (emote.startsWith("m_") || emote.startsWith("icon_") || emote.startsWith("badge_")) return `emotes/${emote}.png`;
+    return `emotes/${emote}.gif`;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 11: CHANGE MANAGEMENT (ADKAR)
+  // ══════════════════════════════════════════════════════════════════════════
+  static buildChangeMgmt(pptx, data, C) {
+    const slide = pptx.addSlide();
+    slide.background = { color: this.h(C.canvas_bg) };
+    this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
+
+    const phases = data.phases || [];
+    phases.forEach((p, idx) => {
+      const x = 0.40 + idx * 2.52;
+      const isComplete = p.status === "COMPLETE";
+      const accent = isComplete ? C.teal_accent : C.amber_accent;
+
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: 0.72, w: 2.44, h: 0.42,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: x, y: 0.72, w: 0.04, h: 0.42,
+        fill: { color: this.h(accent) }
+      });
+      slide.addText(`0${idx+1}`, {
+        x: x + 0.10, y: 0.76, w: 0.34, h: 0.26,
+        fontSize: 10, bold: true, color: this.h(accent), align: "center"
+      });
+      slide.addText(p.title || "", {
+        x: x + 0.50, y: 0.74, w: 1.50, h: 0.20,
+        fontSize: 10, bold: true, color: this.h(C.text_primary)
+      });
+      slide.addText(p.sub || "", {
+        x: x + 0.50, y: 0.90, w: 1.50, h: 0.18,
+        fontSize: 8, color: this.h(C.text_muted)
+      });
+      if (p.emote) {
+        try {
+          slide.addImage({ path: this.getEmotePath(p.emote), x: x + 2.08, y: 0.80, w: 0.24, h: 0.24 });
+        } catch(e) {}
+      }
+    });
+
+    const workstreams = data.workstreams || [];
+    workstreams.forEach((ws, wIdx) => {
+      const y = 1.26 + wIdx * 1.58;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 0.40, y: y, w: 2.60, h: 1.42,
+        fill: { color: this.h(C.hdr_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0.40, y: y, w: 0.06, h: 1.42,
+        fill: { color: this.h(C.stripe) }
+      });
+      if (ws.emote) {
+        try {
+          slide.addImage({ path: this.getEmotePath(ws.emote), x: 0.58, y: y + 0.16, w: 0.34, h: 0.34 });
+        } catch(e) {}
+      }
+      slide.addText(ws.lane || "", {
+        x: 1.00, y: y + 0.20, w: 1.85, h: 0.30,
+        fontSize: 11, bold: true, color: this.h(C.canvas_bg)
+      });
+      slide.addText("CROSS-FUNCTIONAL WORKSTREAM\nAdoption & Governance Lead", {
+        x: 0.58, y: y + 0.65, w: 2.20, h: 0.50,
+        fontSize: 9, color: this.h(C.text_muted)
+      });
+
+      (ws.initiatives || []).forEach((init, iIdx) => {
+        const ix = 3.20 + iIdx * 4.80;
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: ix, y: y, w: 4.60, h: 1.42,
+          fill: { color: this.h(C.card_bg) },
+          line: { color: this.h(C.card_bd), width: 1.0 }
+        });
+        slide.addShape(pptx.ShapeType.rect, {
+          x: ix, y: y, w: 0.05, h: 1.42,
+          fill: { color: this.h(C.stripe) }
+        });
+        slide.addText(init.title || "", {
+          x: ix + 0.18, y: y + 0.18, w: 3.20, h: 0.30,
+          fontSize: 12, bold: true, color: this.h(C.text_primary)
+        });
+        slide.addText(init.owner || "", {
+          x: ix + 3.40, y: y + 0.14, w: 1.04, h: 0.24,
+          fontSize: 9, bold: true, color: this.h(C.text_secondary), align: "center",
+          fill: { color: this.h(C.blue_bg) }
+        });
+        slide.addText(init.desc || "", {
+          x: ix + 0.18, y: y + 0.52, w: 4.24, h: 0.75,
+          fontSize: 10, color: this.h(C.text_secondary)
+        });
+      });
+    });
+
+    const gov = data.governance || {};
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: 6.16, w: 12.53, h: 0.98,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.card_bd), width: 1.0 }
+    });
+    const govMetrics = [
+      { label: "READINESS INDEX", val: gov.readiness_score || "88.4%", sub: "Target: > 85%", color: C.teal_accent },
+      { label: "STAFF CERTIFIED", val: gov.trained_staff || "1,420 / 1,600", sub: "88.8% Coverage", color: C.text_primary },
+      { label: "ACTIVE SUPERUSERS", val: gov.superusers_active || "64 Leads", sub: "Deployed Across 48 Entities", color: C.amber_accent },
+      { label: "USER SENTIMENT", val: gov.sentiment_index || "+74 NPS", sub: "Top Decile Adoption", color: C.text_primary }
+    ];
+    govMetrics.forEach((m, idx) => {
+      const gx = 0.70 + idx * 3.10;
+      slide.addText(m.label, { x: gx, y: 6.26, w: 2.80, h: 0.20, fontSize: 9, bold: true, color: this.h(C.text_muted) });
+      slide.addText(m.val, { x: gx, y: 6.48, w: 2.80, h: 0.36, fontSize: 20, bold: true, color: this.h(m.color) });
+      slide.addText(m.sub, { x: gx, y: 6.84, w: 2.80, h: 0.20, fontSize: 9, color: this.h(C.text_secondary) });
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 12: STRATEGIC SWOT MATRIX
+  // ══════════════════════════════════════════════════════════════════════════
+  static buildSwotAnalysis(pptx, data, C) {
+    const slide = pptx.addSlide();
+    slide.background = { color: this.h(C.canvas_bg) };
+    this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
+
+    const quads = data.quadrants || {};
+    const quadConfigs = [
+      { d: quads.strengths || {}, x: 0.40, y: 0.72, color: "#10B981" },
+      { d: quads.weaknesses || {}, x: 6.76, y: 0.72, color: "#F59E0B" },
+      { d: quads.opportunities || {}, x: 0.40, y: 3.86, color: "#E8734A" },
+      { d: quads.threats || {}, x: 6.76, y: 3.86, color: "#EF4444" }
+    ];
+
+    quadConfigs.forEach(qc => {
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: qc.x, y: qc.y, w: 6.16, h: 3.00,
+        fill: { color: this.h(C.blue_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: qc.x, y: qc.y, w: 6.16, h: 0.42,
+        fill: { color: this.h(C.hdr_bg) }
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: qc.x, y: qc.y + 0.38, w: 6.16, h: 0.04,
+        fill: { color: this.h(qc.color) }
+      });
+      slide.addText(qc.d.title || "", {
+        x: qc.x + 0.20, y: qc.y + 0.08, w: 4.50, h: 0.26,
+        fontSize: 11, bold: true, color: this.h(C.canvas_bg)
+      });
+      slide.addText(qc.d.tag || "", {
+        x: qc.x + 4.90, y: qc.y + 0.08, w: 0.80, h: 0.24,
+        fontSize: 9, bold: true, color: "FFFFFF", align: "center",
+        fill: { color: this.h(qc.color) }
+      });
+      if (qc.d.emote) {
+        try {
+          slide.addImage({ path: this.getEmotePath(qc.d.emote), x: qc.x + 5.80, y: qc.y + 0.08, w: 0.24, h: 0.24 });
+        } catch(e) {}
+      }
+
+      (qc.d.items || []).forEach((item, idx) => {
+        const iy = qc.y + 0.56 + idx * 0.78;
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: qc.x + 0.14, y: iy, w: 5.88, h: 0.68,
+          fill: { color: this.h(C.card_bg) },
+          line: { color: this.h(C.card_bd), width: 1.0 }
+        });
+        slide.addShape(pptx.ShapeType.rect, {
+          x: qc.x + 0.14, y: iy, w: 0.04, h: 0.68,
+          fill: { color: this.h(qc.color) }
+        });
+        slide.addText(item.code || "", {
+          x: qc.x + 0.26, y: iy + 0.10, w: 0.30, h: 0.20,
+          fontSize: 9, bold: true, color: this.h(qc.color)
+        });
+        slide.addText(item.title || "", {
+          x: qc.x + 0.60, y: iy + 0.10, w: 4.40, h: 0.24,
+          fontSize: 10, bold: true, color: this.h(C.text_primary)
+        });
+        slide.addText(item.impact || "", {
+          x: qc.x + 5.10, y: iy + 0.08, w: 0.60, h: 0.20,
+          fontSize: 8, bold: true, color: this.h(C.text_secondary), align: "center",
+          fill: { color: this.h(C.blue_bg) }
+        });
+        slide.addText(item.desc || "", {
+          x: qc.x + 0.26, y: iy + 0.34, w: 5.60, h: 0.30,
+          fontSize: 9, color: this.h(C.text_secondary)
+        });
+      });
+    });
+
+    const sum = data.strategic_summary || {};
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: 6.98, w: 12.52, h: 0.42,
+      fill: { color: this.h(C.hdr_bg) }
+    });
+    slide.addText(`EXECUTIVE STRATEGIC VERDICT:  ${sum.core_verdict || ""}`, {
+      x: 0.60, y: 7.04, w: 9.50, h: 0.30,
+      fontSize: 9, color: this.h(C.canvas_bg)
+    });
+    slide.addText(sum.priority_focus || "", {
+      x: 10.20, y: 7.04, w: 2.50, h: 0.30,
+      fontSize: 9, bold: true, color: this.h(C.teal_accent), align: "right"
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 13: PROJECT GANTT TIMELINE
+  // ══════════════════════════════════════════════════════════════════════════
+  static buildProjectTimeline(pptx, data, C) {
+    const slide = pptx.addSlide();
+    slide.background = { color: this.h(C.canvas_bg) };
+    this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
+
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: 0.72, w: 2.68, h: 0.48,
+      fill: { color: this.h(C.hdr_bg) }
+    });
+    slide.addText("EXECUTION WORKSTREAM", {
+      x: 0.54, y: 0.84, w: 2.40, h: 0.24,
+      fontSize: 11, bold: true, color: this.h(C.canvas_bg)
+    });
+
+    const quarters = data.quarters || [];
+    quarters.forEach((q, idx) => {
+      const x = 3.20 + idx * 2.40;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: 0.72, w: 2.34, h: 0.48,
+        fill: { color: this.h(q.highlight ? C.blue_bg : C.card_bg) },
+        line: { color: this.h(q.highlight ? C.stripe : C.card_bd), width: 1.0 }
+      });
+      slide.addText(`${q.qtr} (${q.months})`, {
+        x: x + 0.14, y: 0.82, w: 1.50, h: 0.24,
+        fontSize: 10, bold: true, color: this.h(C.text_primary)
+      });
+      slide.addText(q.status, {
+        x: x + 1.54, y: 0.82, w: 0.70, h: 0.24,
+        fontSize: 8, bold: true, color: "FFFFFF", align: "center",
+        fill: { color: this.h(q.status === 'COMPLETE' ? C.teal_accent : C.stripe) }
+      });
+    });
+
+    const lanes = data.lanes || [];
+    lanes.forEach((lane, lIdx) => {
+      const y = 1.32 + lIdx * 1.18;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 0.40, y: y, w: 2.68, h: 1.06,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0.40, y: y, w: 0.05, h: 1.06,
+        fill: { color: this.h(C.stripe) }
+      });
+      if (lane.emote) {
+        try {
+          slide.addImage({ path: this.getEmotePath(lane.emote), x: 0.56, y: y + 0.16, w: 0.30, h: 0.30 });
+        } catch(e) {}
+      }
+      slide.addText(lane.name || "", {
+        x: 0.94, y: y + 0.20, w: 2.05, h: 0.40,
+        fontSize: 10, bold: true, color: this.h(C.text_primary)
+      });
+
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 3.20, y: y, w: 9.60, h: 1.06,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0, dashType: "dash" }
+      });
+
+      (lane.bars || []).forEach((bar, bIdx) => {
+        const bx = 3.20 + bar.start * 9.60;
+        const bw = bar.span * 9.60;
+        const by = y + 0.16 + bIdx * 0.46;
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: bx, y: by, w: bw, h: 0.38,
+          fill: { color: this.h(bar.color || C.stripe) }
+        });
+        slide.addText(`${bar.title} [${bar.status}]`, {
+          x: bx + 0.14, y: by + 0.06, w: bw - 0.28, h: 0.26,
+          fontSize: 9, bold: true, color: "FFFFFF"
+        });
+      });
+    });
+
+    const milestones = data.milestones || [];
+    milestones.forEach(m => {
+      const mx = 3.60 + m.pos * 9.00;
+      slide.addShape(pptx.ShapeType.diamond, {
+        x: mx - 0.14, y: 6.20, w: 0.28, h: 0.28,
+        fill: { color: this.h(m.rag === 'green' ? C.teal_accent : C.amber_accent) }
+      });
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: mx - 0.70, y: 6.54, w: 1.40, h: 0.48,
+        fill: { color: this.h(C.hdr_bg) }
+      });
+      slide.addText(`${m.title}\n${m.date}`, {
+        x: mx - 0.70, y: 6.58, w: 1.40, h: 0.40,
+        fontSize: 8, bold: true, color: this.h(C.canvas_bg), align: "center"
+      });
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 14: EXECUTIVE ORGANIZATION HIERARCHY
+  // ══════════════════════════════════════════════════════════════════════════
+  static buildOrgChart(pptx, data, C) {
+    const slide = pptx.addSlide();
+    slide.background = { color: this.h(C.canvas_bg) };
+    this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
+
+    const leader = data.leader || {};
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 4.66, y: 0.76, w: 4.00, h: 0.92,
+      fill: { color: this.h(C.hdr_bg) },
+      line: { color: this.h(C.card_bd), width: 1.0 }
+    });
+    slide.addShape(pptx.ShapeType.rect, {
+      x: 4.66, y: 0.76, w: 0.06, h: 0.92,
+      fill: { color: this.h(C.stripe) }
+    });
+    if (leader.emote) {
+      try {
+        slide.addImage({ path: this.getEmotePath(leader.emote), x: 4.86, y: 0.94, w: 0.44, h: 0.44 });
+      } catch(e) {}
+    }
+    slide.addText(leader.role || "", {
+      x: 5.42, y: 0.86, w: 3.10, h: 0.26,
+      fontSize: 12, bold: true, color: this.h(C.canvas_bg)
+    });
+    slide.addText(leader.name || "", {
+      x: 5.42, y: 1.10, w: 3.10, h: 0.22,
+      fontSize: 10, bold: true, color: this.h(C.stripe)
+    });
+    slide.addText(leader.mandate || "", {
+      x: 5.42, y: 1.30, w: 3.10, h: 0.28,
+      fontSize: 8, color: this.h(C.text_muted)
+    });
+
+    this.addArrowDown(slide, 6.66, 1.68, 2.00, this.h(C.stripe));
+    slide.addShape(pptx.ShapeType.line, {
+      x: 2.40, y: 2.00, w: 8.52, h: 0,
+      line: { color: this.h(C.stripe), width: 2.0 }
+    });
+    this.addArrowDown(slide, 2.40, 2.00, 2.20, this.h(C.stripe));
+    this.addArrowDown(slide, 6.66, 2.00, 2.20, this.h(C.stripe));
+    this.addArrowDown(slide, 10.92, 2.00, 2.20, this.h(C.stripe));
+
+    const divisions = data.divisions || [];
+    divisions.forEach((div, idx) => {
+      const dx = 0.40 + idx * 4.26;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: dx, y: 2.20, w: 4.00, h: 1.10,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: dx, y: 2.20, w: 0.05, h: 1.10,
+        fill: { color: this.h(div.color || C.stripe) }
+      });
+      if (div.emote) {
+        try {
+          slide.addImage({ path: this.getEmotePath(div.emote), x: dx + 0.16, y: 2.36, w: 0.36, h: 0.36 });
+        } catch(e) {}
+      }
+      slide.addText(div.title || "", {
+        x: dx + 0.60, y: 2.32, w: 2.30, h: 0.26,
+        fontSize: 11, bold: true, color: this.h(C.text_primary)
+      });
+      slide.addText(div.owner || "", {
+        x: dx + 0.60, y: 2.54, w: 2.30, h: 0.20,
+        fontSize: 9, bold: true, color: this.h(div.color || C.stripe)
+      });
+      slide.addText(div.mandate || "", {
+        x: dx + 0.16, y: 2.80, w: 3.68, h: 0.40,
+        fontSize: 8, color: this.h(C.text_secondary)
+      });
+      slide.addText(div.hc || "", {
+        x: dx + 2.90, y: 2.34, w: 0.94, h: 0.20,
+        fontSize: 8, bold: true, color: this.h(C.canvas_bg), align: "center",
+        fill: { color: this.h(C.hdr_bg) }
+      });
+
+      this.addArrowDown(slide, dx + 2.00, 3.30, 3.70, this.h(div.color || C.stripe));
+
+      (div.teams || []).forEach((tm, tIdx) => {
+        const ty = 3.70 + tIdx * 1.02;
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: dx, y: ty, w: 4.00, h: 0.88,
+          fill: { color: this.h(C.card_bg) },
+          line: { color: this.h(C.card_bd), width: 1.0 }
+        });
+        slide.addShape(pptx.ShapeType.rect, {
+          x: dx, y: ty, w: 0.04, h: 0.88,
+          fill: { color: this.h(div.color || C.stripe) }
+        });
+        if (tm.emote) {
+          try {
+            slide.addImage({ path: this.getEmotePath(tm.emote), x: dx + 0.16, y: ty + 0.16, w: 0.32, h: 0.32 });
+          } catch(e) {}
+        }
+        slide.addText(tm.name || "", {
+          x: dx + 0.58, y: ty + 0.18, w: 2.30, h: 0.24,
+          fontSize: 11, bold: true, color: this.h(C.text_primary)
+        });
+        slide.addText(tm.lead || "", {
+          x: dx + 0.58, y: ty + 0.42, w: 2.30, h: 0.22,
+          fontSize: 9, color: this.h(C.text_secondary)
+        });
+        slide.addText(tm.hc || "", {
+          x: dx + 2.90, y: ty + 0.18, w: 0.94, h: 0.20,
+          fontSize: 8, bold: true, color: this.h(C.text_secondary), align: "center",
+          fill: { color: this.h(C.blue_bg) }
+        });
+      });
+    });
+
+    const kpis = data.summary_kpis || [];
+    kpis.forEach((k, idx) => {
+      const kx = 0.40 + idx * 4.26;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: kx, y: 5.96, w: 4.00, h: 0.68,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addText(k.label, { x: kx + 0.20, y: 6.04, w: 3.60, h: 0.20, fontSize: 9, bold: true, color: this.h(C.text_muted) });
+      slide.addText(k.val, { x: kx + 0.20, y: 6.26, w: 1.80, h: 0.30, fontSize: 18, bold: true, color: this.h(C.text_primary) });
+      slide.addText(k.sub, { x: kx + 2.00, y: 6.28, w: 1.80, h: 0.24, fontSize: 9, color: this.h(C.teal_accent) });
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEMPLATE 15: FINANCIAL BUDGET WATERFALL
+  // ══════════════════════════════════════════════════════════════════════════
+  static buildBudgetWaterfall(pptx, data, C) {
+    const slide = pptx.addSlide();
+    slide.background = { color: this.h(C.canvas_bg) };
+    this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
+
+    const base = data.baseline || {};
+    const drivers = data.drivers || [];
+    const target = data.target || {};
+    const scorecards = data.scorecards || [];
+
+    const colW = 1.62;
+    const colGap = 0.16;
+    const chartBottomY = 5.60;
+    const chartTopY = 1.60;
+    const chartH = chartBottomY - chartTopY;
+    const scale = chartH / 12;
+
+    let runningVal = base.val || 42.8;
+    const baseY = chartBottomY - (runningVal - 35) * scale;
+    const baseH = chartBottomY - baseY;
+
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: baseY, w: colW, h: baseH,
+      fill: { color: this.h(C.hdr_bg) }
+    });
+    slide.addText(base.amount || "", {
+      x: 0.40, y: baseY - 0.28, w: colW, h: 0.26,
+      fontSize: 14, bold: true, color: this.h(C.text_primary), align: "center"
+    });
+    slide.addText("FY25 BASELINE\nPrior Year Base", {
+      x: 0.40, y: baseY + 0.20, w: colW, h: 0.40,
+      fontSize: 9, bold: true, color: this.h(C.canvas_bg), align: "center"
+    });
+
+    drivers.forEach((drv, idx) => {
+      const x = 0.40 + (idx + 1) * (colW + colGap);
+      const isIncrease = drv.val > 0;
+      const prevVal = runningVal;
+      runningVal += drv.val;
+
+      const topVal = Math.max(prevVal, runningVal);
+      const botVal = Math.min(prevVal, runningVal);
+      const barY = chartBottomY - (topVal - 35) * scale;
+      const barH = Math.max(0.20, (topVal - botVal) * scale);
+
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: barY, w: colW, h: barH,
+        fill: { color: this.h(drv.color || (isIncrease ? C.rose_accent : C.teal_accent)) }
+      });
+      slide.addText(drv.amount || "", {
+        x: x, y: barY - 0.24, w: colW, h: 0.22,
+        fontSize: 11, bold: true, color: this.h(isIncrease ? C.rose_accent : C.teal_accent), align: "center"
+      });
+
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: chartBottomY + 0.14, w: colW, h: 0.76,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addText(drv.title || "", {
+        x: x + 0.05, y: chartBottomY + 0.20, w: colW - 0.10, h: 0.28,
+        fontSize: 8, bold: true, color: this.h(C.text_primary), align: "center"
+      });
+      slide.addText(drv.desc || "", {
+        x: x + 0.05, y: chartBottomY + 0.44, w: colW - 0.10, h: 0.40,
+        fontSize: 7, color: this.h(C.text_secondary), align: "center"
+      });
+    });
+
+    const targetX = 0.40 + 6 * (colW + colGap);
+    const targetY = chartBottomY - (target.val - 35) * scale;
+    const targetH = chartBottomY - targetY;
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: targetX, y: targetY, w: colW, h: targetH,
+      fill: { color: this.h(C.stripe) }
+    });
+    slide.addText(target.amount || "", {
+      x: targetX, y: targetY - 0.28, w: colW, h: 0.26,
+      fontSize: 14, bold: true, color: this.h(C.stripe), align: "center"
+    });
+    slide.addText("FY26 TARGET\nNet Savings", {
+      x: targetX, y: targetY + 0.20, w: colW, h: 0.40,
+      fontSize: 9, bold: true, color: "FFFFFF", align: "center"
+    });
+
+    scorecards.forEach((sc, idx) => {
+      const scX = 0.40 + idx * 4.26;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: scX, y: 6.70, w: 4.00, h: 0.56,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      slide.addText(sc.label, { x: scX + 0.20, y: 6.74, w: 2.00, h: 0.18, fontSize: 8, bold: true, color: this.h(C.text_muted) });
+      slide.addText(sc.val, { x: scX + 0.20, y: 6.92, w: 2.00, h: 0.28, fontSize: 15, bold: true, color: this.h(C.text_primary) });
+      slide.addText(sc.sub, { x: scX + 2.10, y: 6.94, w: 1.80, h: 0.22, fontSize: 9, color: this.h(C.teal_accent) });
     });
   }
 }

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=4.0">
+  <link rel="stylesheet" href="css/style.css?v=5.0">
 </head>
 <body>
 
@@ -36,15 +36,20 @@
         <optgroup label="Philips Strategy & Performance">
           <option value="strategic_roadmap">04. Strategic Transformation Roadmap (3 Horizons)</option>
           <option value="kpi_scorecard">05. Royal Philips Executive Board KPI Scorecard</option>
+          <option value="swot_analysis">06. Strategic SWOT Matrix & Capability Grid</option>
+          <option value="budget_waterfall">07. Financial Budget Waterfall & Cost Variance</option>
         </optgroup>
-        <optgroup label="Philips Organization & ITIL">
-          <option value="operating_model">06. Target Operating Model (TOM 3-Tier Architecture)</option>
-          <option value="it_service">07. IT Service Management & Incident Resolution (ITIL)</option>
+        <optgroup label="Philips Organization & Transformation">
+          <option value="operating_model">08. Target Operating Model (TOM 3-Tier Architecture)</option>
+          <option value="it_service">09. IT Service Management & Incident Resolution (ITIL)</option>
+          <option value="change_mgmt">10. Change Management & ADKAR Transformation</option>
+          <option value="org_chart">11. Executive Organization Hierarchy & Governance</option>
+          <option value="project_timeline">12. Project Gantt Timeline & Delivery Milestones</option>
         </optgroup>
         <optgroup label="Philips Healthcare Risk & Experience">
-          <option value="data_pipeline">08. HealthSuite Data & Agentic AI Architecture</option>
-          <option value="risk_compliance">09. 5×5 Enterprise Risk & SOX Compliance Matrix</option>
-          <option value="customer_journey">10. Clinical Experience & Customer Journey Map</option>
+          <option value="data_pipeline">13. HealthSuite Data & Agentic AI Architecture</option>
+          <option value="risk_compliance">14. 5×5 Enterprise Risk & SOX Compliance Matrix</option>
+          <option value="customer_journey">15. Clinical Experience & Customer Journey Map</option>
         </optgroup>
       </select>
     </div>
@@ -97,7 +102,7 @@
     <aside class="controls-sidebar">
       <div class="sidebar-tabs">
         <button type="button" class="tab-btn active" data-tab="tab-editor">Editor &amp; Nodes</button>
-        <button type="button" class="tab-btn" data-tab="tab-emotes">Emotes (46)</button>
+        <button type="button" class="tab-btn" data-tab="tab-emotes">Emotes (123)</button>
         <button type="button" class="tab-btn" data-tab="tab-engine">DrawingML Specs</button>
       </div>
 
@@ -232,11 +237,17 @@
   <div id="emoteModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-head">
-        <div class="modal-title">Select Transparent Animated Emote (46 Curated)</div>
+        <div class="modal-title">Select Executive Emote & Icon (123 Real Assets)</div>
         <button type="button" id="closeEmoteModal" class="btn-close">&times;</button>
       </div>
+      <div class="modal-filter-tabs">
+        <button type="button" class="modal-tab-btn active" data-type="all">All (123)</button>
+        <button type="button" class="modal-tab-btn" data-type="animated">Animated GIFs (46)</button>
+        <button type="button" class="modal-tab-btn" data-type="static">Static PNGs (45)</button>
+        <button type="button" class="modal-tab-btn" data-type="vector">Vector SVGs (32)</button>
+      </div>
       <div class="modal-filter-row">
-        <input type="text" id="emoteSearchInput" class="input-dark" placeholder="Search 46 emotes by name or category (e.g. calc, stamp, robot, cash)...">
+        <input type="text" id="emoteSearchInput" class="input-dark" placeholder="Search 123 authentic assets by name or category (e.g. trend, shield, robot, ledger)...">
       </div>
       <div id="emoteGrid" class="emote-picker-grid">
         <!-- Populated dynamically -->
@@ -249,10 +260,10 @@
   <script src="js/vendor/html2canvas.min.js"></script>
 
   <!-- Application Scripts with cache-busting -->
-  <script src="js/templates_data.js?v=4.0"></script>
-  <script src="js/canvas_renderer.js?v=4.0"></script>
-  <script src="js/pptx_client_generator.js?v=4.0"></script>
-  <script src="js/app.js?v=4.0"></script>
+  <script src="js/templates_data.js?v=5.0"></script>
+  <script src="js/canvas_renderer.js?v=5.0"></script>
+  <script src="js/pptx_client_generator.js?v=5.0"></script>
+  <script src="js/app.js?v=5.0"></script>
 
 </body>
 </html>
