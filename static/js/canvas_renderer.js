@@ -22,6 +22,38 @@ class SlideCanvasRenderer {
     return `emotes/${emoteId}.gif`;
   }
 
+  resolvePalette(paletteKey) {
+    if (typeof PALETTES !== "undefined" && PALETTES[paletteKey]) {
+      return PALETTES[paletteKey];
+    }
+    return (typeof PALETTES !== "undefined" && PALETTES.executive_blueprint) ? PALETTES.executive_blueprint : {
+      canvas_bg: "#F7F6F3",
+      hdr_bg: "#1A1A2E",
+      stripe: "#E8734A",
+      card_bg: "#FFFFFF",
+      card_bd: "#E0DDD7",
+      text_primary: "#1A1A2E",
+      text_secondary: "#3D3D50",
+      text_muted: "#6B6B7B",
+      blue_accent: "#2D3B4E",
+      blue_bg: "#F0EFEB",
+      blue_border: "#D5D2CB",
+      amber_accent: "#C4621A",
+      amber_bg: "#FBF3EC",
+      amber_border: "#EDCFB3",
+      teal_accent: "#1A7A6D",
+      teal_border: "#B3D9D3",
+      rose_accent: "#B5395A",
+      rose_bg: "#FBF0F3",
+      rose_border: "#E8BFC9",
+      red_accent: "#C42B2B",
+      red_bg: "#FBF0F0",
+      red_border: "#E8C0C0",
+      purple_accent: "#5A4E8C",
+      dashed_border: "#D4D0C8"
+    };
+  }
+
   setNodeClickListener(cb) {
     this.onNodeClickCallback = cb;
   }
