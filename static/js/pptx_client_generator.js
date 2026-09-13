@@ -102,25 +102,119 @@ class ClientPptxGenerator {
       for (const slidePath of slideFiles) {
         let slideXml = await zip.file(slidePath).async("text");
 
-        // 1. Strip any legacy shape-level entrance timing that causes blank screens & click-locks
+        // 1. Strip any existing timing
         if (slideXml.includes("<p:timing>")) {
           slideXml = slideXml.replace(/<p:timing>[\s\S]*?<\/p:timing>/g, "");
         }
 
-        // 2. Inject native executive slide cross-fade transition for instant, silk-smooth presentation flow
-        if (!slideXml.includes("<p:transition")) {
-          const transXml = `<p:transition speed="med"><p:fade/></p:transition>`;
-          slideXml = slideXml.replace("</p:sld>", transXml + "</p:sld>");
+        // 2. Strip any existing transition to reorder strictly according to OpenXML schema
+        const transXml = `<p:transition speed="med"><p:fade/></p:transition>`;
+        if (slideXml.includes("<p:transition")) {
+          slideXml = slideXml.replace(/<p:transition[\s\S]*?<\/p:transition>/g, "");
         }
+
+        // 3. For slide 1 (Master Slide), compile authentic OpenXML animated flow sequence
+        let timingXml = "";
+        if (slidePath === "ppt/slides/slide1.xml") {
+          timingXml = this.compileSlideTiming(slideXml) || "";
+        }
+
+        // 4. Inject transition and timing according to OpenXML schema (transition before timing, both before </p:sld>)
+        const injection = transXml + timingXml;
+        slideXml = slideXml.replace("</p:sld>", injection + "</p:sld>");
 
         zip.file(slidePath, slideXml);
       }
 
-      return await zip.generateAsync(typeof Blob !== "undefined" ? { type: "blob" } : { type: "nodebuffer" });
+      return await zip.generateAsync(typeof Blob !== "undefined" ? { type: "blob" } : { type: "uint8array" });
     } catch (e) {
-      console.warn("Transition injection error:", e);
+      console.warn("Transition/timing injection error:", e);
       return arrayBuffer;
     }
+  }
+
+  static compileSlideTiming(slideXml) {
+    const shapeRegex = /<(p:sp|p:cxnSp|p:pic)>([\s\S]*?)<\/\1>/g;
+    let m;
+    const shapes = [];
+    while ((m = shapeRegex.exec(slideXml)) !== null) {
+      const tag = m[1];
+      const content = m[2];
+      const idMatch = content.match(/<p:cNvPr id="(\d+)"/);
+      const prstMatch = content.match(/prst="([^"]+)"/);
+      if (idMatch) {
+        const spid = idMatch[1];
+        const shapeType = prstMatch ? prstMatch[1] : tag;
+        const isConnector = (shapeType === "line" || tag === "p:cxnSp");
+        const isEmote = (tag === "p:pic" || shapeType === "ellipse");
+        shapes.push({ spid, isConnector, isEmote });
+      }
+    }
+
+    if (shapes.length <= 5) return null;
+
+    // The persistent canvas background and header shapes (IDs <= 6) remain visible at all times
+    const diagramShapes = shapes.filter(s => parseInt(s.spid, 10) > 6);
+    if (diagramShapes.length === 0) return null;
+
+    // Partition diagram shapes into 5 executive flow stages
+    const stages = [[], [], [], [], []];
+    const total = diagramShapes.length;
+    diagramShapes.forEach((s, idx) => {
+      const stageIdx = Math.min(4, Math.floor((idx / total) * 5));
+      const effect = s.isConnector ? "wr" : (s.isEmote ? "zm" : "fade");
+      const delay = (stages[stageIdx].length === 0) ? 0 : 80 + stages[stageIdx].length * 35;
+      stages[stageIdx].push({
+        spid: s.spid,
+        effect: effect,
+        delay: delay
+      });
+    });
+
+    return this.buildOpenXmlTimingXml(stages);
+  }
+
+  static buildOpenXmlTimingXml(stages) {
+    let nextId = 1;
+    const genId = () => String(nextId++);
+    let phasesXml = "";
+    const allSpids = [];
+
+    stages.forEach((stageItems, stageIndex) => {
+      if (!stageItems || stageItems.length === 0) return;
+      let stageXml = "";
+      stageItems.forEach((item, itemIndex) => {
+        const isFirstInStage = (itemIndex === 0);
+        const nodeType = isFirstInStage ? "clickEffect" : "withEffect";
+        const delay = item.delay || (isFirstInStage ? 0 : 80 + itemIndex * 35);
+        const eff = item.effect || "fade";
+        const spid = item.spid;
+
+        if (!allSpids.includes(spid)) {
+          allSpids.push(spid);
+        }
+
+        let pid = "10", ps = "0", flt = "fade", dur = "850";
+        if (eff === "wr" || eff === "wipe_right") {
+          pid = "22"; ps = "8"; flt = "wipe(left)"; dur = "750";
+        } else if (eff === "wd" || eff === "wipe_down") {
+          pid = "22"; ps = "1"; flt = "wipe(up)"; dur = "750";
+        } else if (eff === "zm" || eff === "zoom") {
+          pid = "53"; ps = "0"; flt = "fade"; dur = "650";
+        }
+
+        stageXml += `<p:par><p:cTn id="${genId()}" fill="hold"><p:stCondLst><p:cond delay="${delay}"/></p:stCondLst><p:childTnLst><p:par><p:cTn id="${genId()}" presetID="${pid}" presetClass="entr" presetSubtype="${ps}" fill="hold" grpId="0" nodeType="${nodeType}"><p:stCondLst><p:cond delay="0"/></p:stCondLst><p:childTnLst><p:set><p:cBhvr><p:cTn id="${genId()}" dur="1" fill="hold"><p:stCondLst><p:cond delay="0"/></p:stCondLst></p:cTn><p:tgtEl><p:spTgt spid="${spid}"/></p:tgtEl><p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst></p:cBhvr><p:to><p:strVal val="visible"/></p:to></p:set><p:animEffect transition="in" filter="${flt}"><p:cBhvr><p:cTn id="${genId()}" dur="${dur}"><p:stCondLst><p:cond delay="0"/></p:stCondLst></p:cTn><p:tgtEl><p:spTgt spid="${spid}"/></p:tgtEl></p:cBhvr></p:animEffect></p:childTnLst></p:cTn></p:par></p:childTnLst></p:cTn></p:par>`;
+      });
+
+      phasesXml += `<p:par><p:cTn id="${genId()}" fill="hold"><p:stCondLst><p:cond delay="0"/></p:stCondLst><p:childTnLst>${stageXml}</p:childTnLst></p:cTn></p:par>`;
+    });
+
+    let bldLstXml = "";
+    allSpids.forEach(spid => {
+      bldLstXml += `<p:bldP spid="${spid}" grpId="0"/>`;
+    });
+
+    return `<p:timing><p:tnLst><p:par><p:cTn id="${genId()}" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst><p:seq concurrent="1" nextAc="seek"><p:cTn id="${genId()}" dur="indefinite" nodeType="mainSeq"><p:childTnLst>${phasesXml}</p:childTnLst></p:cTn><p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:prevCondLst><p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:nextCondLst></p:seq></p:childTnLst></p:cTn></p:par></p:tnLst><p:bldLst>${bldLstXml}</p:bldLst></p:timing>`;
   }
 
   static buildTemplate(pptx, templateId, data, C, stageLimit = 5) {
@@ -1186,7 +1280,7 @@ class ClientPptxGenerator {
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
-    // 5 Lifecycle Step Cards across top
+    // 1. Stage 1: 5 Lifecycle Step Cards across top (Y: 0.76 to 2.24)
     const steps = (data.steps && data.steps.length) ? data.steps : [
       { num: "01", title: "Vendor Onboarding", sub: "KYC, Tax & Sanction Checks", emote: "handshake" },
       { num: "02", title: "Sourcing & Purchase Order", sub: "Automated PO dispatch in SAP", emote: "po_doc" },
@@ -1195,21 +1289,21 @@ class ClientPptxGenerator {
       { num: "05", title: "Payment Release", sub: "Electronic Funds Transfer (EFT)", emote: "payment" }
     ];
 
-    const sw = 2.38;
+    const sw = 2.35;
     steps.forEach((st, i) => {
-      const isSpotlight = (stageLimit === i + 1);
+      const isSpotlight = (stageLimit === 1 || stageLimit === i + 1);
       const x = 0.40 + i * 2.54;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: x, y: 0.76, w: sw, h: 1.48,
         rectRadius: 0.08,
-        fill: { color: this.h(isSpotlight ? (C.blue_bg || C.card_bg) : C.card_bg) },
-        line: { color: this.h(isSpotlight ? (C.stripe || C.amber_accent) : C.card_bd), width: isSpotlight ? 2.0 : 1.0 }
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(isSpotlight ? (C.stripe || C.amber_accent) : C.card_bd), width: isSpotlight ? 1.8 : 1.0 }
       });
       // Pill Number Badge
       slide.addShape(pptx.ShapeType.roundRect, {
         x: x + 0.12, y: 0.86, w: 0.44, h: 0.22,
         rectRadius: 0.04,
-        fill: { color: this.h(isSpotlight ? (C.stripe || C.blue_accent) : C.blue_accent) },
+        fill: { color: this.h(C.blue_accent) },
         line: { width: 0 }
       });
       slide.addText(st.num || `0${i+1}`, {
@@ -1230,200 +1324,226 @@ class ClientPptxGenerator {
       } catch (e) {}
       // Title
       slide.addText(st.title || "", {
-        x: x + 0.12, y: 1.16, w: sw - 0.24, h: 0.44,
+        x: x + 0.12, y: 1.16, w: sw - 0.24, h: 0.42,
         fontSize: 10, bold: true, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0
       });
-      // Sub
+      // Subtitle
       slide.addText(st.sub || "", {
-        x: x + 0.12, y: 1.62, w: sw - 0.24, h: 0.54,
+        x: x + 0.12, y: 1.60, w: sw - 0.24, h: 0.54,
         fontSize: 7.5, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
       });
 
       if (i < 4) {
-        this.addArrowRight(slide, x + sw + 0.02, 1.48, x + 2.54 - 0.02, this.h(C.blue_accent));
+        this.addArrowRight(slide, x + sw + 0.02, 1.48, x + 2.54 - 0.02, this.h(C.stripe || C.amber_accent));
       }
     });
 
-    // 2. Middle Left: SAP 3-WAY MATCHING PIPELINE
-    const isMatchingSpotlight = (stageLimit === 3);
+    // 2. Middle Left: SAP 3-WAY MATCHING PIPELINE (Stages 2 & 3)
+    const isStage2 = (stageLimit === 2);
+    const isStage3 = (stageLimit === 3);
+    const isMatchFocus = isStage2 || isStage3;
+
     slide.addShape(pptx.ShapeType.roundRect, {
       x: 0.40, y: 2.38, w: 7.90, h: 3.52,
       rectRadius: 0.10,
-      fill: { color: this.h(isMatchingSpotlight ? (C.blue_bg || C.card_bg) : C.card_bg) },
-      line: { color: this.h(isMatchingSpotlight ? C.amber_accent : C.dashed_border), width: isMatchingSpotlight ? 2.0 : 1.5, dashType: isMatchingSpotlight ? "solid" : "dash" }
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(isMatchFocus ? C.amber_accent : C.dashed_border), width: isMatchFocus ? 2.0 : 1.5, dashType: isMatchFocus ? "solid" : "dash" }
     });
     // Floating Pill
     slide.addShape(pptx.ShapeType.roundRect, {
-      x: 0.56, y: 2.28, w: 3.80, h: 0.24,
+      x: 0.56, y: 2.28, w: 2.30, h: 0.24,
       rectRadius: 0.05,
       fill: { color: this.h(C.amber_accent) },
       line: { width: 0 }
     });
-    slide.addText("SAP 3-WAY MATCHING PIPELINE (PO vs GR vs IR)", {
-      x: 0.56, y: 2.28, w: 3.80, h: 0.24,
+    slide.addText("SAP 3-WAY MATCHING PIPELINE", {
+      x: 0.56, y: 2.28, w: 2.30, h: 0.24,
       fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
     });
 
+    // 3 Inbound Match Pillars (Stage 2)
     const pillars = [
-      { name: "Purchase Order (PO)", badge: "CONTRACT TERMS", emote: "po_doc", desc: "Contract terms, unit pricing, delivery schedules & legal entity code." },
-      { name: "Goods Receipt (GR)", badge: "PHYSICAL RECEIPT", emote: "truck", desc: "Physical barcode scan, accepted warehouse quantity & delivery receipt." },
-      { name: "Vendor Invoice (IR)", badge: "FINANCIAL CLAIM", emote: "scan_doc", desc: "Tax details, payment terms, net delta & verified banking details." }
+      { name: "Purchase Order (PO)", color: C.blue_accent, desc: "Contract terms, unit pricing,\ndelivery schedules & entity code." },
+      { name: "Goods Receipt (GR)", color: C.teal_accent, desc: "Physical barcode scan,\naccepted quantity & warehouse stamp." },
+      { name: "Vendor Invoice (IR)", color: C.rose_accent, desc: "OCR extracted tax, currency,\nIBAN bank details & line items." }
     ];
+
+    const pillarCenters = [];
     pillars.forEach((p, idx) => {
-      const px = 0.65 + idx * 2.50;
+      const px = 0.65 + idx * 2.58;
+      const pw = 2.24;
+      pillarCenters.push(px + pw / 2);
       slide.addShape(pptx.ShapeType.roundRect, {
-        x: px, y: 2.68, w: 2.30, h: 1.86,
+        x: px, y: 2.65, w: pw, h: 1.10,
         rectRadius: 0.08,
         fill: { color: this.h(C.blue_bg) },
         line: { color: this.h(C.blue_border), width: 1.0 }
       });
-      // Pill badge
-      slide.addShape(pptx.ShapeType.roundRect, {
-        x: px + 0.12, y: 2.78, w: 1.20, h: 0.20,
-        rectRadius: 0.04,
-        fill: { color: this.h(C.blue_accent) },
-        line: { width: 0 }
-      });
-      slide.addText(p.badge, {
-        x: px + 0.12, y: 2.78, w: 1.20, h: 0.20,
-        fontSize: 6.5, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
-      });
-      // Avatar circle
-      slide.addShape(pptx.ShapeType.ellipse, {
-        x: px + 2.30 - 0.44, y: 2.78, w: 0.36, h: 0.36,
-        fill: { color: this.h(C.card_bg) },
-        line: { color: this.h(C.blue_border), width: 0.75 }
-      });
-      try {
-        slide.addImage({
-          path: this.getEmotePath(p.emote),
-          x: px + 2.30 - 0.40, y: 2.82, w: 0.28, h: 0.28
-        });
-      } catch (e) {}
       slide.addText(p.name, {
-        x: px + 0.12, y: 3.08, w: 2.06, h: 0.44,
-        fontSize: 10, bold: true, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0
+        x: px + 0.12, y: 2.75, w: pw - 0.24, h: 0.30,
+        fontSize: 10, bold: true, color: this.h(p.color), fontFace: "Calibri", margin: 0
       });
       slide.addText(p.desc, {
-        x: px + 0.12, y: 3.56, w: 2.06, h: 0.90,
+        x: px + 0.12, y: 3.08, w: pw - 0.24, h: 0.58,
         fontSize: 7.5, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
       });
-
-      if (idx < 2) {
-        this.addArrowRight(slide, px + 2.32, 3.60, px + 2.50 - 0.02, this.h(C.amber_accent));
-      }
     });
 
-    // Matching Engine Banner
-    const exFlow = data.exception_flow || {};
+    // 3 Converging Dashed Lines leading down to 3-Way Matching Algorithm
+    const algTopX = 4.35;
+    const algTopY = 4.10;
+    pillarCenters.forEach((cx, idx) => {
+      const lineColor = pillars[idx].color;
+      slide.addShape(pptx.ShapeType.line, {
+        x: Math.min(cx, algTopX),
+        y: 3.75,
+        w: Math.abs(algTopX - cx) || 0.01,
+        h: (algTopY - 3.75),
+        line: { color: this.h(lineColor), width: 1.8, dashType: "dash" },
+        flipH: (cx > algTopX)
+      });
+    });
+
+    // Center: 3-Way Matching Algorithm Card (Stage 3)
     slide.addShape(pptx.ShapeType.roundRect, {
-      x: 0.65, y: 4.70, w: 7.40, h: 0.96,
-      rectRadius: 0.06,
-      fill: { color: this.h(C.amber_bg || C.card_bg) },
-      line: { color: this.h(C.amber_border || C.card_bd), width: 1.0 }
+      x: 2.35, y: 4.10, w: 4.00, h: 0.72,
+      rectRadius: 0.08,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.amber_border || C.amber_accent), width: 1.5 }
     });
-    slide.addText(exFlow.title ? `${exFlow.title.toUpperCase()}: ${exFlow.trigger || ""}` : "MATCHING VERIFICATION ENGINE: Automated Price Variance < 1.0% Auto-Cleared • Exception Hand-Off", {
-      x: 0.80, y: 4.80, w: 7.10, h: 0.30,
-      fontSize: 9.5, bold: true, color: this.h(C.amber_accent), fontFace: "Calibri", margin: 0
+    slide.addShape(pptx.ShapeType.ellipse, {
+      x: 2.50, y: 4.22, w: 0.46, h: 0.46,
+      fill: { color: this.h(C.amber_bg) },
+      line: { color: this.h(C.amber_border), width: 0.75 }
     });
-    slide.addText(exFlow.resolution || "Discrepancies > 1.0% automatically route to Procure-to-Pay triage queue with 48-hour vendor clarification SLA.", {
-      x: 0.80, y: 5.12, w: 7.10, h: 0.44,
+    try {
+      slide.addImage({
+        path: this.getEmotePath("gear"),
+        x: 2.56, y: 4.28, w: 0.34, h: 0.34
+      });
+    } catch (e) {}
+    slide.addText("3-Way Matching Algorithm", {
+      x: 3.10, y: 4.18, w: 3.15, h: 0.28,
+      fontSize: 10.5, bold: true, color: this.h(C.amber_accent), fontFace: "Calibri", margin: 0
+    });
+    slide.addText("Automated line tolerance tolerance check within +/- 1.5% delta.", {
+      x: 3.10, y: 4.46, w: 3.15, h: 0.30,
       fontSize: 8, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
     });
 
-    // 3. Middle Right: Vendor Scorecard Dock
-    const isScorecardSpotlight = (stageLimit === 5);
+    // Exception Track Card below algorithm (Stage 3)
+    const exFlow = data.exception_flow || {};
+    const exTitle = exFlow.title || "Discrepancy Resolution Track";
+    const exTrigger = exFlow.trigger || "Price or Quantity Variance > 1.5%";
+    const exRes = exFlow.resolution || "Automated Buyer Clarification Workflow → 48h Supplier Credit Note";
+
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.65, y: 4.98, w: 7.40, h: 0.76,
+      rectRadius: 0.06,
+      fill: { color: this.h(C.rose_bg) },
+      line: { color: this.h(C.rose_border), width: 1.0 }
+    });
+    slide.addText(`EXCEPTION TRACK: ${exTitle}`, {
+      x: 0.85, y: 5.08, w: 7.00, h: 0.26,
+      fontSize: 9.5, bold: true, color: this.h(C.rose_accent), fontFace: "Calibri", margin: 0
+    });
+    slide.addText(`Trigger: ${exTrigger} • Resolution: ${exRes}`, {
+      x: 0.85, y: 5.36, w: 7.00, h: 0.32,
+      fontSize: 8, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
+    });
+
+    // 3. Middle Right: VENDOR RISK SCORECARD (Stage 4)
+    const isScorecardSpotlight = (stageLimit === 4 || stageLimit === 5);
     slide.addShape(pptx.ShapeType.roundRect, {
       x: 8.50, y: 2.38, w: 4.43, h: 3.52,
       rectRadius: 0.10,
-      fill: { color: this.h(isScorecardSpotlight ? (C.blue_bg || C.card_bg) : C.card_bg) },
+      fill: { color: this.h(C.card_bg) },
       line: { color: this.h(isScorecardSpotlight ? C.teal_accent : C.card_bd), width: isScorecardSpotlight ? 2.0 : 1.2 }
     });
     slide.addShape(pptx.ShapeType.roundRect, {
-      x: 8.70, y: 2.28, w: 3.40, h: 0.24,
+      x: 8.70, y: 2.28, w: 1.90, h: 0.24,
       rectRadius: 0.05,
       fill: { color: this.h(C.teal_accent) },
       line: { width: 0 }
     });
-    slide.addText("VENDOR PERFORMANCE & RISK SCORECARD", {
-      x: 8.70, y: 2.28, w: 3.40, h: 0.24,
+    slide.addText("VENDOR RISK SCORECARD", {
+      x: 8.70, y: 2.28, w: 1.90, h: 0.24,
       fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
     });
 
     const vCard = data.vendor_scorecard || {};
-    const kpis = [
-      { label: "On-Time Delivery", score: vCard.on_time_delivery || "98.2%", status: "OPTIMAL", badgeColor: C.teal_accent, desc: "Evaluated across global shipments" },
-      { label: "Match Accuracy SLA", score: vCard.match_accuracy || "99.1%", status: "PASS", badgeColor: C.blue_accent, desc: "Within bilateral contract delta margin" },
-      { label: "Touchless Invoice Rate", score: vCard.touchless_rate || "91.4%", status: "HIGH", badgeColor: C.rose_accent, desc: "Zero manual touches in SAP posting" }
+    const scRows = [
+      { label: "On-Time Delivery Rate", score: vCard.on_time_delivery || "98.2%", pct: 0.982, color: C.teal_accent },
+      { label: "Invoice 3-Way Match Accuracy", score: vCard.match_accuracy || "99.1%", pct: 0.991, color: C.blue_accent },
+      { label: "Touchless Straight-Through Settlement", score: vCard.touchless_rate || "91.4%", pct: 0.914, color: C.stripe || C.amber_accent }
     ];
-    kpis.forEach((k, i) => {
-      const ky = 2.68 + i * 0.98;
-      slide.addShape(pptx.ShapeType.roundRect, {
-        x: 8.70, y: ky, w: 4.03, h: 0.82,
-        rectRadius: 0.08,
-        fill: { color: this.h(C.blue_bg) },
-        line: { color: this.h(C.card_bd), width: 0.75 }
+
+    scRows.forEach((r, idx) => {
+      const ry = 2.80 + idx * 0.72;
+      slide.addText(r.label, {
+        x: 8.75, y: ry, w: 2.70, h: 0.24,
+        fontSize: 10.5, bold: true, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0
       });
-      // Label
-      slide.addText(k.label, {
-        x: 8.85, y: ky + 0.10, w: 2.40, h: 0.24,
-        fontSize: 9.5, bold: true, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0
+      slide.addText(r.score, {
+        x: 11.45, y: ry - 0.04, w: 1.25, h: 0.28,
+        fontSize: 14, bold: true, color: this.h(r.color), align: "right", fontFace: "Calibri", margin: 0
       });
-      // Status Pill
+      // Progress track
       slide.addShape(pptx.ShapeType.roundRect, {
-        x: 8.70 + 4.03 - 0.92, y: ky + 0.10, w: 0.78, h: 0.20,
+        x: 8.75, y: ry + 0.30, w: 3.95, h: 0.09,
         rectRadius: 0.04,
-        fill: { color: this.h(k.badgeColor) },
+        fill: { color: this.h(C.blue_bg) },
         line: { width: 0 }
       });
-      slide.addText(k.status, {
-        x: 8.70 + 4.03 - 0.92, y: ky + 0.10, w: 0.78, h: 0.20,
-        fontSize: 7, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
-      });
-      // Score & Desc
-      slide.addText(`${k.score}  •  ${k.desc}`, {
-        x: 8.85, y: ky + 0.40, w: 3.73, h: 0.32,
-        fontSize: 8.5, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
+      // Progress fill bar
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 8.75, y: ry + 0.30, w: 3.95 * r.pct, h: 0.09,
+        rectRadius: 0.04,
+        fill: { color: this.h(r.color) },
+        line: { width: 0 }
       });
     });
 
-    // 4. Bottom Full-Width Procurement Ribbon
+    // 4. Bottom: GLOBAL SUPPLY CHAIN PROCUREMENT KPI BENCHMARKS (Stage 5)
     slide.addShape(pptx.ShapeType.roundRect, {
-      x: 0.40, y: 6.08, w: 12.53, h: 1.16,
+      x: 0.40, y: 6.08, w: 12.53, h: 1.10,
       rectRadius: 0.08,
       fill: { color: this.h(C.card_bg) },
       line: { color: this.h(C.card_bd), width: 1.2 }
     });
-    slide.addText("PHILIPS SUPPLY CHAIN & PROCUREMENT EXCELLENCE  •  E2E METRICS", {
-      x: 0.64, y: 6.16, w: 6.00, h: 0.22,
+    slide.addText("GLOBAL SUPPLY CHAIN PROCUREMENT KPI BENCHMARKS", {
+      x: 0.64, y: 6.16, w: 8.00, h: 0.22,
       fontSize: 8.5, bold: true, color: this.h(C.text_muted), fontFace: "Calibri", margin: 0
     });
-    // KPI 1
-    slide.addText(vCard.on_time_delivery || "98.2%", {
-      x: 0.64, y: 6.42, w: 1.60, h: 0.48,
+
+    // Metric 1: €1.2B+
+    slide.addText("€1.2B+", {
+      x: 0.64, y: 6.38, w: 1.80, h: 0.50,
+      fontSize: 22, bold: true, color: this.h(C.teal_accent), fontFace: "Calibri", margin: 0
+    });
+    slide.addText("Annual Spend Processed", {
+      x: 2.30, y: 6.44, w: 2.40, h: 0.40,
+      fontSize: 9.5, bold: true, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
+    });
+
+    // Metric 2: 100%
+    slide.addText("100%", {
+      x: 5.10, y: 6.38, w: 1.40, h: 0.50,
       fontSize: 22, bold: true, color: this.h(C.blue_accent), fontFace: "Calibri", margin: 0
     });
-    slide.addText("PO-to-Receipt On-Time SLA\nGlobal Supplier Benchmark", {
-      x: 2.10, y: 6.46, w: 2.40, h: 0.44,
-      fontSize: 8.5, bold: true, color: this.h(C.teal_accent), fontFace: "Calibri", margin: 0
+    slide.addText("Electronic Invoicing Compliance", {
+      x: 6.35, y: 6.44, w: 2.40, h: 0.40,
+      fontSize: 9.5, bold: true, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
     });
-    // KPI 2
-    slide.addText(vCard.match_accuracy || "99.1%", {
-      x: 4.80, y: 6.42, w: 1.60, h: 0.48,
-      fontSize: 22, bold: true, color: this.h(C.amber_accent), fontFace: "Calibri", margin: 0
+
+    // Metric 3: -4.5d
+    slide.addText("-4.5d", {
+      x: 9.10, y: 6.38, w: 1.40, h: 0.50,
+      fontSize: 22, bold: true, color: this.h(C.stripe || C.amber_accent), fontFace: "Calibri", margin: 0
     });
-    slide.addText("3-Way Matching Line Accuracy\nAutomated Tolerance Clear", {
-      x: 5.85, y: 6.46, w: 2.40, h: 0.44,
-      fontSize: 8.5, bold: true, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
-    });
-    // KPI 3
-    slide.addText(vCard.touchless_rate || "91.4%", {
-      x: 8.60, y: 6.42, w: 1.60, h: 0.48,
-      fontSize: 22, bold: true, color: this.h(C.rose_accent), fontFace: "Calibri", margin: 0
-    });
-    slide.addText("Touchless Invoice Processing Rate\nZero Human Touch", {
-      x: 9.65, y: 6.46, w: 2.80, h: 0.44,
-      fontSize: 8.5, bold: true, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
+    slide.addText("Faster Vendor Payment Velocity", {
+      x: 10.15, y: 6.44, w: 2.50, h: 0.40,
+      fontSize: 9.5, bold: true, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
     });
   }
 
