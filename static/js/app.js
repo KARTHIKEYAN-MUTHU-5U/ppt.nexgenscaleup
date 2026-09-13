@@ -58,13 +58,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch("/api/health", { method: "GET", signal: AbortSignal.timeout(2000) });
       if (res.ok) {
         state.isLocalBackendAvailable = true;
-        connectionStatus.innerHTML = '<span class="status-indicator online"></span> Native Engine (DrawingML + OpenXML COM)';
+        connectionStatus.innerHTML = '<span class="status-indicator online"></span> Native Engine';
+        connectionStatus.title = "Connected to Native Python DrawingML + OpenXML COM Engine";
         connectionStatus.className = "conn-badge online";
         return;
       }
     } catch (e) {}
     state.isLocalBackendAvailable = false;
-    connectionStatus.innerHTML = '<span class="status-indicator cloud"></span> Standalone Engine (Client PptxGenJS Engine)';
+    connectionStatus.innerHTML = '<span class="status-indicator cloud"></span> Client Engine';
+    connectionStatus.title = "Running Standalone Client-Side PptxGenJS + JSZip Engine";
     connectionStatus.className = "conn-badge cloud";
   }
 

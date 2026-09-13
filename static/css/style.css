@@ -73,54 +73,84 @@ body {
 }
 
 /* ==========================================================================
-   TOP NAVBAR
+   TOP GLOBAL EXECUTIVE HEADER
    ========================================================================== */
-.app-navbar {
+.studio-header, .app-navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
-  height: 56px;
-  background: #111315;
-  border-bottom: 1px solid var(--border-default);
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  background: #0E1013;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
   z-index: 100;
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
 }
 
-.brand-section {
+.header-left {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
 }
 
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  cursor: default;
+  user-select: none;
+}
+
 .brand-icon {
   width: 32px;
   height: 32px;
-  background: var(--accent);
+  background: linear-gradient(135deg, rgba(255, 106, 61, 0.16), rgba(229, 169, 60, 0.12));
+  border: 1px solid rgba(255, 106, 61, 0.35);
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 1rem;
-  color: #fff;
+  flex-shrink: 0;
+}
+
+.brand-text-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .brand-title {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #FFFFFF;
   letter-spacing: 0.3px;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .brand-tagline {
-  font-size: 0.68rem;
+  font-size: 0.60rem;
   font-family: var(--font-mono);
   color: var(--text-tertiary);
-  letter-spacing: 0.2px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.header-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 /* TEMPLATE SELECTOR */
@@ -182,23 +212,26 @@ option {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+  padding: 0 10px;
+  height: 32px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  font-size: 0.70rem;
   font-family: var(--font-mono);
   font-weight: 500;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  background: #14161B;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .conn-badge.online {
-  border-color: rgba(52, 211, 153, 0.2);
+  border-color: rgba(52, 211, 153, 0.25);
   color: var(--success);
 }
 
 .conn-badge.cloud {
-  border-color: var(--border-default);
+  border-color: rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
 }
 
@@ -214,23 +247,26 @@ option {
 }
 
 .status-indicator.cloud {
-  background: var(--text-tertiary);
+  background: #E5A93C;
+  box-shadow: 0 0 6px rgba(229, 169, 60, 0.4);
 }
 
 /* ==========================================================================
-   BUTTONS — flat, no gradients, no glow
+   BUTTONS — flat, executive, zero slop
    ========================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 0 12px;
+  height: 32px;
+  box-sizing: border-box;
   border-radius: 6px;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
   border: 1px solid transparent;
   white-space: nowrap;
   outline: none;
@@ -340,7 +376,7 @@ option {
 .studio-layout {
   display: grid;
   grid-template-columns: 400px 1fr;
-  height: calc(100vh - 56px);
+  height: calc(100vh - 52px);
   overflow: hidden;
 }
 
@@ -990,15 +1026,19 @@ textarea.input-dark {
    ========================================================================== */
 .custom-template-selector {
   position: relative;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .template-selector-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  padding: 6px 14px;
+  gap: 8px;
+  background: #14161B;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 10px;
+  height: 34px;
+  box-sizing: border-box;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1007,18 +1047,19 @@ textarea.input-dark {
 
 .template-selector-btn:hover {
   background: var(--bg-elevated);
-  border-color: var(--border-hover);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .template-badge-pill {
   background: var(--accent);
   color: #FFFFFF;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 800;
   font-family: var(--font-mono);
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 4px;
   letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .template-label-block {
@@ -1026,31 +1067,35 @@ textarea.input-dark {
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
+  min-width: 0;
 }
 
 .template-domain-badge {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
   font-family: var(--font-mono);
   color: var(--accent);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  line-height: 1;
 }
 
 .template-name-text {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
-  max-width: 320px;
+  max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .chevron-icon {
   color: var(--text-secondary);
   transition: transform 0.2s ease;
-  margin-left: 4px;
+  margin-left: 2px;
+  flex-shrink: 0;
 }
 
 .custom-template-selector.open .chevron-icon {
@@ -1604,5 +1649,35 @@ body.theater-mode .btn-exit-theater {
 .slide-canvas.focus-stage-5 [data-stage="5"] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 10px rgba(255, 106, 61, 0.5));
+}
+
+/* ==========================================================================
+   HEADER RESPONSIVE BREAKPOINTS (STRICT SINGLE ROW, ZERO MULTI-LINE GAPS)
+   ========================================================================== */
+@media (max-width: 1320px) {
+  .brand-tagline {
+    display: none;
+  }
+  .template-name-text {
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 1140px) {
+  .conn-badge {
+    display: none;
+  }
+  .template-name-text {
+    max-width: 190px;
+  }
+}
+
+@media (max-width: 960px) {
+  .template-domain-badge {
+    display: none;
+  }
+  .template-name-text {
+    max-width: 140px;
+  }
 }
 
