@@ -10,24 +10,51 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=5.4">
+  <link rel="stylesheet" href="css/style.css?v=6.0">
 </head>
 <body>
 
   <!-- Top Global Header -->
   <header class="studio-header">
-    <div class="brand-section">
-      <div class="brand-icon">N</div>
-      <div>
-        <div class="brand-title">NexGen Slide Studio</div>
-        <div class="brand-tagline">philips executive suite</div>
+    <div class="header-left">
+      <div class="brand-section">
+        <div class="brand-icon">N</div>
+        <div>
+          <div class="brand-title">NexGen Slide Studio</div>
+          <div class="brand-tagline">philips executive suite</div>
+        </div>
       </div>
+
+      <!-- Collapsible Sidebar Toggle -->
+      <button type="button" id="btnToggleSidebar" class="btn-icon-studio" title="Toggle Controls Sidebar [Key: []">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
     </div>
 
-    <!-- Center Template Switcher with 10 Philips Executive Templates -->
-    <div class="template-selector-wrapper">
-      <label for="templateSelect" class="template-label">Template:</label>
-      <select id="templateSelect" class="template-select">
+    <!-- Center: Custom Dark Executive Template Selector (Zero White Title Bars) -->
+    <div class="custom-template-selector" id="customTemplateDropdown">
+      <button type="button" class="template-selector-btn" id="customDropdownTrigger" title="Switch Executive Template">
+        <span class="template-badge-pill" id="selectedTemplatePill">01</span>
+        <div class="template-label-block">
+          <span class="template-domain-badge" id="selectedTemplateDomain">OPERATIONS ARCHITECTURE</span>
+          <span class="template-name-text" id="selectedTemplateName">01. ICA Reconciliation As-Is Blueprint (Philips Flagship)</span>
+        </div>
+        <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      <!-- Custom Dark Dropdown Menu Popover -->
+      <div class="custom-template-menu" id="customDropdownMenu" style="display: none;">
+        <div class="template-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="templateSearchInput" placeholder="Filter 15 executive templates by name..." autocomplete="off">
+        </div>
+        <div class="template-options-list" id="templateOptionsList">
+          <!-- Populated dynamically with clean dark cards and warm coral headers -->
+        </div>
+      </div>
+
+      <!-- Synchronized Hidden Native Select (For form state & backward compatibility) -->
+      <select id="templateSelect" class="template-select" style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px;">
         <optgroup label="Philips Operations Architecture">
           <option value="process_flow">01. ICA Reconciliation As-Is Blueprint (Philips Flagship)</option>
           <option value="financial_close">02. Month-End Financial Close & Settlement Pipeline</option>
@@ -54,12 +81,19 @@
       </select>
     </div>
 
-    <!-- Top Action Buttons -->
+    <!-- Top Action Buttons (Decongested) -->
     <div class="nav-actions">
       <div id="connectionStatus" class="conn-badge cloud">
         <span class="status-indicator cloud"></span> Ready
       </div>
 
+      <!-- Theater / Presentation Mode -->
+      <button type="button" id="btnTheaterMode" class="btn btn-secondary" title="Toggle Presentation / Theater Mode [Key: F]">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span>Theater</span>
+      </button>
+
+      <!-- Project Save & Load -->
       <div class="dropdown-menu-wrapper">
         <button type="button" id="btnProjectOptions" class="btn btn-secondary" title="Project Save & Load">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -83,15 +117,46 @@
         </div>
       </div>
 
-      <button type="button" id="btnDownloadPng" class="btn btn-secondary" title="Export 1080p High-Resolution PNG">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <span>Export 1080p (.PNG)</span>
-      </button>
+      <!-- Export Presentation Dropdown (Master PPTX, Morph Deck, Benchmark Deck, PNG) -->
+      <div class="dropdown-menu-wrapper">
+        <button type="button" id="btnExportMenu" class="btn btn-primary btn-export-glow" title="Export Executive Presentation">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export Deck</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="exportDropdownMenu" class="dropdown-popover export-popover" style="display: none;">
+          <button type="button" id="btnDownloadPptx" class="dropdown-item export-option">
+            <div class="export-opt-icon pptx-icon">PPTX</div>
+            <div class="export-opt-text">
+              <div class="export-opt-title">Download Master Presentation (.pptx)</div>
+              <div class="export-opt-sub">Unified DrawingML shapes, zero collision, exact mathematical margins</div>
+            </div>
+          </button>
+          <button type="button" id="btnDownloadMorphPptx" class="dropdown-item export-option">
+            <div class="export-opt-icon morph-icon">5-STG</div>
+            <div class="export-opt-text">
+              <div class="export-opt-title">Download 5-Stage Morph Deck (.pptx)</div>
+              <div class="export-opt-sub">Progressive multi-slide deck with native slide-by-slide flow reveal</div>
+            </div>
+          </button>
+          <button type="button" id="btnDownloadBenchmarkPptx" class="dropdown-item export-option flagship-option">
+            <div class="export-opt-icon gold-icon">5.2M</div>
+            <div class="export-opt-text">
+              <div class="export-opt-title">Download Flagship Benchmark Deck (5.2 MB)</div>
+              <div class="export-opt-sub">Exact reference master with 502 OpenXML animation timing nodes &amp; connectors</div>
+            </div>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" id="btnDownloadPng" class="dropdown-item export-option">
+            <div class="export-opt-icon png-icon">PNG</div>
+            <div class="export-opt-text">
+              <div class="export-opt-title">Export High-Res 1080p Image (.png)</div>
+              <div class="export-opt-sub">Pixel-perfect mathematical vector rasterization</div>
+            </div>
+          </button>
+        </div>
+      </div>
 
-      <button type="button" id="btnDownloadPptx" class="btn btn-primary" title="Compile and Download Native PowerPoint Presentation">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Download Executive .PPTX</span>
-      </button>
     </div>
   </header>
 
@@ -228,6 +293,56 @@
         <div id="slideCanvas" class="slide-canvas">
           <!-- Rendered dynamically by SlideCanvasRenderer -->
         </div>
+
+        <!-- Floating Exit Theater Button (Visible in Theater / Presentation Mode) -->
+        <button type="button" id="btnExitTheater" class="btn-exit-theater" title="Exit Presentation Mode [Key: Esc or F]">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Exit Theater (Esc)</span>
+        </button>
+
+        <!-- Floating Bottom Executive Flow Control Deck (Decongested Interactive Sequence) -->
+        <div id="flowControlDeck" class="flow-control-deck">
+          <div class="flow-deck-left">
+            <button type="button" id="btnFlowPlay" class="btn-flow-action btn-flow-play" title="Play / Pause Flow Animation [Space]">
+              <svg id="iconFlowPlay" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg id="iconFlowPause" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <span id="labelFlowPlay">Play Flow</span>
+            </button>
+            <button type="button" id="btnFlowPrev" class="btn-flow-step" title="Previous Stage [Left Arrow]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" id="btnFlowNext" class="btn-flow-step" title="Next Stage [Right Arrow]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <div class="flow-deck-divider"></div>
+
+          <!-- Stage Selection Pills (1 to 5 + All) -->
+          <div class="flow-stage-pills" id="flowStagePills">
+            <button type="button" class="flow-stage-pill active" data-stage="0" title="All Stages Active">ALL</button>
+            <button type="button" class="flow-stage-pill" data-stage="1" title="Stage 1: Ingestion &amp; Extract">S1 Ingestion</button>
+            <button type="button" class="flow-stage-pill" data-stage="2" title="Stage 2: Filter &amp; Open-Item Delta">S2 Filter</button>
+            <button type="button" class="flow-stage-pill" data-stage="3" title="Stage 3: Decision &amp; Triage Root">S3 Triage</button>
+            <button type="button" class="flow-stage-pill" data-stage="4" title="Stage 4: Action &amp; Remediation Tracks">S4 Action</button>
+            <button type="button" class="flow-stage-pill" data-stage="5" title="Stage 5: Governance &amp; Escalation SLA">S5 Governance</button>
+          </div>
+
+          <div class="flow-deck-divider"></div>
+
+          <!-- Flow Scrubber & Speed -->
+          <div class="flow-deck-right">
+            <div class="flow-scrubber-wrap">
+              <input type="range" id="flowScrubber" min="0" max="100" value="100" class="flow-range-input" title="Scrub Animation Flow">
+              <span id="flowStageNameBadge" class="flow-stage-label">All Stages Active</span>
+            </div>
+            <button type="button" id="btnFlowSpeed" class="btn-flow-speed" title="Toggle Playback Speed">1.0x</button>
+            <button type="button" id="btnFlowReset" class="btn-flow-step" title="Reset Viewport &amp; Animation">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -260,10 +375,10 @@
   <script src="js/vendor/html2canvas.min.js"></script>
 
   <!-- Application Scripts with cache-busting -->
-  <script src="js/templates_data.js?v=5.4"></script>
-  <script src="js/canvas_renderer.js?v=5.4"></script>
-  <script src="js/pptx_client_generator.js?v=5.4"></script>
-  <script src="js/app.js?v=5.4"></script>
+  <script src="js/templates_data.js?v=6.0"></script>
+  <script src="js/canvas_renderer.js?v=6.0"></script>
+  <script src="js/pptx_client_generator.js?v=6.0"></script>
+  <script src="js/app.js?v=6.0"></script>
 
 </body>
 </html>

@@ -54,6 +54,20 @@ class SlideCanvasRenderer {
     };
   }
 
+  escapeXml(str) {
+    if (str == null) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+  }
+
+  escape(str) {
+    return this.escapeXml(str);
+  }
+
   setNodeClickListener(cb) {
     this.onNodeClickCallback = cb;
   }
@@ -267,61 +281,65 @@ class SlideCanvasRenderer {
 
         <!-- 4. COLUMN 1: INGESTION PIPELINE (X: 68, W: 200) -->
         <g class="anim-grp anim-p2">
-          <!-- Card 1: Accounting Specialist -->
-          <g class="interactive-card" data-node-id="node_spec" cursor="pointer">
-            <rect x="68" y="152" width="200" height="70" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)" />
-            <text x="80" y="174" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.text_primary}">${this.escape(ing[0]?.title || "Accounting Specialist")}</text>
-            <text x="80" y="190" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">${this.escape(ing[0]?.sub || "Philips Accounting Lead")}</text>
-            <circle cx="236" cy="187" r="22" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
-            <image href="emotes/${ing[0]?.emote || 'spec'}.gif" x="214" y="165" width="44" height="44" />
-          </g>
-          <line x1="168" y1="222" x2="168" y2="252" stroke="${C.blue_accent}" stroke-width="2.78" marker-end="url(#arr-blu)" />
+          <!-- Stage 1 Nodes -->
+          <g data-stage="1">
+            <!-- Card 1: Accounting Specialist -->
+            <g class="interactive-card" data-node-id="node_spec" cursor="pointer">
+              <rect x="68" y="152" width="200" height="70" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)" />
+              <text x="80" y="174" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.text_primary}">${this.escape(ing[0]?.title || "Accounting Specialist")}</text>
+              <text x="80" y="190" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">${this.escape(ing[0]?.sub || "Philips Accounting Lead")}</text>
+              <circle cx="236" cy="187" r="22" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
+              <image href="emotes/${ing[0]?.emote || 'spec'}.gif" x="214" y="165" width="44" height="44" />
+            </g>
+            <line x1="168" y1="222" x2="168" y2="252" stroke="${C.blue_accent}" stroke-width="2.78" marker-end="url(#arr-blu)" />
 
-          <!-- Card 2: Extract Open-Item Report -->
-          <g class="interactive-card" data-node-id="node_qlik" cursor="pointer">
-            <rect x="68" y="258" width="200" height="126" rx="8" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
-            <rect x="68" y="258" width="6" height="126" fill="${C.blue_accent}" />
-            <text x="80" y="280" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.blue_accent}">${this.escape(ing[1]?.title || "Extract Open-Item Report")}</text>
-            <text x="80" y="296" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_secondary}">Qlik Sense extract</text>
-            <text x="80" y="310" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_secondary}">Exclude reciprocal matched items.</text>
-            <circle cx="234" cy="321" r="24" fill="${C.card_bg}" filter="url(#shadow-halo)" />
-            <image href="emotes/${ing[1]?.emote || 'qlik'}.gif" x="210" y="297" width="48" height="48" />
+            <!-- Card 2: Extract Open-Item Report -->
+            <g class="interactive-card" data-node-id="node_qlik" cursor="pointer">
+              <rect x="68" y="258" width="200" height="126" rx="8" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
+              <rect x="68" y="258" width="6" height="126" fill="${C.blue_accent}" />
+              <text x="80" y="280" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.blue_accent}">${this.escape(ing[1]?.title || "Extract Open-Item Report")}</text>
+              <text x="80" y="296" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_secondary}">Qlik Sense extract</text>
+              <text x="80" y="310" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_secondary}">Exclude reciprocal matched items.</text>
+              <circle cx="234" cy="321" r="24" fill="${C.card_bg}" filter="url(#shadow-halo)" />
+              <image href="emotes/${ing[1]?.emote || 'qlik'}.gif" x="210" y="297" width="48" height="48" />
+            </g>
+            <line x1="168" y1="384" x2="168" y2="416" stroke="${C.blue_accent}" stroke-width="2.78" marker-end="url(#arr-blu)" />
           </g>
-          <line x1="168" y1="384" x2="168" y2="416" stroke="${C.blue_accent}" stroke-width="2.78" marker-end="url(#arr-blu)" />
 
-          <!-- Card 3: Filter by Company Code -->
-          <g class="interactive-card" data-node-id="node_filter" cursor="pointer">
-            <rect x="68" y="422" width="200" height="64" rx="8" fill="${C.card_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
-            <text x="80" y="444" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.text_primary}">${this.escape(ing[2]?.title || "Filter by Company Code")}</text>
-            <text x="80" y="460" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">${this.escape(ing[2]?.sub || "Scope validation by entity code")}</text>
-            <circle cx="239" cy="454" r="19" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
-            <image href="emotes/${ing[2]?.emote || 'filter'}.gif" x="220" y="435" width="38" height="38" />
-          </g>
-          <line x1="168" y1="486" x2="168" y2="518" stroke="${C.blue_accent}" stroke-width="2.78" marker-end="url(#arr-blu)" />
+          <!-- Stage 2 Nodes -->
+          <g data-stage="2">
+            <!-- Card 3: Filter by Company Code -->
+            <g class="interactive-card" data-node-id="node_filter" cursor="pointer">
+              <rect x="68" y="422" width="200" height="64" rx="8" fill="${C.card_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
+              <text x="80" y="444" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.text_primary}">${this.escape(ing[2]?.title || "Filter by Company Code")}</text>
+              <text x="80" y="460" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">${this.escape(ing[2]?.sub || "Scope validation by entity code")}</text>
+              <circle cx="239" cy="454" r="19" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
+              <image href="emotes/${ing[2]?.emote || 'filter'}.gif" x="220" y="435" width="38" height="38" />
+            </g>
+            <line x1="168" y1="486" x2="168" y2="518" stroke="${C.blue_accent}" stroke-width="2.78" marker-end="url(#arr-blu)" />
 
-          <!-- Card 4: List of open items with classification -->
-          <g class="interactive-card" data-node-id="node_list" cursor="pointer">
-            <rect x="68" y="524" width="200" height="182" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)" />
-            <text x="80" y="546" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.text_primary}">List of open items</text>
-            <text x="80" y="560" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.blue_accent}">with classification</text>
-            <text x="80" y="578" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">Consolidated open delta ready</text>
-            <text x="80" y="590" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">for triage taxonomy.</text>
-            <circle cx="233" cy="615" r="25" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
-            <image href="emotes/${ing[3]?.emote || 'list'}.gif" x="208" y="590" width="50" height="50" />
+            <!-- Card 4: List of open items with classification -->
+            <g class="interactive-card" data-node-id="node_list" cursor="pointer">
+              <rect x="68" y="524" width="200" height="182" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)" />
+              <text x="80" y="546" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.text_primary}">List of open items</text>
+              <text x="80" y="560" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.blue_accent}">with classification</text>
+              <text x="80" y="578" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">Consolidated open delta ready</text>
+              <text x="80" y="590" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">for triage taxonomy.</text>
+              <circle cx="233" cy="615" r="25" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
+              <image href="emotes/${ing[3]?.emote || 'list'}.gif" x="208" y="590" width="50" height="50" />
+            </g>
           </g>
         </g>
 
-        <!-- 5. DECISION FORK CONNECTORS (2.0 pt DrawingML Precision) -->
-        <g class="anim-grp anim-p3">
+        <!-- 5. DECISION FORK CONNECTORS & ROOT CAUSES (Stage 3) -->
+        <g class="anim-grp anim-p3" data-stage="3">
           <line x1="268" y1="540" x2="288" y2="540" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="288" y1="275" x2="288" y2="654" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="288" y1="275" x2="302" y2="275" stroke="${C.purple_accent}" stroke-width="2.78" marker-end="url(#arr-pur)" />
           <line x1="288" y1="500" x2="302" y2="500" stroke="${C.purple_accent}" stroke-width="2.78" marker-end="url(#arr-pur)" />
           <line x1="288" y1="654" x2="302" y2="654" stroke="${C.purple_accent}" stroke-width="2.78" marker-end="url(#arr-pur)" />
-        </g>
 
-        <!-- 6. TRACK 1: Posting not found (X: 308, Y: 220, W: 178) -->
-        <g class="anim-grp anim-p3">
+          <!-- Root 1: Posting not found -->
           <g class="interactive-card" data-node-id="node_pnf" cursor="pointer">
             <rect x="308" y="220" width="178" height="110" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)" />
             <text x="320" y="244" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.text_primary}">${this.escape(df.root?.title || "Posting not found")}</text>
@@ -330,6 +348,27 @@ class SlideCanvasRenderer {
             <image href="emotes/${df.root?.emote || 'pnf'}.gif" x="432" y="253" width="44" height="44" />
           </g>
 
+          <!-- Root 2: AP-AR Sign Issue -->
+          <g class="interactive-card" data-node-id="node_ap_ar" cursor="pointer">
+            <rect x="308" y="446" width="194" height="108" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1" filter="url(#shadow-card)" />
+            <text x="320" y="468" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.amber_accent}">Investigate AP-AR sign issue</text>
+            <text x="320" y="484" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">AR cleared, AP remains open (+/−)</text>
+            <circle cx="470" cy="500" r="22" fill="${C.amber_bg}" filter="url(#shadow-halo)" />
+            <image href="emotes/${df.track_2?.cause?.emote || 'ap_ar'}.gif" x="448" y="478" width="44" height="44" />
+          </g>
+
+          <!-- Root 3: Cash to allocated -->
+          <g class="interactive-card" data-node-id="node_cash" cursor="pointer">
+            <rect x="308" y="600" width="194" height="108" rx="8" fill="${C.card_bg}" stroke="${C.rose_border}" stroke-width="1" filter="url(#shadow-card)" />
+            <text x="320" y="622" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.rose_accent}">Cash to allocated / AP paid</text>
+            <text x="320" y="638" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">AR unapplied in reciprocal ERP</text>
+            <circle cx="470" cy="654" r="22" fill="${C.rose_bg}" filter="url(#shadow-halo)" />
+            <image href="emotes/${df.track_3?.cause?.emote || 'cash'}.gif" x="448" y="632" width="44" height="44" />
+          </g>
+        </g>
+
+        <!-- 6. TRACK ACTIONS & REMEDIATION (Stage 4) -->
+        <g class="anim-grp anim-p4" data-stage="4">
           <!-- Sub-fork to 1A and 1B -->
           <line x1="486" y1="275" x2="502" y2="275" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="502" y1="203" x2="502" y2="347" stroke="${C.purple_accent}" stroke-width="2.78" />
@@ -371,19 +410,9 @@ class SlideCanvasRenderer {
             <circle cx="851" cy="347" r="21" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
             <image href="emotes/${df.sub_branch_1b?.action?.emote || 'inv'}.gif" x="830" y="326" width="42" height="42" />
           </g>
-        </g>
 
-        <!-- 7. TRACK 2: AP-AR Sign Issue -> Review (Y: 446) -->
-        <g class="anim-grp anim-p4">
-          <g class="interactive-card" data-node-id="node_ap_ar" cursor="pointer">
-            <rect x="308" y="446" width="194" height="108" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1" filter="url(#shadow-card)" />
-            <text x="320" y="468" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.amber_accent}">Investigate AP-AR sign issue</text>
-            <text x="320" y="484" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">AR cleared, AP remains open (+/−)</text>
-            <circle cx="470" cy="500" r="22" fill="${C.amber_bg}" filter="url(#shadow-halo)" />
-            <image href="emotes/${df.track_2?.cause?.emote || 'ap_ar'}.gif" x="448" y="478" width="44" height="44" />
-          </g>
+          <!-- Track 2 Action: Review & Analyze -->
           <line x1="502" y1="500" x2="532" y2="500" stroke="${C.amber_accent}" stroke-width="2.78" marker-end="url(#arr-amb)" />
-
           <g class="interactive-card" data-node-id="node_review" cursor="pointer">
             <rect x="538" y="446" width="248" height="108" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1" filter="url(#shadow-card)" />
             <text x="550" y="468" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.amber_accent}">Review &amp; Analyze Issue</text>
@@ -391,19 +420,9 @@ class SlideCanvasRenderer {
             <circle cx="754" cy="500" r="22" fill="${C.amber_bg}" filter="url(#shadow-halo)" />
             <image href="emotes/${df.track_2?.action?.emote || 'review'}.gif" x="732" y="478" width="44" height="44" />
           </g>
-        </g>
 
-        <!-- 8. TRACK 3: Cash to allocated -> Waiting (Y: 600) -->
-        <g class="anim-grp anim-p4">
-          <g class="interactive-card" data-node-id="node_cash" cursor="pointer">
-            <rect x="308" y="600" width="194" height="108" rx="8" fill="${C.card_bg}" stroke="${C.rose_border}" stroke-width="1" filter="url(#shadow-card)" />
-            <text x="320" y="622" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.rose_accent}">Cash to allocated / AP paid</text>
-            <text x="320" y="638" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">AR unapplied in reciprocal ERP</text>
-            <circle cx="470" cy="654" r="22" fill="${C.rose_bg}" filter="url(#shadow-halo)" />
-            <image href="emotes/${df.track_3?.cause?.emote || 'cash'}.gif" x="448" y="632" width="44" height="44" />
-          </g>
+          <!-- Track 3 Action: Waiting for Counterparty -->
           <line x1="502" y1="654" x2="532" y2="654" stroke="${C.rose_accent}" stroke-width="2.78" marker-end="url(#arr-ros)" />
-
           <g class="interactive-card" data-node-id="node_waiting" cursor="pointer">
             <rect x="538" y="600" width="248" height="108" rx="8" fill="${C.card_bg}" stroke="${C.rose_border}" stroke-width="1" filter="url(#shadow-card)" />
             <text x="550" y="622" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.1" font-weight="bold" fill="${C.rose_accent}">Waiting for Counterparty Action</text>
@@ -413,18 +432,16 @@ class SlideCanvasRenderer {
           </g>
         </g>
 
-        <!-- 9. CONVERGENCE BUS TO GOVERNANCE (X: 902, Y: 203 to 654) -->
-        <g class="anim-grp anim-p4">
+        <!-- 7. CONVERGENCE BUS & GOVERNANCE SLA (Stage 5) -->
+        <g class="anim-grp anim-p5" data-stage="5">
+          <!-- Convergence Bus lines -->
           <line x1="882" y1="203" x2="902" y2="203" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="882" y1="347" x2="902" y2="347" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="786" y1="500" x2="902" y2="500" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="786" y1="654" x2="902" y2="654" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="902" y1="203" x2="902" y2="654" stroke="${C.purple_accent}" stroke-width="2.78" />
           <line x1="902" y1="212" x2="922" y2="212" stroke="${C.purple_accent}" stroke-width="2.78" marker-end="url(#arr-pur)" />
-        </g>
 
-        <!-- 10. COLUMN 3: GOVERNANCE & ESCALATION (X: 928, W: 345) -->
-        <g class="anim-grp anim-p5">
           <!-- Card 1: Reconciliation Discrepancy -->
           <g class="interactive-card" data-node-id="node_gap" cursor="pointer">
             <rect x="928" y="152" width="345" height="120" rx="8" fill="${C.rose_bg}" stroke="${C.rose_border}" stroke-width="1" filter="url(#shadow-card)" />
@@ -476,6 +493,31 @@ class SlideCanvasRenderer {
             <text x="1030" y="654" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="${C.text_primary}">Entity Finance Director</text>
             <text x="942" y="668" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.3" fill="${C.text_muted}">Executive sign-off; post un-cleared accrual &amp; note.</text>
           </g>
+        </g>
+
+        <!-- ANIMATED FLOW TRACERS (DrawingML Pulsing Information Highway) -->
+        <g class="flow-tracers-layer" pointer-events="none">
+          <!-- Ingestion Column Vertical Flow -->
+          <line x1="168" y1="187" x2="168" y2="615" class="flow-tracer-line" />
+          <!-- Fork to Spine -->
+          <path d="M 268 540 L 288 540 L 288 275 L 308 275" fill="none" class="flow-tracer-line" />
+          <line x1="288" y1="500" x2="308" y2="500" class="flow-tracer-line" />
+          <line x1="288" y1="654" x2="308" y2="654" class="flow-tracer-line" />
+          <!-- Track 1 Sub-branches -->
+          <path d="M 486 275 L 502 275 L 502 203 L 518 203" fill="none" class="flow-tracer-line" />
+          <path d="M 502 275 L 502 347 L 518 347" fill="none" class="flow-tracer-line" />
+          <line x1="666" y1="203" x2="692" y2="203" class="flow-tracer-line" />
+          <line x1="666" y1="347" x2="692" y2="347" class="flow-tracer-line" />
+          <!-- Track 2 & 3 -->
+          <line x1="502" y1="500" x2="538" y2="500" class="flow-tracer-line" />
+          <line x1="502" y1="654" x2="538" y2="654" class="flow-tracer-line" />
+          <!-- Convergence to Governance -->
+          <path d="M 882 203 L 902 203 L 902 212 L 928 212" fill="none" class="flow-tracer-line" />
+          <path d="M 882 347 L 902 347 L 902 212" fill="none" class="flow-tracer-line" />
+          <path d="M 786 500 L 902 500 L 902 212" fill="none" class="flow-tracer-line" />
+          <path d="M 786 654 L 902 654 L 902 212" fill="none" class="flow-tracer-line" />
+          <!-- Governance Vertical SLA Flow -->
+          <line x1="1100" y1="212" x2="1100" y2="480" class="flow-tracer-line" />
         </g>
       </svg>
     `;
@@ -1766,4 +1808,61 @@ class SlideCanvasRenderer {
       </svg>
     `;
   }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FLOW ANIMATION & MULTI-STAGE PROGRESSION CONTROLLERS
+  // ══════════════════════════════════════════════════════════════════════════
+  setStage(stageNum) {
+    this.currentStage = stageNum;
+    const stageContainer = document.getElementById("slideCanvas") || this.container;
+    if (!stageContainer) return;
+
+    for (let i = 1; i <= 5; i++) {
+      stageContainer.classList.remove(`focus-stage-${i}`);
+    }
+
+    if (stageNum >= 1 && stageNum <= 5) {
+      stageContainer.classList.add(`focus-stage-${stageNum}`);
+    }
+  }
+
+  setAnimationSpeed(multiplier) {
+    this.speedMultiplier = multiplier || 1.0;
+  }
+
+  simulateAnimation(onPhaseChange, onComplete) {
+    this.resetAnimation();
+    this.isAnimating = true;
+    let stage = 1;
+    const speed = this.speedMultiplier || 1.0;
+    const intervalMs = Math.round(1400 / speed);
+
+    this.setStage(1);
+    if (onPhaseChange) onPhaseChange(1);
+
+    this.animTimer = setInterval(() => {
+      stage++;
+      if (stage <= 5) {
+        this.setStage(stage);
+        if (onPhaseChange) onPhaseChange(stage);
+      } else {
+        this.setStage(0);
+        if (onPhaseChange) onPhaseChange(0);
+        this.isAnimating = false;
+        clearInterval(this.animTimer);
+        this.animTimer = null;
+        if (onComplete) onComplete();
+      }
+    }, intervalMs);
+  }
+
+  resetAnimation() {
+    if (this.animTimer) {
+      clearInterval(this.animTimer);
+      this.animTimer = null;
+    }
+    this.isAnimating = false;
+    this.setStage(0);
+  }
 }
+

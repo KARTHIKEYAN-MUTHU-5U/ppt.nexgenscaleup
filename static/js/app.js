@@ -81,6 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
       activeTemplateBadge.textContent = cfg.name.split("|")[0].trim();
     }
 
+    if (templateSelect && templateSelect.value !== templateId) {
+      templateSelect.value = templateId;
+    }
+
+    updateCustomDropdownHeader(templateId);
     syncInputsFromData();
     buildDynamicForm();
     renderer.render(state.currentData);
@@ -1327,12 +1332,445 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Simulator controls
-  if (btnSimulate) btnSimulate.addEventListener("click", playSimulation);
-  if (btnStepAnim) btnStepAnim.addEventListener("click", stepSimulation);
-  if (btnResetAnim) btnResetAnim.addEventListener("click", resetSimulation);
-  if (btnDownloadPptx) btnDownloadPptx.addEventListener("click", downloadPresentation);
-  if (btnDownloadPng) btnDownloadPng.addEventListener("click", exportSlidePng);
+  // ══════════════════════════════════════════════════════════════════════════
+  // CUSTOM DARK EXECUTIVE TEMPLATE DROPDOWN (ZERO WHITE TITLE BARS)
+  // ══════════════════════════════════════════════════════════════════════════
+  function updateCustomDropdownHeader(templateId) {
+    const cfg = TEMPLATES_CONFIG[templateId];
+    if (!cfg) return;
+    const num = cfg.num || "01";
+    const domain = cfg.domain || "OPERATIONS ARCHITECTURE";
+    const name = cfg.name || templateId;
+
+    const pillEl = document.getElementById("selectedTemplatePill");
+    const domainEl = document.getElementById("selectedTemplateDomain");
+    const nameEl = document.getElementById("selectedTemplateName");
+
+    if (pillEl) pillEl.textContent = num;
+    if (domainEl) domainEl.textContent = domain;
+    if (nameEl) nameEl.textContent = name;
+
+    document.querySelectorAll(".template-opt-item").forEach(item => {
+      if (item.getAttribute("data-template-id") === templateId) {
+        item.classList.add("active");
+        const checkEl = item.querySelector(".template-opt-check");
+        if (!checkEl) {
+          const chk = document.createElement("span");
+          chk.className = "template-opt-check";
+          chk.textContent = "✓";
+          item.appendChild(chk);
+        }
+      } else {
+        item.classList.remove("active");
+        const checkEl = item.querySelector(".template-opt-check");
+        if (checkEl) checkEl.remove();
+      }
+    });
+  }
+
+  function initCustomTemplateDropdown() {
+    const trigger = document.getElementById("customDropdownTrigger");
+    const menu = document.getElementById("customDropdownMenu");
+    const searchInput = document.getElementById("templateSearchInput");
+    const optionsList = document.getElementById("templateOptionsList");
+    const container = document.getElementById("customTemplateDropdown");
+
+    if (!trigger || !menu || !optionsList) return;
+
+    const categories = [
+      {
+        title: "Philips Operations Architecture",
+        templates: ["process_flow", "financial_close", "vendor_p2p"]
+      },
+      {
+        title: "Philips Strategy & Performance",
+        templates: ["strategic_roadmap", "kpi_scorecard", "swot_analysis", "budget_waterfall"]
+      },
+      {
+        title: "Philips Organization & Transformation",
+        templates: ["operating_model", "it_service", "change_mgmt", "org_chart", "project_timeline"]
+      },
+      {
+        title: "Philips Healthcare Risk & Experience",
+        templates: ["data_pipeline", "risk_compliance", "customer_journey"]
+      }
+    ];
+
+    function renderOptions(filterText = "") {
+      const q = filterText.toLowerCase().trim();
+      let html = "";
+
+      categories.forEach(cat => {
+        const filteredTemplates = cat.templates.filter(tid => {
+          const cfg = TEMPLATES_CONFIG[tid];
+          if (!cfg) return false;
+          if (!q) return true;
+          return (cfg.name && cfg.name.toLowerCase().includes(q)) ||
+                 (cfg.num && cfg.num.toLowerCase().includes(q)) ||
+                 cat.title.toLowerCase().includes(q);
+        });
+
+        if (filteredTemplates.length > 0) {
+          html += `<div class="template-opt-group-header">${cat.title}</div>`;
+          filteredTemplates.forEach(tid => {
+            const cfg = TEMPLATES_CONFIG[tid];
+            const isActive = tid === state.activeTemplateId;
+            html += `
+              <div class="template-opt-item ${isActive ? 'active' : ''}" data-template-id="${tid}">
+                <div class="template-opt-item-left">
+                  <span class="template-opt-num">${cfg.num || '01'}</span>
+                  <span class="template-opt-title">${escapeHtml(cfg.name || tid)}</span>
+                </div>
+                ${isActive ? '<span class="template-opt-check">✓</span>' : ''}
+              </div>
+            `;
+          });
+        }
+      });
+
+      if (!html) {
+        html = `<div style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: 0.78rem;">No matching templates found</div>`;
+      }
+
+      optionsList.innerHTML = html;
+
+      optionsList.querySelectorAll(".template-opt-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const tid = item.getAttribute("data-template-id");
+          if (tid) {
+            switchTemplate(tid);
+            menu.style.display = "none";
+            if (container) container.classList.remove("open");
+          }
+        });
+      });
+    }
+
+    renderOptions("");
+
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = menu.style.display !== "none";
+      menu.style.display = isOpen ? "none" : "flex";
+      if (container) container.classList.toggle("open", !isOpen);
+      if (!isOpen && searchInput) {
+        searchInput.value = "";
+        renderOptions("");
+        setTimeout(() => searchInput.focus(), 50);
+      }
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        renderOptions(e.target.value);
+      });
+      searchInput.addEventListener("click", (e) => e.stopPropagation());
+    }
+
+    document.addEventListener("click", (e) => {
+      if (container && !container.contains(e.target)) {
+        menu.style.display = "none";
+        container.classList.remove("open");
+      }
+    });
+
+    updateCustomDropdownHeader(state.activeTemplateId);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // COLLAPSIBLE SIDEBAR & THEATER / PRESENTATION MODE
+  // ══════════════════════════════════════════════════════════════════════════
+  function initWorkspaceControls() {
+    const btnToggleSidebar = document.getElementById("btnToggleSidebar");
+    const controlsSidebar = document.querySelector(".controls-sidebar");
+    const btnTheaterMode = document.getElementById("btnTheaterMode");
+    const btnExitTheater = document.getElementById("btnExitTheater");
+
+    function toggleSidebar() {
+      if (controlsSidebar) {
+        controlsSidebar.classList.toggle("collapsed");
+        document.body.classList.toggle("sidebar-collapsed", controlsSidebar.classList.contains("collapsed"));
+      }
+    }
+
+    if (btnToggleSidebar) {
+      btnToggleSidebar.addEventListener("click", toggleSidebar);
+    }
+
+    if (btnTheaterMode) {
+      btnTheaterMode.addEventListener("click", () => {
+        document.body.classList.toggle("theater-mode");
+        if (document.body.classList.contains("theater-mode")) {
+          showNotification("Theater Mode Active. Press [Esc] or [F] to exit.");
+        }
+      });
+    }
+
+    if (btnExitTheater) {
+      btnExitTheater.addEventListener("click", () => {
+        document.body.classList.remove("theater-mode");
+      });
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
+      if (e.key === "[" || e.key === "]") {
+        toggleSidebar();
+      } else if (e.key === "f" || e.key === "F") {
+        btnTheaterMode?.click();
+      } else if (e.key === "Escape") {
+        if (document.body.classList.contains("theater-mode")) {
+          document.body.classList.remove("theater-mode");
+        }
+      }
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // EXPORT PRESENTATION SUITE (MASTER, 5-STAGE MORPH, BENCHMARK 5.2M, PNG)
+  // ══════════════════════════════════════════════════════════════════════════
+  function triggerDirectDownload(url, filename) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || url.split("/").pop();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function initExportMenu() {
+    const btnExportMenu = document.getElementById("btnExportMenu");
+    const exportDropdownMenu = document.getElementById("exportDropdownMenu");
+    const btnDownloadPptx = document.getElementById("btnDownloadPptx");
+    const btnDownloadMorphPptx = document.getElementById("btnDownloadMorphPptx");
+    const btnDownloadBenchmarkPptx = document.getElementById("btnDownloadBenchmarkPptx");
+    const btnDownloadPng = document.getElementById("btnDownloadPng");
+
+    if (btnExportMenu && exportDropdownMenu) {
+      btnExportMenu.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = exportDropdownMenu.style.display !== "none";
+        exportDropdownMenu.style.display = isOpen ? "none" : "flex";
+      });
+
+      document.addEventListener("click", () => {
+        exportDropdownMenu.style.display = "none";
+      });
+    }
+
+    // 1. Download Master PPTX (Unscrambled single text frame)
+    if (btnDownloadPptx) {
+      btnDownloadPptx.addEventListener("click", () => {
+        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
+        downloadPresentation();
+      });
+    }
+
+    // 2. Download 5-Stage Morph Deck
+    if (btnDownloadMorphPptx) {
+      btnDownloadMorphPptx.addEventListener("click", async () => {
+        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
+        try {
+          if (state.activeTemplateId === "process_flow") {
+            triggerDirectDownload("exports/ICA_Reconciliation_Executive_Cinematic_Morph.pptx", "Philips_ICA_Executive_Cinematic_Morph.pptx");
+            showNotification("Downloaded 5-Stage Morph Deck (.pptx)!");
+          } else {
+            showNotification("Generating 5-Stage Progressive Deck...");
+            await ClientPptxGenerator.generateProgressiveDeck(state.currentData);
+            showNotification("Progressive build deck exported cleanly!");
+          }
+        } catch (e) {
+          alert("Error downloading morph deck: " + e.message);
+        }
+      });
+    }
+
+    // 3. Download Flagship Benchmark Deck (5.2 MB)
+    if (btnDownloadBenchmarkPptx) {
+      btnDownloadBenchmarkPptx.addEventListener("click", () => {
+        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
+        triggerDirectDownload("exports/ICA_Executive_Blueprint.pptx", "Philips_ICA_Executive_Blueprint_Benchmark.pptx");
+        showNotification("Downloaded Flagship Benchmark Deck (5.2 MB) with 502 timing nodes!");
+      });
+    }
+
+    // 4. Download 1080p PNG
+    if (btnDownloadPng) {
+      btnDownloadPng.addEventListener("click", () => {
+        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
+        exportSlidePng();
+      });
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FLOATING BOTTOM EXECUTIVE FLOW CONTROL DECK
+  // ══════════════════════════════════════════════════════════════════════════
+  function initFlowControlDeck() {
+    const btnFlowPlay = document.getElementById("btnFlowPlay");
+    const iconFlowPlay = document.getElementById("iconFlowPlay");
+    const iconFlowPause = document.getElementById("iconFlowPause");
+    const labelFlowPlay = document.getElementById("labelFlowPlay");
+    const btnFlowPrev = document.getElementById("btnFlowPrev");
+    const btnFlowNext = document.getElementById("btnFlowNext");
+    const flowStagePills = document.querySelectorAll(".flow-stage-pill");
+    const flowScrubber = document.getElementById("flowScrubber");
+    const flowStageNameBadge = document.getElementById("flowStageNameBadge");
+    const btnFlowSpeed = document.getElementById("btnFlowSpeed");
+    const btnFlowReset = document.getElementById("btnFlowReset");
+
+    const stageLabels = [
+      "All Stages Active",
+      "Stage 1: Ingestion & Extract",
+      "Stage 2: Filter & Delta",
+      "Stage 3: Decision & Root Causes",
+      "Stage 4: Action & Remediation",
+      "Stage 5: Governance & SLA Gate"
+    ];
+
+    let currentStageIndex = 0;
+    const speeds = [1.0, 1.5, 2.0, 0.5];
+    let speedIdx = 0;
+
+    function updateFlowUI(stageNum) {
+      currentStageIndex = stageNum;
+
+      flowStagePills.forEach(pill => {
+        const pStage = parseInt(pill.getAttribute("data-stage"), 10);
+        if (pStage === stageNum) {
+          pill.classList.add("active");
+        } else {
+          pill.classList.remove("active");
+        }
+      });
+
+      if (flowStageNameBadge) {
+        flowStageNameBadge.textContent = stageLabels[stageNum] || `Stage ${stageNum}`;
+      }
+
+      if (flowScrubber) {
+        flowScrubber.value = stageNum === 0 ? 100 : stageNum * 20;
+      }
+
+      if (animPhaseIndicator) {
+        animPhaseIndicator.textContent = stageNum === 0 ? "Phase: All Visible" : `Phase: ${stageNum} / 5`;
+      }
+    }
+
+    function setPlayButtonState(isPlaying) {
+      if (iconFlowPlay) iconFlowPlay.style.display = isPlaying ? "none" : "inline-block";
+      if (iconFlowPause) iconFlowPause.style.display = isPlaying ? "inline-block" : "none";
+      if (labelFlowPlay) labelFlowPlay.textContent = isPlaying ? "Pause" : "Play Flow";
+    }
+
+    if (btnFlowPlay) {
+      btnFlowPlay.addEventListener("click", () => {
+        if (renderer.isAnimating) {
+          renderer.resetAnimation();
+          setPlayButtonState(false);
+          updateFlowUI(currentStageIndex);
+        } else {
+          setPlayButtonState(true);
+          renderer.simulateAnimation(
+            (stage) => {
+              updateFlowUI(stage);
+            },
+            () => {
+              setPlayButtonState(false);
+              updateFlowUI(0);
+            }
+          );
+        }
+      });
+    }
+
+    if (btnFlowPrev) {
+      btnFlowPrev.addEventListener("click", () => {
+        renderer.resetAnimation();
+        setPlayButtonState(false);
+        let nextStage = currentStageIndex - 1;
+        if (nextStage < 0) nextStage = 5;
+        renderer.setStage(nextStage);
+        updateFlowUI(nextStage);
+      });
+    }
+
+    if (btnFlowNext) {
+      btnFlowNext.addEventListener("click", () => {
+        renderer.resetAnimation();
+        setPlayButtonState(false);
+        let nextStage = (currentStageIndex + 1) % 6;
+        renderer.setStage(nextStage);
+        updateFlowUI(nextStage);
+      });
+    }
+
+    flowStagePills.forEach(pill => {
+      pill.addEventListener("click", () => {
+        renderer.resetAnimation();
+        setPlayButtonState(false);
+        const stageNum = parseInt(pill.getAttribute("data-stage"), 10) || 0;
+        renderer.setStage(stageNum);
+        updateFlowUI(stageNum);
+      });
+    });
+
+    if (flowScrubber) {
+      flowScrubber.addEventListener("input", (e) => {
+        renderer.resetAnimation();
+        setPlayButtonState(false);
+        const val = parseInt(e.target.value, 10);
+        let stageNum = 0;
+        if (val < 10) stageNum = 0;
+        else if (val <= 25) stageNum = 1;
+        else if (val <= 45) stageNum = 2;
+        else if (val <= 65) stageNum = 3;
+        else if (val <= 85) stageNum = 4;
+        else stageNum = 5;
+
+        renderer.setStage(stageNum);
+        updateFlowUI(stageNum);
+      });
+    }
+
+    if (btnFlowSpeed) {
+      btnFlowSpeed.addEventListener("click", () => {
+        speedIdx = (speedIdx + 1) % speeds.length;
+        const s = speeds[speedIdx];
+        btnFlowSpeed.textContent = `${s.toFixed(1)}x`;
+        renderer.setAnimationSpeed(s);
+        showNotification(`Flow speed: ${s.toFixed(1)}x`);
+      });
+    }
+
+    if (btnFlowReset) {
+      btnFlowReset.addEventListener("click", () => {
+        renderer.resetAnimation();
+        setPlayButtonState(false);
+        renderer.setStage(0);
+        updateFlowUI(0);
+      });
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        btnFlowPlay?.click();
+      } else if (e.code === "ArrowLeft") {
+        e.preventDefault();
+        btnFlowPrev?.click();
+      } else if (e.code === "ArrowRight") {
+        e.preventDefault();
+        btnFlowNext?.click();
+      }
+    });
+  }
+
+  // Top toolbar simulator buttons (Backward compatibility)
+  if (btnSimulate) btnSimulate.addEventListener("click", () => document.getElementById("btnFlowPlay")?.click());
+  if (btnStepAnim) btnStepAnim.addEventListener("click", () => document.getElementById("btnFlowNext")?.click());
+  if (btnResetAnim) btnResetAnim.addEventListener("click", () => document.getElementById("btnFlowReset")?.click());
 
   if (btnFullscreen) {
     btnFullscreen.addEventListener("click", () => {
@@ -1354,20 +1792,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (emoteSearchInput) {
     emoteSearchInput.addEventListener("input", e => buildEmoteGrid(emoteGrid, e.target.value, applySelectedEmote));
-  }
-
-  // Palette Swatches Renderer
-  function updatePaletteSwatches(paletteKey) {
-    const swatchesContainer = document.getElementById("paletteSwatches");
-    if (!swatchesContainer) return;
-    const p = window.PALETTES && window.PALETTES[paletteKey];
-    if (!p) return;
-    swatchesContainer.innerHTML = `
-      <span class="swatch-dot" style="background:${p.canvas_bg}; border: 1px solid ${p.card_bd};" title="Canvas: ${p.canvas_bg}"></span>
-      <span class="swatch-dot" style="background:${p.hdr_bg};" title="Header: ${p.hdr_bg}"></span>
-      <span class="swatch-dot" style="background:${p.stripe};" title="Accent: ${p.stripe}"></span>
-      <span class="swatch-dot" style="background:${p.teal_accent || '#10B981'};" title="Secondary: ${p.teal_accent}"></span>
-    `;
   }
 
   // Sidebar Emote Category Chips
@@ -1419,11 +1843,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Initialize
+  // Initialize All Systems
   checkBackend();
   loadFromLocalStorage();
   syncInputsFromData();
   buildDynamicForm();
   renderer.render(state.currentData);
+  initCustomTemplateDropdown();
+  initWorkspaceControls();
+  initExportMenu();
+  initFlowControlDeck();
   if (sidebarEmoteGrid) buildEmoteGrid(sidebarEmoteGrid, "");
 });
+

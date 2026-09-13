@@ -112,6 +112,61 @@ class ClientPptxGenerator {
     return pptx.writeFile({ fileName: filename });
   }
 
+  // Generate 5-Slide Progressive Morph Deck
+  static async generateProgressiveDeck(data) {
+    if (typeof PptxGenJS === "undefined") {
+      throw new Error("PptxGenJS library is not loaded");
+    }
+
+    const pptx = new PptxGenJS();
+    pptx.layout = "LAYOUT_16x9";
+
+    const paletteKey = data.palette || "executive_blueprint";
+    const C = (typeof PALETTES !== "undefined" && PALETTES[paletteKey]) ? PALETTES[paletteKey] : {
+      canvas_bg: "#F7F6F3",
+      hdr_bg: "#1A1A2E",
+      stripe: "#E8734A",
+      card_bg: "#FFFFFF",
+      card_bd: "#E0DDD7",
+      text_primary: "#1A1A2E",
+      text_secondary: "#3D3D50",
+      text_muted: "#6B6B7B",
+      blue_accent: "#2D3B4E",
+      blue_bg: "#F0EFEB",
+      blue_border: "#D5D2CB",
+      amber_accent: "#C4621A",
+      amber_bg: "#FBF3EC",
+      amber_border: "#EDCFB3",
+      teal_accent: "#1A7A6D",
+      teal_border: "#B3D9D3",
+      rose_accent: "#B5395A",
+      rose_bg: "#FBF0F3",
+      rose_border: "#E8BFC9",
+      red_accent: "#C42B2B",
+      red_bg: "#FBF0F0",
+      red_border: "#E8C0C0",
+      purple_accent: "#5A4E8C",
+      dashed_border: "#D4D0C8"
+    };
+
+    const stageNames = [
+      "Stage 1: Ingestion & Scope Validation",
+      "Stage 2: Open-Item Delta & Filter",
+      "Stage 3: 3-Track Root Cause Taxonomy",
+      "Stage 4: Action & Remediation Execution",
+      "Stage 5: Closed-Loop Governance Gate & SLA"
+    ];
+
+    for (let s = 1; s <= 5; s++) {
+      const slideData = JSON.parse(JSON.stringify(data));
+      slideData.header = slideData.header || {};
+      slideData.header.subtitle = `PHILIPS EXECUTIVE SUITE  •  ${stageNames[s - 1].toUpperCase()}`;
+      this.buildProcessFlow(pptx, slideData, C, s);
+    }
+
+    return pptx.writeFile({ fileName: "Philips_ICA_Executive_Progressive_Morph_Deck.pptx" });
+  }
+
   static h(colorStr) {
     if (!colorStr) return "FFFFFF";
     return String(colorStr).replace("#", "").trim();
@@ -181,7 +236,7 @@ class ClientPptxGenerator {
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 1: PHILIPS ICA RECONCILIATION AS-IS BLUEPRINT
   // ══════════════════════════════════════════════════════════════════════════
-  static buildProcessFlow(pptx, data, C) {
+  static buildProcessFlow(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
 
@@ -233,7 +288,7 @@ class ClientPptxGenerator {
         color: "FFFFFF",
         align: "center",
         fontFace: "Calibri",
-        margin: 0
+        margin: [0, 0, 0, 0]
       });
 
       slide.addText(
@@ -241,7 +296,7 @@ class ClientPptxGenerator {
           { text: r.title + "\n", options: { bold: true, fontSize: 8.5, color: this.h(C.text_primary) } },
           { text: r.sub, options: { fontSize: 7, color: this.h(C.text_muted) } }
         ],
-        { x: x + 0.52, y: 0.75, w: w - 0.58, h: 0.28, fontFace: "Calibri", margin: 0 }
+        { x: x + 0.52, y: 0.75, w: w - 0.58, h: 0.28, fontFace: "Calibri", margin: [0, 0, 0, 0] }
       );
 
       if (idx < 3) {
@@ -280,155 +335,173 @@ class ClientPptxGenerator {
       color: "FFFFFF",
       align: "center",
       fontFace: "Calibri",
-      margin: 0
+      margin: [0, 0, 0, 0]
     });
 
     // 4. Ingestion Pipeline Column 1
     const sx = 0.68, sw = 2.00;
-    this.addBpCard(slide, sx, 1.52, sw, 0.70, ing[0]?.title || "Accounting Specialist", ing[0]?.sub || "Philips Accounting Lead", ing[0]?.emote || "spec", this.h(C.card_bg), this.h(C.card_bd));
-    this.addArrowDown(slide, sx + sw/2, 2.22, 2.58, this.h(C.blue_accent));
+    if (stageLimit >= 1) {
+      this.addBpCard(slide, sx, 1.52, sw, 0.70, ing[0]?.title || "Accounting Specialist", ing[0]?.sub || "Philips Accounting Lead", ing[0]?.emote || "spec", this.h(C.card_bg), this.h(C.card_bd));
+      this.addArrowDown(slide, sx + sw/2, 2.22, 2.58, this.h(C.blue_accent));
 
-    this.addBpCard(slide, sx, 2.58, sw, 1.26, ing[1]?.title || "Extract Open-Item Report", ing[1]?.sub || "Qlik Sense extract | Exclude reciprocal matched items.", ing[1]?.emote || "qlik", this.h(C.blue_bg), this.h(C.blue_border), this.h(C.blue_accent));
-    this.addArrowDown(slide, sx + sw/2, 3.84, 4.22, this.h(C.blue_accent));
+      this.addBpCard(slide, sx, 2.58, sw, 1.26, ing[1]?.title || "Extract Open-Item Report", ing[1]?.sub || "Qlik Sense extract | Exclude reciprocal matched items.", ing[1]?.emote || "qlik", this.h(C.blue_bg), this.h(C.blue_border), this.h(C.blue_accent));
+      this.addArrowDown(slide, sx + sw/2, 3.84, 4.22, this.h(C.blue_accent));
+    }
 
-    this.addBpCard(slide, sx, 4.22, sw, 0.64, ing[2]?.title || "Filter by Company Code", ing[2]?.sub || "Scope validation by entity code", ing[2]?.emote || "filter", this.h(C.card_bg), this.h(C.blue_border));
-    this.addArrowDown(slide, sx + sw/2, 4.86, 5.24, this.h(C.blue_accent));
+    if (stageLimit >= 2) {
+      this.addBpCard(slide, sx, 4.22, sw, 0.64, ing[2]?.title || "Filter by Company Code", ing[2]?.sub || "Scope validation by entity code", ing[2]?.emote || "filter", this.h(C.card_bg), this.h(C.blue_border));
+      this.addArrowDown(slide, sx + sw/2, 4.86, 5.24, this.h(C.blue_accent));
 
-    this.addBpCard(slide, sx, 5.24, sw, 1.82, ing[3]?.title || "List of open items with classification", ing[3]?.sub || "Consolidated open delta ready for triage taxonomy.\nMaps unreconciled line items into operational resolution tracks.", ing[3]?.emote || "list", this.h(C.card_bg), this.h(C.card_bd), this.h(C.blue_accent));
+      this.addBpCard(slide, sx, 5.24, sw, 1.82, ing[3]?.title || "List of open items with classification", ing[3]?.sub || "Consolidated open delta ready for triage taxonomy.\nMaps unreconciled line items into operational resolution tracks.", ing[3]?.emote || "list", this.h(C.card_bg), this.h(C.card_bd), this.h(C.blue_accent));
+    }
 
-    // 5. Decision Fork Connectors
+    // 5. Decision Fork Connectors & Root Causes
     const fxm = 2.88, fx2 = 3.08;
-    this.addLine(slide, sx + sw, 5.40, fxm, 5.40, this.h(C.purple_accent));
-    this.addLine(slide, fxm, 2.75, fxm, 6.54, this.h(C.purple_accent));
-    this.addArrowRight(slide, fxm, 2.75, fx2, this.h(C.purple_accent));
-    this.addArrowRight(slide, fxm, 5.00, fx2, this.h(C.purple_accent));
-    this.addArrowRight(slide, fxm, 6.54, fx2, this.h(C.purple_accent));
-
-    // 6. Track 1: Posting Not Found
     const tw1 = 1.78;
-    this.addBpCard(slide, fx2, 2.20, tw1, 1.10, df.root?.title || "Posting not found", df.root?.sub || "Kernel out of scope line", df.root?.emote || "pnf", this.h(C.card_bg), this.h(C.card_bd), this.h(C.blue_accent));
-
-    const sfxm = 5.02, sfx2 = 5.18;
-    this.addLine(slide, fx2 + tw1, 2.75, sfxm, 2.75, this.h(C.purple_accent));
-    this.addLine(slide, sfxm, 2.03, sfxm, 3.47, this.h(C.purple_accent));
-    this.addArrowRight(slide, sfxm, 2.03, sfx2, this.h(C.purple_accent));
-    this.addArrowRight(slide, sfxm, 3.47, sfx2, this.h(C.purple_accent));
-
-    // 1A: IDoc
-    const iaw = 1.48, hx = 6.92, hw = 1.90;
-    this.addBpCard(slide, sfx2, 1.52, iaw, 1.02, df.sub_branch_1a?.cause?.title || "IDoc / OCR Issue", df.sub_branch_1a?.cause?.sub || "Interface syntax failure", df.sub_branch_1a?.cause?.emote || "idoc", this.h(C.card_bg), this.h(C.teal_border));
-    this.addArrowRight(slide, sfx2 + iaw, 2.03, hx, this.h(C.teal_accent));
-    this.addBpCard(slide, hx, 1.52, hw, 1.02, df.sub_branch_1a?.action?.title || "Troubleshoot IDoc Using HWI", df.sub_branch_1a?.action?.sub || "Execute SAP Hand Work Instructions", df.sub_branch_1a?.action?.emote || "hwi", this.h(C.card_bg), this.h(C.teal_border), null, this.h(C.teal_accent));
-
-    // 1B: No EDI
-    this.addBpCard(slide, sfx2, 2.96, iaw, 1.02, df.sub_branch_1b?.cause?.title || "No EDI / Non-SAP", df.sub_branch_1b?.cause?.sub || "Paper drop / legacy format", df.sub_branch_1b?.cause?.emote || "no_edi", this.h(C.card_bg), this.h(C.blue_border));
-    this.addArrowRight(slide, sfx2 + iaw, 3.47, hx, this.h(C.blue_accent));
-    this.addBpCard(slide, hx, 2.96, hw, 1.02, df.sub_branch_1b?.action?.title || "Request / Retrieve Invoice Copy", df.sub_branch_1b?.action?.sub || "Auto-fetch PDF via OCR matching", df.sub_branch_1b?.action?.emote || "inv", this.h(C.card_bg), this.h(C.blue_border), null, this.h(C.blue_accent));
-
-    // Track 2: AP-AR
     const t2w = 1.94, a2x = 5.38, a2w = 2.48;
-    this.addBpCard(slide, fx2, 4.46, t2w, 1.08, df.track_2?.cause?.title || "Investigate AP-AR sign issue", df.track_2?.cause?.sub || "AR cleared, AP remains open (+/−)", df.track_2?.cause?.emote || "ap_ar", this.h(C.card_bg), this.h(C.amber_border), this.h(C.amber_accent));
-    this.addArrowRight(slide, fx2 + t2w, 5.00, a2x, this.h(C.amber_accent));
-    this.addBpCard(slide, a2x, 4.46, a2w, 1.08, df.track_2?.action?.title || "Review & Analyze Issue", df.track_2?.action?.sub || "Investigate discrepancy; post clearing journal", df.track_2?.action?.emote || "review", this.h(C.card_bg), this.h(C.amber_border), null, this.h(C.amber_accent));
 
-    // Track 3: Cash to allocated
-    this.addBpCard(slide, fx2, 6.00, t2w, 1.08, df.track_3?.cause?.title || "Cash to allocated / AP paid", df.track_3?.cause?.sub || "AR unapplied in reciprocal ERP", df.track_3?.cause?.emote || "cash", this.h(C.card_bg), this.h(C.rose_border), this.h(C.rose_accent));
-    this.addArrowRight(slide, fx2 + t2w, 6.54, a2x, this.h(C.rose_accent));
-    this.addBpCard(slide, a2x, 6.00, a2w, 1.08, df.track_3?.action?.title || "Waiting for Counterparty Action (Clearing)", df.track_3?.action?.sub || "Pending reciprocal entity ledger clearing", df.track_3?.action?.emote || "waiting", this.h(C.card_bg), this.h(C.rose_border), null, this.h(C.rose_accent));
+    if (stageLimit >= 3) {
+      this.addLine(slide, sx + sw, 5.40, fxm, 5.40, this.h(C.purple_accent));
+      this.addLine(slide, fxm, 2.75, fxm, 6.54, this.h(C.purple_accent));
+      this.addArrowRight(slide, fxm, 2.75, fx2, this.h(C.purple_accent));
+      this.addArrowRight(slide, fxm, 5.00, fx2, this.h(C.purple_accent));
+      this.addArrowRight(slide, fxm, 6.54, fx2, this.h(C.purple_accent));
 
-    // Convergence to Governance
+      // Track 1: Posting Not Found
+      this.addBpCard(slide, fx2, 2.20, tw1, 1.10, df.root?.title || "Posting not found", df.root?.sub || "Kernel out of scope line", df.root?.emote || "pnf", this.h(C.card_bg), this.h(C.card_bd), this.h(C.blue_accent));
+
+      // Track 2: AP-AR
+      this.addBpCard(slide, fx2, 4.46, t2w, 1.08, df.track_2?.cause?.title || "Investigate AP-AR sign issue", df.track_2?.cause?.sub || "AR cleared, AP remains open (+/−)", df.track_2?.cause?.emote || "ap_ar", this.h(C.card_bg), this.h(C.amber_border), this.h(C.amber_accent));
+
+      // Track 3: Cash to allocated
+      this.addBpCard(slide, fx2, 6.00, t2w, 1.08, df.track_3?.cause?.title || "Cash to allocated / AP paid", df.track_3?.cause?.sub || "AR unapplied in reciprocal ERP", df.track_3?.cause?.emote || "cash", this.h(C.card_bg), this.h(C.rose_border), this.h(C.rose_accent));
+    }
+
+    // 6. Action Execution & Remediation Tracks
+    const sfxm = 5.02, sfx2 = 5.18;
+    const iaw = 1.48, hx = 6.92, hw = 1.90;
+
+    if (stageLimit >= 4) {
+      // Sub-fork to 1A and 1B
+      this.addLine(slide, fx2 + tw1, 2.75, sfxm, 2.75, this.h(C.purple_accent));
+      this.addLine(slide, sfxm, 2.03, sfxm, 3.47, this.h(C.purple_accent));
+      this.addArrowRight(slide, sfxm, 2.03, sfx2, this.h(C.purple_accent));
+      this.addArrowRight(slide, sfxm, 3.47, sfx2, this.h(C.purple_accent));
+
+      // 1A: IDoc
+      this.addBpCard(slide, sfx2, 1.52, iaw, 1.02, df.sub_branch_1a?.cause?.title || "IDoc / OCR Issue", df.sub_branch_1a?.cause?.sub || "Interface syntax failure", df.sub_branch_1a?.cause?.emote || "idoc", this.h(C.card_bg), this.h(C.teal_border));
+      this.addArrowRight(slide, sfx2 + iaw, 2.03, hx, this.h(C.teal_accent));
+      this.addBpCard(slide, hx, 1.52, hw, 1.02, df.sub_branch_1a?.action?.title || "Troubleshoot IDoc Using HWI", df.sub_branch_1a?.action?.sub || "Execute SAP Hand Work Instructions", df.sub_branch_1a?.action?.emote || "hwi", this.h(C.card_bg), this.h(C.teal_border), null, this.h(C.teal_accent));
+
+      // 1B: No EDI
+      this.addBpCard(slide, sfx2, 2.96, iaw, 1.02, df.sub_branch_1b?.cause?.title || "No EDI / Non-SAP", df.sub_branch_1b?.cause?.sub || "Paper drop / legacy format", df.sub_branch_1b?.cause?.emote || "no_edi", this.h(C.card_bg), this.h(C.blue_border));
+      this.addArrowRight(slide, sfx2 + iaw, 3.47, hx, this.h(C.blue_accent));
+      this.addBpCard(slide, hx, 2.96, hw, 1.02, df.sub_branch_1b?.action?.title || "Request / Retrieve Invoice Copy", df.sub_branch_1b?.action?.sub || "Auto-fetch PDF via OCR matching", df.sub_branch_1b?.action?.emote || "inv", this.h(C.card_bg), this.h(C.blue_border), null, this.h(C.blue_accent));
+
+      // Track 2 Action: Review
+      this.addArrowRight(slide, fx2 + t2w, 5.00, a2x, this.h(C.amber_accent));
+      this.addBpCard(slide, a2x, 4.46, a2w, 1.08, df.track_2?.action?.title || "Review & Analyze Issue", df.track_2?.action?.sub || "Investigate discrepancy; post clearing journal", df.track_2?.action?.emote || "review", this.h(C.card_bg), this.h(C.amber_border), null, this.h(C.amber_accent));
+
+      // Track 3 Action: Waiting
+      this.addArrowRight(slide, fx2 + t2w, 6.54, a2x, this.h(C.rose_accent));
+      this.addBpCard(slide, a2x, 6.00, a2w, 1.08, df.track_3?.action?.title || "Waiting for Counterparty Action (Clearing)", df.track_3?.action?.sub || "Pending reciprocal entity ledger clearing", df.track_3?.action?.emote || "waiting", this.h(C.card_bg), this.h(C.rose_border), null, this.h(C.rose_accent));
+    }
+
+    // 7. Convergence & Governance Column (Stage 5)
     const cvx2 = 9.02, gx = 9.28;
-    this.addLine(slide, hx + hw, 2.03, cvx2, 2.03, this.h(C.purple_accent));
-    this.addLine(slide, hx + hw, 3.47, cvx2, 3.47, this.h(C.purple_accent));
-    this.addLine(slide, a2x + a2w, 5.00, cvx2, 5.00, this.h(C.purple_accent));
-    this.addLine(slide, a2x + a2w, 6.54, cvx2, 6.54, this.h(C.purple_accent));
-    this.addLine(slide, cvx2, 2.03, cvx2, 6.54, this.h(C.purple_accent));
-    this.addArrowRight(slide, cvx2, 2.12, gx, this.h(C.purple_accent));
-
-    // Column 3: Governance
     const gw = 3.45;
-    this.addBpCard(slide, gx, 1.52, gw, 1.20, gov.gap_card?.title || "Reconciliation Discrepancy", gov.gap_card?.sub || "Open-item delta isolated between reciprocal Philips entities.", gov.gap_card?.emote || "gap", this.h(C.rose_bg), this.h(C.rose_border), null, null, "GAP DETECTED", this.h(C.rose_accent));
-    this.addArrowDown(slide, gx + gw/2, 2.72, 3.16, this.h(C.rose_accent));
 
-    this.addBpCard(slide, gx, 3.16, gw, 1.20, gov.notif_card?.title || "Send Action Notification (Email)", gov.notif_card?.sub || "Structured notice sent to counterparty accounting lead.", gov.notif_card?.emote || "notif", this.h(C.card_bg), this.h(C.rose_border), null, null, "ACTION NOTIFICATION", this.h(C.rose_accent));
-    this.addArrowDown(slide, gx + gw/2, 4.36, 4.80, this.h(C.red_accent));
+    if (stageLimit >= 5) {
+      this.addLine(slide, hx + hw, 2.03, cvx2, 2.03, this.h(C.purple_accent));
+      this.addLine(slide, hx + hw, 3.47, cvx2, 3.47, this.h(C.purple_accent));
+      this.addLine(slide, a2x + a2w, 5.00, cvx2, 5.00, this.h(C.purple_accent));
+      this.addLine(slide, a2x + a2w, 6.54, cvx2, 6.54, this.h(C.purple_accent));
+      this.addLine(slide, cvx2, 2.03, cvx2, 6.54, this.h(C.purple_accent));
+      this.addArrowRight(slide, cvx2, 2.12, gx, this.h(C.purple_accent));
 
-    // Escalation Matrix Card
-    slide.addShape(pptx.ShapeType.roundRect, {
-      x: gx,
-      y: 4.80,
-      w: gw,
-      h: 2.28,
-      rectRadius: 0.08,
-      fill: { color: this.h(C.red_bg) },
-      line: { color: this.h(C.red_border), width: 1 }
-    });
+      this.addBpCard(slide, gx, 1.52, gw, 1.20, gov.gap_card?.title || "Reconciliation Discrepancy", gov.gap_card?.sub || "Open-item delta isolated between reciprocal Philips entities.", gov.gap_card?.emote || "gap", this.h(C.rose_bg), this.h(C.rose_border), null, null, "GAP DETECTED", this.h(C.rose_accent));
+      this.addArrowDown(slide, gx + gw/2, 2.72, 3.16, this.h(C.rose_accent));
 
-    slide.addShape(pptx.ShapeType.roundRect, {
-      x: gx + 0.14,
-      y: 4.94,
-      w: 1.44,
-      h: 0.22,
-      rectRadius: 0.04,
-      fill: { color: this.h(C.red_accent) },
-      line: { width: 0 }
-    });
-    slide.addText("MULTI-TIER ESCALATION", {
-      x: gx + 0.14,
-      y: 4.94,
-      w: 1.44,
-      h: 0.22,
-      fontSize: 7,
-      bold: true,
-      color: "FFFFFF",
-      align: "center",
-      fontFace: "Calibri",
-      margin: 0
-    });
+      this.addBpCard(slide, gx, 3.16, gw, 1.20, gov.notif_card?.title || "Send Action Notification (Email)", gov.notif_card?.sub || "Structured notice sent to counterparty accounting lead.", gov.notif_card?.emote || "notif", this.h(C.card_bg), this.h(C.rose_border), null, null, "ACTION NOTIFICATION", this.h(C.rose_accent));
+      this.addArrowDown(slide, gx + gw/2, 4.36, 4.80, this.h(C.red_accent));
 
-    slide.addText("No Response → Initiate Escalation (Matrix)", {
-      x: gx + 0.14,
-      y: 5.26,
-      w: gw - 0.76,
-      h: 0.30,
-      fontSize: 10,
-      bold: true,
-      color: this.h(C.red_accent),
-      fontFace: "Calibri",
-      margin: 0
-    });
-
-    const tiers = gov.escalation_card?.tiers || [
-      { code: "L1", hrs: "48h Inaction", owner: "Accounting Lead / Processor", detail: "Initial SLA alert; re-verify unmatched ledger delta." },
-      { code: "L2", hrs: "96h Inaction", owner: "FSS Shared Services Manager", detail: "Shared services escalation; bilateral review call." },
-      { code: "L3", hrs: ">5d / Close", owner: "Entity Finance Director", detail: "Executive sign-off; post un-cleared accrual & audit note." }
-    ];
-
-    const tierParas = [];
-    tiers.forEach(t => {
-      tierParas.push({ text: `${t.code} (${t.hrs}): `, options: { bold: true, fontSize: 8, color: this.h(C.red_accent) } });
-      tierParas.push({ text: `${t.owner}\n`, options: { bold: true, fontSize: 8, color: this.h(C.text_primary) } });
-      tierParas.push({ text: `    ${t.detail}\n\n`, options: { fontSize: 7, color: this.h(C.text_muted) } });
-    });
-
-    slide.addText(tierParas, {
-      x: gx + 0.14,
-      y: 5.60,
-      w: gw - 0.76,
-      h: 1.40,
-      fontFace: "Calibri",
-      margin: 0
-    });
-
-    try {
-      slide.addImage({
-        path: "emotes/esc.gif",
-        x: gx + gw - 0.58,
-        y: 5.00,
-        w: 0.48,
-        h: 0.48
+      // Escalation Matrix Card
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: gx,
+        y: 4.80,
+        w: gw,
+        h: 2.28,
+        rectRadius: 0.08,
+        fill: { color: this.h(C.red_bg) },
+        line: { color: this.h(C.red_border), width: 1 }
       });
-    } catch (e) {}
+
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: gx + 0.14,
+        y: 4.94,
+        w: 1.44,
+        h: 0.22,
+        rectRadius: 0.04,
+        fill: { color: this.h(C.red_accent) },
+        line: { width: 0 }
+      });
+      slide.addText("MULTI-TIER ESCALATION", {
+        x: gx + 0.14,
+        y: 4.94,
+        w: 1.44,
+        h: 0.22,
+        fontSize: 7,
+        bold: true,
+        color: "FFFFFF",
+        align: "center",
+        fontFace: "Calibri",
+        margin: [0, 0, 0, 0]
+      });
+
+      slide.addText("No Response → Initiate Escalation (Matrix)", {
+        x: gx + 0.14,
+        y: 5.26,
+        w: gw - 0.76,
+        h: 0.30,
+        fontSize: 10,
+        bold: true,
+        color: this.h(C.red_accent),
+        fontFace: "Calibri",
+        margin: [0, 0, 0, 0]
+      });
+
+      const tiers = gov.escalation_card?.tiers || [
+        { code: "L1", hrs: "48h Inaction", owner: "Accounting Lead / Processor", detail: "Initial SLA alert; re-verify unmatched ledger delta." },
+        { code: "L2", hrs: "96h Inaction", owner: "FSS Shared Services Manager", detail: "Shared services escalation; bilateral review call." },
+        { code: "L3", hrs: ">5d / Close", owner: "Entity Finance Director", detail: "Executive sign-off; post un-cleared accrual & audit note." }
+      ];
+
+      const tierParas = [];
+      tiers.forEach(t => {
+        tierParas.push({ text: `${t.code} (${t.hrs}): `, options: { bold: true, fontSize: 8, color: this.h(C.red_accent) } });
+        tierParas.push({ text: `${t.owner}\n`, options: { bold: true, fontSize: 8, color: this.h(C.text_primary) } });
+        tierParas.push({ text: `    ${t.detail}\n\n`, options: { fontSize: 7, color: this.h(C.text_muted) } });
+      });
+
+      slide.addText(tierParas, {
+        x: gx + 0.14,
+        y: 5.60,
+        w: gw - 0.76,
+        h: 1.40,
+        fontFace: "Calibri",
+        margin: [0, 0, 0, 0]
+      });
+
+      try {
+        slide.addImage({
+          path: "emotes/esc.gif",
+          x: gx + gw - 0.58,
+          y: 5.00,
+          w: 0.48,
+          h: 0.48
+        });
+      } catch (e) {}
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -774,37 +847,51 @@ class ClientPptxGenerator {
         color: "FFFFFF",
         align: "center",
         fontFace: "Calibri",
-        margin: 0
+        margin: [0, 0, 0, 0]
       });
     }
 
     const titleY = (badgeText && badgeColor) ? y + 0.38 : y + 0.12;
     const titleColor = stripColor || (bg === "FFFFFF" ? "1A1A2E" : "1A1A2E");
 
-    slide.addText(title, {
-      x: x + 0.12,
-      y: titleY,
-      w: w - 0.60,
-      h: 0.32,
-      fontSize: 9.5,
-      bold: true,
-      color: titleColor,
-      fontFace: "Calibri",
-      margin: 0
-    });
-
-    if (sub) {
-      slide.addText(sub, {
-        x: x + 0.12,
-        y: titleY + 0.28,
-        w: w - 0.60,
-        h: h - (titleY - y) - 0.32,
-        fontSize: 7.5,
-        color: "6B6B7B",
-        fontFace: "Calibri",
-        margin: 0
+    // UNIFIED MULTI-RUN TEXT FRAME: Zero text collisions, automatic natural reflow
+    const textRuns = [];
+    if (title) {
+      textRuns.push({
+        text: title + (sub ? "\n" : ""),
+        options: {
+          bold: true,
+          fontSize: 9.5,
+          color: titleColor,
+          breakLine: !!sub
+        }
       });
     }
+    if (sub) {
+      textRuns.push({
+        text: sub,
+        options: {
+          bold: false,
+          fontSize: 7.5,
+          color: "6B6B7B"
+        }
+      });
+    }
+
+    const hasEmote = !!emote;
+    const textW = hasEmote ? Math.max(0.6, w - 0.62) : Math.max(0.6, w - 0.24);
+    const textH = Math.max(0.35, h - (titleY - y) - 0.06);
+
+    slide.addText(textRuns, {
+      x: x + 0.12,
+      y: titleY,
+      w: textW,
+      h: textH,
+      fontFace: "Calibri",
+      margin: [0, 0, 0, 0],
+      wrap: true,
+      valign: "top"
+    });
 
     if (chevronColor) {
       slide.addText("›", {
@@ -816,20 +903,22 @@ class ClientPptxGenerator {
         bold: true,
         color: chevronColor,
         fontFace: "Calibri",
-        margin: 0
+        margin: [0, 0, 0, 0]
       });
     }
 
     if (emote) {
       try {
         const emoteFilename = window.getEmoteInfo ? window.getEmoteInfo(emote).filename : (emote.includes(".") ? emote : (emote.startsWith("m_") || emote.startsWith("icon_") ? `${emote}.png` : `${emote}.gif`));
-        slide.addImage({
-          path: `emotes/${emoteFilename}`,
-          x: x + w - 0.50,
-          y: y + h/2 - 0.22,
-          w: 0.44,
-          h: 0.44
-        });
+        if (!emoteFilename.endsWith(".svg")) {
+          slide.addImage({
+            path: `emotes/${emoteFilename}`,
+            x: x + w - 0.50,
+            y: y + h/2 - 0.22,
+            w: 0.44,
+            h: 0.44
+          });
+        }
       } catch (e) {}
     }
   }
