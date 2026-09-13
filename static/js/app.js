@@ -1144,6 +1144,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function loadFromLocalStorage() {
     try {
+      const CURRENT_SCHEMA = "6.6";
+      const savedVersion = localStorage.getItem("nexgen_studio_schema_version");
+      if (savedVersion !== CURRENT_SCHEMA) {
+        // Stale cache detected: clear outdated template data to prevent mismatched blueprints
+        localStorage.removeItem("nexgen_studio_active_template");
+        if (typeof TEMPLATES_CONFIG !== "undefined") {
+          Object.keys(TEMPLATES_CONFIG).forEach(tid => {
+            localStorage.removeItem(`nexgen_studio_data_${tid}`);
+          });
+        }
+        localStorage.setItem("nexgen_studio_schema_version", CURRENT_SCHEMA);
+        return;
+      }
       const savedTid = localStorage.getItem("nexgen_studio_active_template");
       if (savedTid && TEMPLATES_CONFIG[savedTid]) {
         state.activeTemplateId = savedTid;
@@ -1195,15 +1208,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // ══════════════════════════════════════════════════════════════════════════
   // PPTX & PNG EXPORT ENGINES
   // ══════════════════════════════════════════════════════════════════════════
-  async function downloadPresentation() {
+  async function downloadPresentation(options = {}) {
+    // 1. Force sync all current form inputs into state.currentData so user customizations are never lost
+    syncDataFromInputs();
     state.currentData.template_id = state.activeTemplateId;
+
     const btn = document.getElementById("btnDownloadPptxDirect") || document.getElementById("btnDownloadPptx");
     const originalText = btn ? btn.innerHTML : "Download Animated PPTX";
     if (btn) {
       btn.disabled = true;
       btn.innerHTML = `
         <span class="spinner"></span>
-        <span>Compiling 5-Stage Animated Deck...</span>
+        <span>Compiling Executive Deck...</span>
       `;
     }
 
@@ -1233,10 +1249,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {}
       }
 
-      // Standalone client generation via PptxGenJS + JSZip timing injection
-      await ClientPptxGenerator.generate(state.currentData);
+      // Standalone client generation via PptxGenJS + JSZip native transitions
+      await ClientPptxGenerator.generate(state.currentData, options);
       const fName = ClientPptxGenerator.getFilenameForTemplate ? ClientPptxGenerator.getFilenameForTemplate(state.currentData.template_id) : "presentation.pptx";
-      showNotification(`Downloaded ${fName} with 5 progressive flow stages & timing animations!`);
+      showNotification(`Downloaded ${fName} with executive transitions & zero click-locks!`);
     } catch (err) {
       alert("Error compiling presentation: " + err.message);
     } finally {
@@ -1556,15 +1572,31 @@ document.addEventListener("DOMContentLoaded", () => {
   function initExportMenu() {
     const btnDownloadPptxDirect = document.getElementById("btnDownloadPptxDirect") || document.getElementById("btnDownloadPptx");
     const btnDownloadPngDirect = document.getElementById("btnDownloadPngDirect") || document.getElementById("btnDownloadPng");
+    const btnDownloadSingleSlide = document.getElementById("btnDownloadSingleSlide");
+    const btnDownloadFullDeck = document.getElementById("btnDownloadFullDeck");
 
-    // 1. Download Master Animated Presentation (.pptx) - Direct 1-Click
+    // 1. Download Master Presentation (.pptx) - Direct 1-Click
     if (btnDownloadPptxDirect) {
       btnDownloadPptxDirect.addEventListener("click", () => {
         downloadPresentation();
       });
     }
 
-    // 2. Download 1080p PNG - Direct 1-Click
+    // 2. Download Master Slide Only (1-Slide .pptx)
+    if (btnDownloadSingleSlide) {
+      btnDownloadSingleSlide.addEventListener("click", () => {
+        downloadPresentation({ singleSlideOnly: true });
+      });
+    }
+
+    // 3. Download Full 6-Stage Presentation Deck (6-Slide .pptx)
+    if (btnDownloadFullDeck) {
+      btnDownloadFullDeck.addEventListener("click", () => {
+        downloadPresentation({ singleSlideOnly: false });
+      });
+    }
+
+    // 4. Download 1080p PNG - Direct 1-Click
     if (btnDownloadPngDirect) {
       btnDownloadPngDirect.addEventListener("click", () => {
         exportSlidePng();

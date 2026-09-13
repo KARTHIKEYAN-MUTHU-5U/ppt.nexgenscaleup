@@ -45,29 +45,33 @@ class ClientPptxGenerator {
     const templateId = data.template_id || "process_flow";
     const stageNames = this.getStageNamesForTemplate(templateId);
     const baseSub = (data.header && data.header.subtitle) ? data.header.subtitle : "PHILIPS EXECUTIVE SUITE";
+    const singleSlideOnly = options.singleSlideOnly || false;
 
     // ──────────────────────────────────────────────────────────────────────────
     // SLIDE 1: MASTER ARCHITECTURE BLUEPRINT (100% COMPLETE EXECUTIVE VIEW)
     // ──────────────────────────────────────────────────────────────────────────
     const masterData = JSON.parse(JSON.stringify(data));
     masterData.header = masterData.header || {};
-    masterData.header.subtitle = `${baseSub}  •  MASTER ARCHITECTURE BLUEPRINT`;
+    masterData.header.subtitle = `${baseSub}  •  MASTER ARCHITECTURE BLUEPRINT (ALL STAGES ACTIVE)`;
     this.buildTemplate(pptx, templateId, masterData, C, 5);
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // SLIDES 2 to 6: DETAILED PROGRESSIVE FLOW STAGE BREAKDOWNS
-    // ──────────────────────────────────────────────────────────────────────────
-    for (let s = 1; s <= 5; s++) {
-      const slideData = JSON.parse(JSON.stringify(data));
-      slideData.header = slideData.header || {};
-      const stageTitle = stageNames[s - 1] || `Stage ${s} Flow`;
-      slideData.header.subtitle = `${baseSub}  •  ${stageTitle.toUpperCase()}`;
-      this.buildTemplate(pptx, templateId, slideData, C, s);
+    if (!singleSlideOnly) {
+      // ──────────────────────────────────────────────────────────────────────────
+      // SLIDES 2 to 6: PROGRESSIVE STAGE FOCUS (FULL ARCHITECTURE + STAGE HIGHLIGHT)
+      // ──────────────────────────────────────────────────────────────────────────
+      for (let s = 1; s <= 5; s++) {
+        const slideData = JSON.parse(JSON.stringify(data));
+        slideData.header = slideData.header || {};
+        const stageTitle = stageNames[s - 1] || `Stage ${s} Flow`;
+        slideData.header.subtitle = `${baseSub}  •  STAGE ${s} IN FOCUS: ${stageTitle.toUpperCase()}`;
+        // Render the complete architecture so there are never empty voids or missing columns
+        this.buildTemplate(pptx, templateId, slideData, C, 5);
+      }
     }
 
     const filename = this.getFilenameForTemplate(templateId);
 
-    // Inject OpenXML timing animations into package via JSZip
+    // Inject OpenXML native transitions into package via JSZip (Zero Blank Screens, Zero Click Locks)
     try {
       if (typeof JSZip !== "undefined") {
         const arrayBuffer = await pptx.write("arraybuffer");
@@ -97,70 +101,24 @@ class ClientPptxGenerator {
 
       for (const slidePath of slideFiles) {
         let slideXml = await zip.file(slidePath).async("text");
-        if (slideXml.includes("<p:timing>")) continue;
 
-        const regex = /<p:cNvPr id="(\d+)"/g;
-        let match;
-        const shapeIds = [];
-        while ((match = regex.exec(slideXml)) !== null) {
-          const id = parseInt(match[1], 10);
-          if (id > 6) shapeIds.push(String(id));
+        // 1. Strip any legacy shape-level entrance timing that causes blank screens & click-locks
+        if (slideXml.includes("<p:timing>")) {
+          slideXml = slideXml.replace(/<p:timing>[\s\S]*?<\/p:timing>/g, "");
         }
 
-        if (shapeIds.length === 0) continue;
+        // 2. Inject native executive slide cross-fade transition for instant, silk-smooth presentation flow
+        if (!slideXml.includes("<p:transition")) {
+          const transXml = `<p:transition speed="med"><p:fade/></p:transition>`;
+          slideXml = slideXml.replace("</p:sld>", transXml + "</p:sld>");
+        }
 
-        let idCounter = 1;
-        let childTnLst = "";
-        shapeIds.forEach((spId, idx) => {
-          const isClick = idx % 2 === 0;
-          const nodeType = isClick ? "clickEffect" : "withEffect";
-          const delay = isClick ? 0 : 150;
-          const effectFilter = idx % 3 === 0 ? "wipe" : "fade";
-          const cTn1 = idCounter++;
-          const cTn2 = idCounter++;
-          const cTn3 = idCounter++;
-          const cTn4 = idCounter++;
-
-          childTnLst += `
-            <p:par>
-              <p:cTn id="${cTn1}" fill="hold">
-                <p:stCondLst><p:cond delay="${delay}"/></p:stCondLst>
-                <p:childTnLst>
-                  <p:par>
-                    <p:cTn id="${cTn2}" presetID="10" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}">
-                      <p:stCondLst><p:cond delay="0"/></p:stCondLst>
-                      <p:childTnLst>
-                        <p:set>
-                          <p:cBhvr>
-                            <p:cTn id="${cTn3}" dur="1" fill="hold"><p:stCondLst><p:cond delay="0"/></p:stCondLst></p:cTn>
-                            <p:tgtEl><p:spTgt spid="${spId}"/></p:tgtEl>
-                            <p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst>
-                          </p:cBhvr>
-                          <p:to><p:strVal val="visible"/></p:to>
-                        </p:set>
-                        <p:animEffect transition="in" filter="${effectFilter}">
-                          <p:cBhvr>
-                            <p:cTn id="${cTn4}" dur="600"/>
-                            <p:tgtEl><p:spTgt spid="${spId}"/></p:tgtEl>
-                          </p:cBhvr>
-                        </p:animEffect>
-                      </p:childTnLst>
-                    </p:cTn>
-                  </p:par>
-                </p:childTnLst>
-              </p:cTn>
-            </p:par>
-          `;
-        });
-
-        const timingXml = `<p:timing><p:tnLst><p:par><p:cTn id="${idCounter++}" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst><p:seq concurrent="1" nextAc="seek"><p:cTn id="${idCounter++}" dur="indefinite" nodeType="mainSeq"><p:childTnLst>${childTnLst}</p:childTnLst></p:cTn></p:seq></p:childTnLst></p:cTn></p:par></p:tnLst></p:timing>`;
-        slideXml = slideXml.replace("</p:sld>", timingXml + "</p:sld>");
         zip.file(slidePath, slideXml);
       }
 
       return await zip.generateAsync({ type: "blob" });
     } catch (e) {
-      console.warn("Timing injection error:", e);
+      console.warn("Transition injection error:", e);
       return arrayBuffer;
     }
   }
@@ -2220,4 +2178,11 @@ class ClientPptxGenerator {
       });
     }
   }
+}
+
+if (typeof window !== "undefined") {
+  window.ClientPptxGenerator = ClientPptxGenerator;
+}
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = ClientPptxGenerator;
 }

@@ -108,6 +108,15 @@
           <span>Project</span>
         </button>
         <div id="projectDropdown" class="dropdown-popover">
+          <button type="button" id="btnDownloadSingleSlide" class="dropdown-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+            Download Master Slide (1-Slide .pptx)
+          </button>
+          <button type="button" id="btnDownloadFullDeck" class="dropdown-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download 6-Stage Executive Deck (.pptx)
+          </button>
+          <div class="dropdown-divider"></div>
           <button type="button" id="btnExportJson" class="dropdown-item">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Save Blueprint (.JSON)
@@ -355,10 +364,10 @@
   <script src="js/vendor/html2canvas.min.js"></script>
 
   <!-- Application Scripts with cache-busting -->
-  <script src="js/templates_data.js?v=6.5"></script>
-  <script src="js/canvas_renderer.js?v=6.5"></script>
-  <script src="js/pptx_client_generator.js?v=6.5"></script>
-  <script src="js/app.js?v=6.5"></script>
+  <script src="js/templates_data.js?v=6.6"></script>
+  <script src="js/canvas_renderer.js?v=6.6"></script>
+  <script src="js/pptx_client_generator.js?v=6.6"></script>
+  <script src="js/app.js?v=6.6"></script>
 
 </body>
 </html>
