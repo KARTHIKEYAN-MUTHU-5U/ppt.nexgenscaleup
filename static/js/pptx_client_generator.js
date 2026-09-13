@@ -12,7 +12,7 @@ class ClientPptxGenerator {
     }
 
     const pptx = new PptxGenJS();
-    pptx.layout = "LAYOUT_16x9"; // 13.333 x 7.50 inches
+    pptx.layout = "LAYOUT_WIDE"; // Exact 13.333 x 7.50 inches (16:9 executive widescreen standard)
 
     const paletteKey = data.palette || "executive_blueprint";
     const C = (typeof PALETTES !== "undefined" && PALETTES[paletteKey]) ? PALETTES[paletteKey] : {
@@ -44,17 +44,24 @@ class ClientPptxGenerator {
 
     const templateId = data.template_id || "process_flow";
     const stageNames = this.getStageNamesForTemplate(templateId);
+    const baseSub = (data.header && data.header.subtitle) ? data.header.subtitle : "PHILIPS EXECUTIVE SUITE";
 
-    // Build 5 Progressive Animated Slides (Stage 1 to Stage 5 Master)
+    // ──────────────────────────────────────────────────────────────────────────
+    // SLIDE 1: MASTER ARCHITECTURE BLUEPRINT (100% COMPLETE EXECUTIVE VIEW)
+    // ──────────────────────────────────────────────────────────────────────────
+    const masterData = JSON.parse(JSON.stringify(data));
+    masterData.header = masterData.header || {};
+    masterData.header.subtitle = `${baseSub}  •  MASTER ARCHITECTURE BLUEPRINT`;
+    this.buildTemplate(pptx, templateId, masterData, C, 5);
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SLIDES 2 to 6: DETAILED PROGRESSIVE FLOW STAGE BREAKDOWNS
+    // ──────────────────────────────────────────────────────────────────────────
     for (let s = 1; s <= 5; s++) {
       const slideData = JSON.parse(JSON.stringify(data));
       slideData.header = slideData.header || {};
       const stageTitle = stageNames[s - 1] || `Stage ${s} Flow`;
-      const baseSub = (data.header && data.header.subtitle) ? data.header.subtitle : "PHILIPS EXECUTIVE SUITE";
-      slideData.header.subtitle = s === 5 
-        ? `${baseSub}  •  MASTER ARCHITECTURE BLUEPRINT`
-        : `${baseSub}  •  ${stageTitle.toUpperCase()}`;
-
+      slideData.header.subtitle = `${baseSub}  •  ${stageTitle.toUpperCase()}`;
       this.buildTemplate(pptx, templateId, slideData, C, s);
     }
 
@@ -96,8 +103,8 @@ class ClientPptxGenerator {
         let match;
         const shapeIds = [];
         while ((match = regex.exec(slideXml)) !== null) {
-          const id = match[1];
-          if (id !== "1") shapeIds.push(id);
+          const id = parseInt(match[1], 10);
+          if (id > 6) shapeIds.push(String(id));
         }
 
         if (shapeIds.length === 0) continue;
@@ -935,125 +942,621 @@ class ClientPptxGenerator {
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
-    const phases = data.phases || [];
-    // Stage 1: Top 4 Close Phases Ribbon with connectors
+    const phases = data.phases || [
+      { phase: "PHASE 01", days: "WD -2 to WD 0", title: "Sub-Ledger Cutoff", emote: "calc", status: "COMPLETE" },
+      { phase: "PHASE 02", days: "WD +1 to WD +2", title: "Bilateral Matching", emote: "currency", status: "AUTOMATED" },
+      { phase: "PHASE 03", days: "WD +3 to WD +4", title: "Consolidation & Eliminations", emote: "ledger", status: "IN PROGRESS" },
+      { phase: "PHASE 04", days: "WD +5 Close", title: "Sign-Off & Distribution", emote: "stamp", status: "PLANNED" }
+    ];
+
+    // 1. Top 4 Close Phases Ribbon (Always present with exact widescreen alignment)
+    const rx = [0.40, 3.56, 6.72, 9.88];
+    const rw = 2.92;
     phases.forEach((p, i) => {
-      const x = 0.40 + i * 3.16;
-      slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.76, w: 2.92, h: 0.60, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1 } });
-      slide.addText(`${p.phase} • ${p.days}\n${p.title}`, { x: x + 0.10, y: 0.82, w: 2.70, h: 0.48, bold: true, fontSize: 9, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0 });
+      const x = rx[i];
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: 0.74, w: rw, h: 0.62,
+        rectRadius: 0.08,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      // Phase Pill Badge
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x + 0.10, y: 0.82, w: 0.75, h: 0.20,
+        rectRadius: 0.04,
+        fill: { color: this.h(C.blue_accent) },
+        line: { width: 0 }
+      });
+      slide.addText(p.phase, {
+        x: x + 0.10, y: 0.82, w: 0.75, h: 0.20,
+        fontSize: 7.5, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+      });
+      // Days
+      slide.addText(p.days, {
+        x: x + 0.90, y: 0.82, w: 1.40, h: 0.20,
+        fontSize: 8, bold: true, color: this.h(C.amber_accent), fontFace: "Calibri", margin: 0
+      });
+      // Title
+      slide.addText(p.title, {
+        x: x + 0.10, y: 1.05, w: 2.20, h: 0.24,
+        fontSize: 10, bold: true, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0
+      });
+      // Avatar circle
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: x + rw - 0.48, y: 0.82, w: 0.38, h: 0.38,
+        fill: { color: this.h(C.blue_bg) },
+        line: { color: this.h(C.blue_border), width: 0.75 }
+      });
+      try {
+        slide.addImage({
+          path: this.getEmotePath(p.emote || "calc"),
+          x: x + rw - 0.44, y: 0.86, w: 0.30, h: 0.30
+        });
+      } catch (e) {}
+
+      // Arrow to next phase
       if (i < 3) {
-        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.95, y: 0.98, w: 0.18, h: 0.16, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+        this.addArrowRight(slide, x + rw + 0.04, 1.05, rx[i + 1] - 0.04, this.h(C.blue_accent));
       }
     });
 
-    slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 1.52, w: 8.70, h: 4.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.dashed_border), width: 1.5, dashType: "dash" } });
-    slide.addText("SUB-LEDGER SETTLEMENT RUNBOOK", { x: 0.56, y: 1.60, w: 3.50, h: 0.25, bold: true, fontSize: 10, color: this.h(C.blue_accent), fontFace: "Calibri" });
+    // 2. Main Middle Sub-Ledger Settlement Runbook Outer Container
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: 1.48, w: 8.70, h: 4.46,
+      rectRadius: 0.10,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.dashed_border), width: 1.5, dashType: "dash" }
+    });
+    // Floating Pill Header
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.56, y: 1.38, w: 2.60, h: 0.24,
+      rectRadius: 0.05,
+      fill: { color: this.h(C.blue_accent) },
+      line: { width: 0 }
+    });
+    slide.addText("SUB-LEDGER SETTLEMENT RUNBOOK", {
+      x: 0.56, y: 1.38, w: 2.60, h: 0.24,
+      fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+    });
 
-    // Stage 2: Nodes Row 1
-    if (stageLimit >= 2) {
-      (data.nodes || []).slice(0, 3).forEach((n, idx) => {
-        const x = 0.70 + idx * 2.60;
-        const y = 2.00;
-        slide.addShape(pptx.ShapeType.roundRect, { x: x, y: y, w: 2.30, h: 1.20, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.blue_border), width: 1 } });
-        slide.addText(`[${n.badge}] ${n.title}\n${n.desc}`, { x: x + 0.12, y: y + 0.12, w: 2.06, h: 0.96, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
-        if (idx < 2) {
-          slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.33, y: y + 0.52, w: 0.22, h: 0.16, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
-        }
+    const nodes = data.nodes || [
+      { id: "fc_node1", stage: 1, title: "Sub-Ledger Ingestion", desc: "Lock transactional sub-ledgers across 48 entities", emote: "calc", badge: "LOCK" },
+      { id: "fc_node2", stage: 1, title: "Accruals & Prepayments", desc: "Automated standard recurring journals", emote: "ledger", badge: "POST" },
+      { id: "fc_node3", stage: 2, title: "Intercompany Run", desc: "Execute bilateral automated settlement runs", emote: "currency", badge: "MATCH" },
+      { id: "fc_node4", stage: 2, title: "Discrepancy Triage", desc: "Route unallocated items > €10K to fast track", emote: "gap", badge: "TRIAGE" },
+      { id: "fc_node5", stage: 3, title: "Trial Balance Rollup", desc: "Automated group currency consolidation", emote: "chart_up", badge: "CONSOLIDATE" },
+      { id: "fc_node6", stage: 4, title: "CFO & Controller Sign-Off", desc: "Audit trail certification and board release", emote: "stamp", badge: "AUDIT" }
+    ];
+
+    // Row 1 Cards (Nodes 1, 2, 3)
+    const row1Nodes = nodes.slice(0, 3);
+    row1Nodes.forEach((n, idx) => {
+      const isVisible = stageLimit >= (idx === 2 ? 2 : 1) || stageLimit === 5;
+      const x = 0.65 + idx * 2.64;
+      const y = 1.76;
+      const w = 2.40;
+      const h = 1.18;
+
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: y, w: w, h: h,
+        rectRadius: 0.08,
+        fill: { color: this.h(isVisible ? C.blue_bg : C.card_bg) },
+        line: { color: this.h(isVisible ? C.blue_border : C.card_bd), width: 1.0 }
       });
-    }
-
-    // Stage 3: Nodes Row 2 & Lower Spine Connectors
-    if (stageLimit >= 3) {
-      (data.nodes || []).slice(3, 6).forEach((n, idx) => {
-        const x = 0.70 + idx * 2.60;
-        const y = 3.80;
-        slide.addShape(pptx.ShapeType.roundRect, { x: x, y: y, w: 2.30, h: 1.20, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-        slide.addText(`[${n.badge}] ${n.title}\n${n.desc}`, { x: x + 0.12, y: y + 0.12, w: 2.06, h: 0.96, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
-        if (idx < 2) {
-          slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.33, y: y + 0.52, w: 0.22, h: 0.16, fill: { color: this.h(C.teal_accent) }, line: { width: 0 } });
-        }
+      slide.addShape(pptx.ShapeType.rect, {
+        x: x, y: y, w: 0.06, h: h,
+        fill: { color: this.h(isVisible ? C.amber_accent : C.card_bd) },
+        line: { width: 0 }
       });
-    }
-
-    // Stage 4: Speed Metric Banner
-    if (stageLimit >= 4) {
-      slide.addShape(pptx.ShapeType.roundRect, { x: 0.70, y: 5.30, w: 8.10, h: 0.42, fill: { color: this.h(C.blue_bg) }, line: { width: 0 } });
-      slide.addText("AUTO-RECONCILIATION SPEED: 94.8% Same-Day Bilateral Settlement • Zero Manual Journal Overrides", { x: 0.90, y: 5.38, w: 7.70, h: 0.26, bold: true, fontSize: 10, color: this.h(C.blue_accent), fontFace: "Calibri" });
-    }
-
-    // Stage 5: Governance Gateways & Materiality Dock
-    if (stageLimit >= 5) {
-      slide.addShape(pptx.ShapeType.roundRect, { x: 9.30, y: 1.52, w: 3.63, h: 4.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-      slide.addText("GOVERNANCE GATEWAYS & MATERIALITY", { x: 9.50, y: 1.70, w: 3.20, h: 0.30, bold: true, fontSize: 11, color: this.h(C.rose_accent), fontFace: "Calibri" });
-      const gws = [
-        { title: "Materiality Threshold", val: "€25,000 Delta Limit", desc: "Variances below €25K auto-expensed" },
-        { title: "Escalation SLA", val: "4-Hour Critical SLA", desc: "Immediate Slack & SAP notification" },
-        { title: "Authorized Sign-Off", val: "VP Group Accounting", desc: "Two-person cryptographic sign-off" }
-      ];
-      gws.forEach((g, i) => {
-        const gy = 2.20 + i * 1.15;
-        slide.addShape(pptx.ShapeType.roundRect, { x: 9.50, y: gy, w: 3.23, h: 0.95, fill: { color: this.h(C.rose_bg || C.card_bg) }, line: { color: this.h(C.rose_border || C.card_bd), width: 1 } });
-        slide.addText(`${g.title}\n${g.val} • ${g.desc}`, { x: 9.65, y: gy + 0.12, w: 2.93, h: 0.70, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      // Colored Pill Badge
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x + 0.14, y: y + 0.10, w: 0.76, h: 0.20,
+        rectRadius: 0.04,
+        fill: { color: this.h(isVisible ? C.amber_accent : C.card_bd) },
+        line: { width: 0 }
       });
-    }
+      slide.addText(n.badge || "STEP", {
+        x: x + 0.14, y: y + 0.10, w: 0.76, h: 0.20,
+        fontSize: 7.5, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+      });
+      // Circular Avatar
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: x + w - 0.50, y: y + 0.10, w: 0.40, h: 0.40,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(isVisible ? C.blue_border : C.card_bd), width: 0.75 }
+      });
+      if (isVisible) {
+        try {
+          slide.addImage({
+            path: this.getEmotePath(n.emote || "calc"),
+            x: x + w - 0.46, y: y + 0.14, w: 0.32, h: 0.32
+          });
+        } catch (e) {}
+      }
+      // Title
+      slide.addText(n.title, {
+        x: x + 0.14, y: y + 0.36, w: w - 0.65, h: 0.26,
+        fontSize: 10, bold: true, color: this.h(isVisible ? C.text_primary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+      // Description
+      slide.addText(n.desc, {
+        x: x + 0.14, y: y + 0.64, w: w - 0.28, h: 0.46,
+        fontSize: 7.5, color: this.h(isVisible ? C.text_secondary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+
+      if (idx < 2) {
+        this.addArrowRight(slide, x + w + 0.04, y + h/2, x + 2.64 - 0.04, this.h(isVisible ? C.blue_accent : C.card_bd));
+      }
+    });
+
+    // Lower Spine Connector: Row 1 Node 3 -> Row 2 Node 4
+    const spineColor = stageLimit >= 3 || stageLimit === 5 ? this.h(C.purple_accent) : this.h(C.card_bd);
+    const n3RightX = 0.65 + 2 * 2.64 + 2.40;
+    const n3MidY = 1.76 + 1.18 / 2;
+    const spineMidY = 3.32;
+    const n4LeftX = 0.65 + 2.40 / 2;
+    this.addLine(slide, n3RightX + 0.04, n3MidY, n3RightX + 0.20, n3MidY, spineColor);
+    this.addLine(slide, n3RightX + 0.20, n3MidY, n3RightX + 0.20, spineMidY, spineColor);
+    this.addLine(slide, n3RightX + 0.20, spineMidY, n4LeftX, spineMidY, spineColor);
+    this.addArrowDown(slide, n4LeftX, spineMidY, 3.66, spineColor);
+
+    // Row 2 Cards (Nodes 4, 5, 6)
+    const row2Nodes = nodes.slice(3, 6);
+    row2Nodes.forEach((n, idx) => {
+      const isVisible = stageLimit >= 3 || stageLimit === 5;
+      const x = 0.65 + idx * 2.64;
+      const y = 3.68;
+      const w = 2.40;
+      const h = 1.18;
+
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: y, w: w, h: h,
+        rectRadius: 0.08,
+        fill: { color: this.h(isVisible ? C.card_bg : C.card_bg) },
+        line: { color: this.h(isVisible ? C.card_bd : C.card_bd), width: 1.2 }
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: x, y: y, w: 0.06, h: h,
+        fill: { color: this.h(isVisible ? C.teal_accent : C.card_bd) },
+        line: { width: 0 }
+      });
+      // Colored Pill Badge
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x + 0.14, y: y + 0.10, w: 0.98, h: 0.20,
+        rectRadius: 0.04,
+        fill: { color: this.h(isVisible ? C.teal_accent : C.card_bd) },
+        line: { width: 0 }
+      });
+      slide.addText(n.badge || "STEP", {
+        x: x + 0.14, y: y + 0.10, w: 0.98, h: 0.20,
+        fontSize: 7.5, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+      });
+      // Circular Avatar
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: x + w - 0.50, y: y + 0.10, w: 0.40, h: 0.40,
+        fill: { color: this.h(C.blue_bg) },
+        line: { color: this.h(isVisible ? C.teal_border : C.card_bd), width: 0.75 }
+      });
+      if (isVisible) {
+        try {
+          slide.addImage({
+            path: this.getEmotePath(n.emote || "ledger"),
+            x: x + w - 0.46, y: y + 0.14, w: 0.32, h: 0.32
+          });
+        } catch (e) {}
+      }
+      // Title
+      slide.addText(n.title, {
+        x: x + 0.14, y: y + 0.36, w: w - 0.65, h: 0.26,
+        fontSize: 10, bold: true, color: this.h(isVisible ? C.text_primary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+      // Description
+      slide.addText(n.desc, {
+        x: x + 0.14, y: y + 0.64, w: w - 0.28, h: 0.46,
+        fontSize: 7.5, color: this.h(isVisible ? C.text_secondary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+
+      if (idx < 2) {
+        this.addArrowRight(slide, x + w + 0.04, y + h/2, x + 2.64 - 0.04, this.h(isVisible ? C.teal_accent : C.card_bd));
+      }
+    });
+
+    // Speed Metric Banner
+    const showSpeed = stageLimit >= 4 || stageLimit === 5;
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.65, y: 5.34, w: 8.20, h: 0.44,
+      rectRadius: 0.06,
+      fill: { color: this.h(showSpeed ? C.blue_bg : C.card_bg) },
+      line: { color: this.h(showSpeed ? C.blue_border : C.card_bd), width: 0.75 }
+    });
+    slide.addText("AUTO-RECONCILIATION SPEED: 94.8% Same-Day Bilateral Settlement • Zero Manual Journal Overrides", {
+      x: 0.65, y: 5.34, w: 8.20, h: 0.44,
+      fontSize: 9, bold: true, color: this.h(showSpeed ? C.blue_accent : C.text_muted), align: "center", fontFace: "Calibri", margin: 0
+    });
+
+    // 3. Right Container: Close Governance & Materiality Dock (Always present)
+    const showGov = stageLimit >= 5;
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 9.30, y: 1.48, w: 3.63, h: 4.46,
+      rectRadius: 0.10,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.card_bd), width: 1.2 }
+    });
+    // Floating Pill Header
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 9.50, y: 1.38, w: 2.10, h: 0.24,
+      rectRadius: 0.05,
+      fill: { color: this.h(showGov ? C.rose_accent : C.card_bd) },
+      line: { width: 0 }
+    });
+    slide.addText("GOVERNANCE GATEWAYS", {
+      x: 9.50, y: 1.38, w: 2.10, h: 0.24,
+      fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+    });
+
+    const gws = [
+      { title: "Materiality Threshold", badge: "MATERIALITY LIMIT", bColor: C.rose_accent, val: data.gateways?.threshold || "€25,000 Delta Limit", desc: "Variances below €25K auto-expensed with audit note", emote: "stamp", bg: C.rose_bg, bd: C.rose_border, textC: C.rose_accent },
+      { title: "Escalation SLA", badge: "CRITICAL SLA", bColor: C.amber_accent, val: data.gateways?.sla || "4-Hour Critical SLA", desc: "Immediate Slack, Teams & SAP push notification", emote: "tb_ageing", bg: C.amber_bg, bd: C.amber_border, textC: C.amber_accent },
+      { title: "Authorized Sign-Off", badge: "EXECUTIVE SIGN-OFF", bColor: C.blue_accent, val: data.gateways?.approver || "VP Group Accounting", desc: "Two-person cryptographic sign-off & ledger lock", emote: "tb_rbac", bg: C.blue_bg, bd: C.blue_border, textC: C.blue_accent }
+    ];
+
+    gws.forEach((g, i) => {
+      const gy = 1.82 + i * 1.15;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 9.50, y: gy, w: 3.23, h: 0.98,
+        rectRadius: 0.08,
+        fill: { color: this.h(showGov ? g.bg : C.card_bg) },
+        line: { color: this.h(showGov ? g.bd : C.card_bd), width: 1.0 }
+      });
+      // Pill Badge
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 9.64, y: gy + 0.10, w: 1.40, h: 0.20,
+        rectRadius: 0.04,
+        fill: { color: this.h(showGov ? g.bColor : C.card_bd) },
+        line: { width: 0 }
+      });
+      slide.addText(g.badge, {
+        x: 9.64, y: gy + 0.10, w: 1.40, h: 0.20,
+        fontSize: 7, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+      });
+      // Avatar Circle
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: 9.50 + 3.23 - 0.48, y: gy + 0.10, w: 0.38, h: 0.38,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(showGov ? g.bd : C.card_bd), width: 0.75 }
+      });
+      if (showGov) {
+        try {
+          slide.addImage({
+            path: this.getEmotePath(g.emote),
+            x: 9.50 + 3.23 - 0.44, y: gy + 0.14, w: 0.30, h: 0.30
+          });
+        } catch (e) {}
+      }
+      // Title
+      slide.addText(g.title, {
+        x: 9.64, y: gy + 0.34, w: 2.50, h: 0.22,
+        fontSize: 10, bold: true, color: this.h(showGov ? g.textC : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+      // Val
+      slide.addText(g.val, {
+        x: 9.64, y: gy + 0.54, w: 2.90, h: 0.22,
+        fontSize: 8.5, bold: true, color: this.h(showGov ? C.text_primary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+      // Detail
+      slide.addText(g.desc, {
+        x: 9.64, y: gy + 0.74, w: 2.90, h: 0.18,
+        fontSize: 7, color: this.h(C.text_muted), fontFace: "Calibri", margin: 0
+      });
+
+      if (i < 2) {
+        this.addArrowDown(slide, 9.50 + 3.23/2, gy + 0.98 + 0.02, gy + 1.15 - 0.02, this.h(showGov ? g.bColor : C.card_bd));
+      }
+    });
+
+    // 4. Bottom Full-Width Summary Ribbon: Finance Close Velocity
+    const showVelocity = stageLimit >= 4 || stageLimit === 5;
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: 6.08, w: 12.53, h: 1.16,
+      rectRadius: 0.08,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.card_bd), width: 1.2 }
+    });
+    slide.addText("PHILIPS GLOBAL BUSINESS SERVICES  •  FINANCE CLOSE VELOCITY", {
+      x: 0.64, y: 6.16, w: 6.00, h: 0.22,
+      fontSize: 8.5, bold: true, color: this.h(C.text_muted), fontFace: "Calibri", margin: 0
+    });
+
+    // Metric 1
+    slide.addText("1.8 DAYS", {
+      x: 0.64, y: 6.42, w: 1.80, h: 0.48,
+      fontSize: 22, bold: true, color: this.h(showVelocity ? C.blue_accent : C.text_muted), fontFace: "Calibri", margin: 0
+    });
+    slide.addText(
+      [
+        { text: "Global Close Cycle\n", options: { bold: true, fontSize: 8.5, color: this.h(showVelocity ? C.teal_accent : C.text_muted) } },
+        { text: "Down from 4.2d baseline", options: { fontSize: 7.5, color: this.h(C.text_muted) } }
+      ],
+      { x: 2.10, y: 6.46, w: 2.40, h: 0.44, fontFace: "Calibri", margin: 0 }
+    );
+
+    // Metric 2
+    slide.addText("99.8%", {
+      x: 4.80, y: 6.42, w: 1.50, h: 0.48,
+      fontSize: 22, bold: true, color: this.h(showVelocity ? C.amber_accent : C.text_muted), fontFace: "Calibri", margin: 0
+    });
+    slide.addText(
+      [
+        { text: "First-Pass Journal Integrity\n", options: { bold: true, fontSize: 8.5, color: this.h(showVelocity ? C.text_primary : C.text_muted) } },
+        { text: "Automated bilateral clearing", options: { fontSize: 7.5, color: this.h(C.text_muted) } }
+      ],
+      { x: 5.85, y: 6.46, w: 2.40, h: 0.44, fontFace: "Calibri", margin: 0 }
+    );
+
+    // Metric 3
+    slide.addText("€0.00", {
+      x: 8.60, y: 6.42, w: 1.50, h: 0.48,
+      fontSize: 22, bold: true, color: this.h(showVelocity ? C.rose_accent : C.text_muted), fontFace: "Calibri", margin: 0
+    });
+    slide.addText(
+      [
+        { text: "Unallocated Material Balances\n", options: { bold: true, fontSize: 8.5, color: this.h(showVelocity ? C.text_primary : C.text_muted) } },
+        { text: "Full audit trail certification", options: { fontSize: 7.5, color: this.h(C.text_muted) } }
+      ],
+      { x: 9.65, y: 6.46, w: 2.80, h: 0.44, fontFace: "Calibri", margin: 0 }
+    );
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // TEMPLATE 7: PROCURE-TO-PAY (P2P)
+  // TEMPLATE 7: PROCURE-TO-PAY (P2P) & VENDOR WORKFLOW
   // ══════════════════════════════════════════════════════════════════════════
   static buildVendorP2P(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
-    (data.steps || []).forEach((st, i) => {
-      if (stageLimit < (i + 1) && stageLimit < 2) return;
-      const x = 0.40 + i * 2.53;
-      slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.80, w: 2.35, h: 1.50, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1 } });
-      slide.addText(`${st.num}. ${st.title}\n${st.sub}`, { x: x + 0.14, y: 0.94, w: 2.07, h: 1.20, bold: true, fontSize: 9.5, color: this.h(C.text_primary), fontFace: "Calibri" });
-      if (i < 4 && stageLimit >= (i + 2)) {
-        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.37, y: 1.45, w: 0.14, h: 0.14, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+    // 5 Lifecycle Step Cards across top
+    const steps = data.steps || [
+      { num: "01", title: "Vendor Onboarding", sub: "KYC, Tax & Sanction Checks", emote: "handshake" },
+      { num: "02", title: "Sourcing & Purchase Order", sub: "Automated PO dispatch in SAP", emote: "po_doc" },
+      { num: "03", title: "Goods Receipt (GR/IR)", sub: "Barcode scan & warehouse confirmation", emote: "truck" },
+      { num: "04", title: "OCR Invoice Extraction", sub: "3-Way Line Matching Engine", emote: "scan_doc" },
+      { num: "05", title: "Payment Release", sub: "Electronic Funds Transfer (EFT)", emote: "payment" }
+    ];
+
+    const sw = 2.38;
+    steps.forEach((st, i) => {
+      const isVisible = stageLimit >= (i + 1) || stageLimit === 5;
+      const x = 0.40 + i * 2.54;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x, y: 0.76, w: sw, h: 1.48,
+        rectRadius: 0.08,
+        fill: { color: this.h(isVisible ? C.card_bg : C.card_bg) },
+        line: { color: this.h(isVisible ? C.card_bd : C.card_bd), width: 1.0 }
+      });
+      // Pill Number Badge
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: x + 0.12, y: 0.86, w: 0.44, h: 0.22,
+        rectRadius: 0.04,
+        fill: { color: this.h(isVisible ? C.blue_accent : C.card_bd) },
+        line: { width: 0 }
+      });
+      slide.addText(st.num, {
+        x: x + 0.12, y: 0.86, w: 0.44, h: 0.22,
+        fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+      });
+      // Circular Avatar
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: x + sw - 0.48, y: 0.86, w: 0.38, h: 0.38,
+        fill: { color: this.h(C.blue_bg) },
+        line: { color: this.h(isVisible ? C.blue_border : C.card_bd), width: 0.75 }
+      });
+      if (isVisible) {
+        try {
+          slide.addImage({
+            path: this.getEmotePath(st.emote),
+            x: x + sw - 0.44, y: 0.90, w: 0.30, h: 0.30
+          });
+        } catch (e) {}
+      }
+      // Title
+      slide.addText(st.title, {
+        x: x + 0.12, y: 1.16, w: sw - 0.24, h: 0.44,
+        fontSize: 10, bold: true, color: this.h(isVisible ? C.text_primary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+      // Sub
+      slide.addText(st.sub, {
+        x: x + 0.12, y: 1.62, w: sw - 0.24, h: 0.54,
+        fontSize: 7.5, color: this.h(isVisible ? C.text_secondary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+
+      if (i < 4) {
+        this.addArrowRight(slide, x + sw + 0.02, 1.48, x + 2.54 - 0.02, this.h(isVisible ? C.blue_accent : C.card_bd));
       }
     });
 
-    if (stageLimit >= 2) {
-      slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 2.50, w: 7.90, h: 3.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.dashed_border), width: 1.5, dashType: "dash" } });
-      slide.addText("SAP 3-WAY MATCHING PIPELINE (PO vs GR vs IR)", { x: 0.60, y: 2.70, w: 5.00, h: 0.30, bold: true, fontSize: 11, color: this.h(C.amber_accent), fontFace: "Calibri" });
+    // 2. Middle Left: SAP 3-WAY MATCHING PIPELINE
+    const showMatching = stageLimit >= 2 || stageLimit === 5;
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: 2.38, w: 7.90, h: 3.52,
+      rectRadius: 0.10,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.dashed_border), width: 1.5, dashType: "dash" }
+    });
+    // Floating Pill
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.56, y: 2.28, w: 3.80, h: 0.24,
+      rectRadius: 0.05,
+      fill: { color: this.h(showMatching ? C.amber_accent : C.card_bd) },
+      line: { width: 0 }
+    });
+    slide.addText("SAP 3-WAY MATCHING PIPELINE (PO vs GR vs IR)", {
+      x: 0.56, y: 2.28, w: 3.80, h: 0.24,
+      fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+    });
 
-      const pillars = [
-        { name: "Purchase Order (PO)", desc: "Contract terms, unit pricing, delivery schedules & entity code." },
-        { name: "Goods Receipt (GR)", desc: "Physical barcode scan, accepted quantity & warehouse stamp." },
-        { name: "Vendor Invoice (IR)", desc: "Tax details, payment terms, net delta & banking verification." }
-      ];
-      pillars.forEach((p, idx) => {
-        const px = 0.70 + idx * 2.50;
-        slide.addShape(pptx.ShapeType.roundRect, { x: px, y: 3.20, w: 2.30, h: 1.20, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.blue_border), width: 1 } });
-        slide.addText(`${p.name}\n${p.desc}`, { x: px + 0.12, y: 3.32, w: 2.06, h: 0.96, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
-        if (idx < 2) {
-          slide.addShape(pptx.ShapeType.rightArrow, { x: px + 2.33, y: 3.72, w: 0.15, h: 0.15, fill: { color: this.h(C.amber_accent) }, line: { width: 0 } });
-        }
+    const pillars = [
+      { name: "Purchase Order (PO)", badge: "CONTRACT TERMS", emote: "po_doc", desc: "Contract terms, unit pricing, delivery schedules & legal entity code." },
+      { name: "Goods Receipt (GR)", badge: "PHYSICAL RECEIPT", emote: "truck", desc: "Physical barcode scan, accepted warehouse quantity & delivery receipt." },
+      { name: "Vendor Invoice (IR)", badge: "FINANCIAL CLAIM", emote: "scan_doc", desc: "Tax details, payment terms, net delta & verified banking details." }
+    ];
+    pillars.forEach((p, idx) => {
+      const px = 0.65 + idx * 2.50;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: px, y: 2.68, w: 2.30, h: 1.86,
+        rectRadius: 0.08,
+        fill: { color: this.h(showMatching ? C.blue_bg : C.card_bg) },
+        line: { color: this.h(showMatching ? C.blue_border : C.card_bd), width: 1.0 }
       });
-    }
-
-    if (stageLimit >= 4) {
-      slide.addShape(pptx.ShapeType.roundRect, { x: 0.70, y: 4.80, w: 7.30, h: 0.80, fill: { color: this.h(C.amber_bg || C.card_bg) }, line: { color: this.h(C.amber_border || C.card_bd), width: 1 } });
-      slide.addText("MATCHING VERIFICATION ENGINE: Automated Price Variance < 1.0% Auto-Cleared • Exception Hand-Off", { x: 0.85, y: 5.00, w: 7.00, h: 0.40, bold: true, fontSize: 9.5, color: this.h(C.amber_accent), fontFace: "Calibri" });
-    }
-
-    if (stageLimit >= 5) {
-      slide.addShape(pptx.ShapeType.roundRect, { x: 8.50, y: 2.50, w: 4.43, h: 3.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-      slide.addText("VENDOR PERFORMANCE & RISK SCORECARD", { x: 8.70, y: 2.70, w: 4.00, h: 0.30, bold: true, fontSize: 11, color: this.h(C.teal_accent), fontFace: "Calibri" });
-      const kpis = [
-        { label: "On-Time Delivery", score: "97.4%", status: "OPTIMAL" },
-        { label: "Price Variance SLA", score: "0.42%", status: "PASS" },
-        { label: "Duplicate Invoice Risk", score: "0.00%", status: "ZERO" }
-      ];
-      kpis.forEach((k, i) => {
-        const ky = 3.30 + i * 0.75;
-        slide.addShape(pptx.ShapeType.roundRect, { x: 8.70, y: ky, w: 4.03, h: 0.60, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.card_bd), width: 0.75 } });
-        slide.addText(`${k.label}: ${k.score}  [${k.status}]`, { x: 8.85, y: ky + 0.15, w: 3.73, h: 0.35, bold: true, fontSize: 9.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      // Pill badge
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: px + 0.12, y: 2.78, w: 1.20, h: 0.20,
+        rectRadius: 0.04,
+        fill: { color: this.h(showMatching ? C.blue_accent : C.card_bd) },
+        line: { width: 0 }
       });
-    }
+      slide.addText(p.badge, {
+        x: px + 0.12, y: 2.78, w: 1.20, h: 0.20,
+        fontSize: 6.5, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+      });
+      // Avatar circle
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: px + 2.30 - 0.44, y: 2.78, w: 0.36, h: 0.36,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(showMatching ? C.blue_border : C.card_bd), width: 0.75 }
+      });
+      if (showMatching) {
+        try {
+          slide.addImage({
+            path: this.getEmotePath(p.emote),
+            x: px + 2.30 - 0.40, y: 2.82, w: 0.28, h: 0.28
+          });
+        } catch (e) {}
+      }
+      slide.addText(p.name, {
+        x: px + 0.12, y: 3.08, w: 2.06, h: 0.44,
+        fontSize: 10, bold: true, color: this.h(showMatching ? C.text_primary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+      slide.addText(p.desc, {
+        x: px + 0.12, y: 3.56, w: 2.06, h: 0.90,
+        fontSize: 7.5, color: this.h(showMatching ? C.text_secondary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+
+      if (idx < 2) {
+        this.addArrowRight(slide, px + 2.32, 3.60, px + 2.50 - 0.02, this.h(showMatching ? C.amber_accent : C.card_bd));
+      }
+    });
+
+    // Matching Engine Banner
+    const showEngine = stageLimit >= 4 || stageLimit === 5;
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.65, y: 4.70, w: 7.40, h: 0.96,
+      rectRadius: 0.06,
+      fill: { color: this.h(showEngine ? (C.amber_bg || C.card_bg) : C.card_bg) },
+      line: { color: this.h(showEngine ? (C.amber_border || C.card_bd) : C.card_bd), width: 1.0 }
+    });
+    slide.addText("MATCHING VERIFICATION ENGINE: Automated Price Variance < 1.0% Auto-Cleared • Exception Hand-Off", {
+      x: 0.80, y: 4.80, w: 7.10, h: 0.30,
+      fontSize: 9.5, bold: true, color: this.h(showEngine ? C.amber_accent : C.text_muted), fontFace: "Calibri", margin: 0
+    });
+    slide.addText("Discrepancies > 1.0% automatically route to Procure-to-Pay triage queue with 48-hour vendor clarification SLA.", {
+      x: 0.80, y: 5.12, w: 7.10, h: 0.44,
+      fontSize: 8, color: this.h(showEngine ? C.text_secondary : C.text_muted), fontFace: "Calibri", margin: 0
+    });
+
+    // 3. Middle Right: Vendor Scorecard Dock
+    const showScorecard = stageLimit >= 5;
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 8.50, y: 2.38, w: 4.43, h: 3.52,
+      rectRadius: 0.10,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.card_bd), width: 1.2 }
+    });
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 8.70, y: 2.28, w: 3.40, h: 0.24,
+      rectRadius: 0.05,
+      fill: { color: this.h(showScorecard ? C.teal_accent : C.card_bd) },
+      line: { width: 0 }
+    });
+    slide.addText("VENDOR PERFORMANCE & RISK SCORECARD", {
+      x: 8.70, y: 2.28, w: 3.40, h: 0.24,
+      fontSize: 8, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+    });
+
+    const kpis = [
+      { label: "On-Time Delivery", score: "97.4%", status: "OPTIMAL", badgeColor: C.teal_accent, desc: "Evaluated across 1,420 shipments" },
+      { label: "Price Variance SLA", score: "0.42%", status: "PASS", badgeColor: C.blue_accent, desc: "Within bilateral contract delta margin" },
+      { label: "Duplicate Invoice Risk", score: "0.00%", status: "ZERO", badgeColor: C.rose_accent, desc: "Cryptographic ledger hash validation" }
+    ];
+    kpis.forEach((k, i) => {
+      const ky = 2.68 + i * 0.98;
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 8.70, y: ky, w: 4.03, h: 0.82,
+        rectRadius: 0.08,
+        fill: { color: this.h(showScorecard ? C.blue_bg : C.card_bg) },
+        line: { color: this.h(showScorecard ? C.card_bd : C.card_bd), width: 0.75 }
+      });
+      // Label
+      slide.addText(k.label, {
+        x: 8.85, y: ky + 0.10, w: 2.40, h: 0.24,
+        fontSize: 9.5, bold: true, color: this.h(showScorecard ? C.text_primary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+      // Status Pill
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 8.70 + 4.03 - 0.92, y: ky + 0.10, w: 0.78, h: 0.20,
+        rectRadius: 0.04,
+        fill: { color: this.h(showScorecard ? k.badgeColor : C.card_bd) },
+        line: { width: 0 }
+      });
+      slide.addText(k.status, {
+        x: 8.70 + 4.03 - 0.92, y: ky + 0.10, w: 0.78, h: 0.20,
+        fontSize: 7, bold: true, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0
+      });
+      // Score & Desc
+      slide.addText(`${k.score}  •  ${k.desc}`, {
+        x: 8.85, y: ky + 0.40, w: 3.73, h: 0.32,
+        fontSize: 8.5, color: this.h(showScorecard ? C.text_secondary : C.text_muted), fontFace: "Calibri", margin: 0
+      });
+    });
+
+    // 4. Bottom Full-Width Procurement Ribbon
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: 0.40, y: 6.08, w: 12.53, h: 1.16,
+      rectRadius: 0.08,
+      fill: { color: this.h(C.card_bg) },
+      line: { color: this.h(C.card_bd), width: 1.2 }
+    });
+    slide.addText("PHILIPS SUPPLY CHAIN & PROCUREMENT EXCELLENCE  •  E2E METRICS", {
+      x: 0.64, y: 6.16, w: 6.00, h: 0.22,
+      fontSize: 8.5, bold: true, color: this.h(C.text_muted), fontFace: "Calibri", margin: 0
+    });
+    // KPI 1
+    slide.addText("98.2%", {
+      x: 0.64, y: 6.42, w: 1.60, h: 0.48,
+      fontSize: 22, bold: true, color: this.h(C.blue_accent), fontFace: "Calibri", margin: 0
+    });
+    slide.addText("PO-to-Receipt On-Time SLA\nGlobal Supplier Benchmark", {
+      x: 2.10, y: 6.46, w: 2.40, h: 0.44,
+      fontSize: 8.5, bold: true, color: this.h(C.teal_accent), fontFace: "Calibri", margin: 0
+    });
+    // KPI 2
+    slide.addText("99.1%", {
+      x: 4.80, y: 6.42, w: 1.60, h: 0.48,
+      fontSize: 22, bold: true, color: this.h(C.amber_accent), fontFace: "Calibri", margin: 0
+    });
+    slide.addText("3-Way Matching Line Accuracy\nAutomated Tolerance Clear", {
+      x: 5.85, y: 6.46, w: 2.40, h: 0.44,
+      fontSize: 8.5, bold: true, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
+    });
+    // KPI 3
+    slide.addText("91.4%", {
+      x: 8.60, y: 6.42, w: 1.60, h: 0.48,
+      fontSize: 22, bold: true, color: this.h(C.rose_accent), fontFace: "Calibri", margin: 0
+    });
+    slide.addText("Touchless Invoice Processing Rate\nZero Human Touch", {
+      x: 9.65, y: 6.46, w: 2.80, h: 0.44,
+      fontSize: 8.5, bold: true, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0
+    });
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -1158,8 +1661,18 @@ class ClientPptxGenerator {
   // ══════════════════════════════════════════════════════════════════════════
   // HELPER DRAWING METHODS
   // ══════════════════════════════════════════════════════════════════════════
+  static getShapeType(type) {
+    if (typeof PptxGenJS !== "undefined" && PptxGenJS.ShapeType && PptxGenJS.ShapeType[type]) {
+      return PptxGenJS.ShapeType[type];
+    }
+    if (typeof window !== "undefined" && window.PptxGenJS && window.PptxGenJS.ShapeType && window.PptxGenJS.ShapeType[type]) {
+      return window.PptxGenJS.ShapeType[type];
+    }
+    return type;
+  }
+
   static addBpCard(slide, x, y, w, h, title, sub, emote, bg, border, stripColor = null, chevronColor = null, badgeText = null, badgeColor = null) {
-    slide.addShape(window.PptxGenJS.ShapeType ? window.PptxGenJS.ShapeType.roundRect : "roundRect", {
+    slide.addShape(this.getShapeType("roundRect"), {
       x: x,
       y: y,
       w: w,
@@ -1170,7 +1683,7 @@ class ClientPptxGenerator {
     });
 
     if (stripColor) {
-      slide.addShape(window.PptxGenJS.ShapeType ? window.PptxGenJS.ShapeType.rect : "rect", {
+      slide.addShape(this.getShapeType("rect"), {
         x: x,
         y: y,
         w: 0.06,
@@ -1181,7 +1694,7 @@ class ClientPptxGenerator {
     }
 
     if (badgeText && badgeColor) {
-      slide.addShape(window.PptxGenJS.ShapeType ? window.PptxGenJS.ShapeType.roundRect : "roundRect", {
+      slide.addShape(this.getShapeType("roundRect"), {
         x: x + 0.14,
         y: y + 0.12,
         w: 1.12,
@@ -1262,7 +1775,7 @@ class ClientPptxGenerator {
 
     if (emote) {
       try {
-        const emoteFilename = window.getEmoteInfo ? window.getEmoteInfo(emote).filename : (emote.includes(".") ? emote : (emote.startsWith("m_") || emote.startsWith("icon_") ? `${emote}.png` : `${emote}.gif`));
+        const emoteFilename = typeof window !== "undefined" && window.getEmoteInfo ? window.getEmoteInfo(emote).filename : (emote.includes(".") ? emote : (emote.startsWith("m_") || emote.startsWith("icon_") ? `${emote}.png` : `${emote}.gif`));
         if (!emoteFilename.endsWith(".svg")) {
           slide.addImage({
             path: `emotes/${emoteFilename}`,
@@ -1277,31 +1790,46 @@ class ClientPptxGenerator {
   }
 
   static addArrowRight(slide, x1, y, x2, color) {
-    slide.addShape(window.PptxGenJS.ShapeType ? window.PptxGenJS.ShapeType.line : "line", {
-      x: x1,
+    const minX = Math.min(x1, x2);
+    const w = Math.abs(x2 - x1);
+    if (w < 0.01) return;
+    slide.addShape(this.getShapeType("line"), {
+      x: minX,
       y: y,
-      w: x2 - x1,
+      w: w,
       h: 0,
+      flipH: x2 < x1,
       line: { color: color, width: 2.0, endArrowType: "triangle" }
     });
   }
 
   static addArrowDown(slide, x, y1, y2, color) {
-    slide.addShape(window.PptxGenJS.ShapeType ? window.PptxGenJS.ShapeType.line : "line", {
+    const minY = Math.min(y1, y2);
+    const h = Math.abs(y2 - y1);
+    if (h < 0.01) return;
+    slide.addShape(this.getShapeType("line"), {
       x: x,
-      y: y1,
+      y: minY,
       w: 0,
-      h: y2 - y1,
+      h: h,
+      flipV: y2 < y1,
       line: { color: color, width: 2.0, endArrowType: "triangle" }
     });
   }
 
   static addLine(slide, x1, y1, x2, y2, color) {
-    slide.addShape(window.PptxGenJS.ShapeType ? window.PptxGenJS.ShapeType.line : "line", {
-      x: x1,
-      y: y1,
-      w: x2 - x1,
-      h: y2 - y1,
+    const minX = Math.min(x1, x2);
+    const minY = Math.min(y1, y2);
+    const w = Math.abs(x2 - x1);
+    const h = Math.abs(y2 - y1);
+    if (w < 0.005 && h < 0.005) return;
+    slide.addShape(this.getShapeType("line"), {
+      x: minX,
+      y: minY,
+      w: Math.max(0.001, w),
+      h: Math.max(0.001, h),
+      flipH: x2 < x1,
+      flipV: y2 < y1,
       line: { color: color, width: 2.0 }
     });
   }
