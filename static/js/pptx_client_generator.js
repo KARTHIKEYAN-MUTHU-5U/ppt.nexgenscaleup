@@ -43,128 +43,317 @@ class ClientPptxGenerator {
     };
 
     const templateId = data.template_id || "process_flow";
-    let filename = "Philips_Executive_Presentation.pptx";
+    const stageNames = this.getStageNamesForTemplate(templateId);
 
-    switch (templateId) {
-      case "strategic_roadmap":
-        filename = "Philips_Strategic_Transformation_Roadmap.pptx";
-        this.buildStrategicRoadmap(pptx, data, C);
-        break;
-      case "operating_model":
-        filename = "Philips_Target_Operating_Model_TOM.pptx";
-        this.buildOperatingModel(pptx, data, C);
-        break;
-      case "data_pipeline":
-        filename = "Philips_HealthSuite_AI_Data_Pipeline.pptx";
-        this.buildDataPipeline(pptx, data, C);
-        break;
-      case "kpi_scorecard":
-        filename = "Royal_Philips_Executive_KPI_Scorecard.pptx";
-        this.buildKpiScorecard(pptx, data, C);
-        break;
-      case "financial_close":
-        filename = "Philips_Month_End_Financial_Close.pptx";
-        this.buildFinancialClose(pptx, data, C);
-        break;
-      case "vendor_p2p":
-        filename = "Philips_Procure_To_Pay_P2P.pptx";
-        this.buildVendorP2P(pptx, data, C);
-        break;
-      case "it_service":
-        filename = "Philips_ITIL_Service_Architecture.pptx";
-        this.buildITService(pptx, data, C);
-        break;
-      case "risk_compliance":
-        filename = "Philips_Enterprise_Risk_Compliance_5x5.pptx";
-        this.buildRiskCompliance(pptx, data, C);
-        break;
-      case "customer_journey":
-        filename = "Philips_Clinical_Customer_Journey.pptx";
-        this.buildCustomerJourney(pptx, data, C);
-        break;
-      case "change_mgmt":
-        filename = "Philips_Change_Management_ADKAR.pptx";
-        this.buildChangeMgmt(pptx, data, C);
-        break;
-      case "swot_analysis":
-        filename = "Philips_Executive_SWOT_Matrix.pptx";
-        this.buildSwotAnalysis(pptx, data, C);
-        break;
-      case "project_timeline":
-        filename = "Philips_Project_Gantt_Timeline.pptx";
-        this.buildProjectTimeline(pptx, data, C);
-        break;
-      case "org_chart":
-        filename = "Philips_Executive_Org_Hierarchy.pptx";
-        this.buildOrgChart(pptx, data, C);
-        break;
-      case "budget_waterfall":
-        filename = "Philips_Financial_Budget_Waterfall.pptx";
-        this.buildBudgetWaterfall(pptx, data, C);
-        break;
-      case "process_flow":
-      default:
-        filename = "Philips_ICA_Executive_Blueprint.pptx";
-        this.buildProcessFlow(pptx, data, C);
-        break;
+    // Build 5 Progressive Animated Slides (Stage 1 to Stage 5 Master)
+    for (let s = 1; s <= 5; s++) {
+      const slideData = JSON.parse(JSON.stringify(data));
+      slideData.header = slideData.header || {};
+      const stageTitle = stageNames[s - 1] || `Stage ${s} Flow`;
+      const baseSub = (data.header && data.header.subtitle) ? data.header.subtitle : "PHILIPS EXECUTIVE SUITE";
+      slideData.header.subtitle = s === 5 
+        ? `${baseSub}  •  MASTER ARCHITECTURE BLUEPRINT`
+        : `${baseSub}  •  ${stageTitle.toUpperCase()}`;
+
+      this.buildTemplate(pptx, templateId, slideData, C, s);
+    }
+
+    const filename = this.getFilenameForTemplate(templateId);
+
+    // Inject OpenXML timing animations into package via JSZip
+    try {
+      if (typeof JSZip !== "undefined") {
+        const arrayBuffer = await pptx.write("arraybuffer");
+        const blob = await this.injectTimingAnimations(arrayBuffer);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        return;
+      }
+    } catch (e) {
+      console.warn("Direct buffer download fallback:", e);
     }
 
     return pptx.writeFile({ fileName: filename });
   }
 
-  // Generate 5-Slide Progressive Morph Deck
-  static async generateProgressiveDeck(data) {
-    if (typeof PptxGenJS === "undefined") {
-      throw new Error("PptxGenJS library is not loaded");
+  static async injectTimingAnimations(arrayBuffer) {
+    if (typeof JSZip === "undefined") return arrayBuffer;
+    try {
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      const slideFiles = Object.keys(zip.files).filter(f => f.startsWith("ppt/slides/slide") && f.endsWith(".xml"));
+
+      for (const slidePath of slideFiles) {
+        let slideXml = await zip.file(slidePath).async("text");
+        if (slideXml.includes("<p:timing>")) continue;
+
+        const regex = /<p:cNvPr id="(\d+)"/g;
+        let match;
+        const shapeIds = [];
+        while ((match = regex.exec(slideXml)) !== null) {
+          const id = match[1];
+          if (id !== "1") shapeIds.push(id);
+        }
+
+        if (shapeIds.length === 0) continue;
+
+        let idCounter = 1;
+        let childTnLst = "";
+        shapeIds.forEach((spId, idx) => {
+          const isClick = idx % 2 === 0;
+          const nodeType = isClick ? "clickEffect" : "withEffect";
+          const delay = isClick ? 0 : 150;
+          const effectFilter = idx % 3 === 0 ? "wipe" : "fade";
+          const cTn1 = idCounter++;
+          const cTn2 = idCounter++;
+          const cTn3 = idCounter++;
+          const cTn4 = idCounter++;
+
+          childTnLst += `
+            <p:par>
+              <p:cTn id="${cTn1}" fill="hold">
+                <p:stCondLst><p:cond delay="${delay}"/></p:stCondLst>
+                <p:childTnLst>
+                  <p:par>
+                    <p:cTn id="${cTn2}" presetID="10" presetClass="entr" presetSubtype="0" fill="hold" grpId="0" nodeType="${nodeType}">
+                      <p:stCondLst><p:cond delay="0"/></p:stCondLst>
+                      <p:childTnLst>
+                        <p:set>
+                          <p:cBhvr>
+                            <p:cTn id="${cTn3}" dur="1" fill="hold"><p:stCondLst><p:cond delay="0"/></p:stCondLst></p:cTn>
+                            <p:tgtEl><p:spTgt spid="${spId}"/></p:tgtEl>
+                            <p:attrNameLst><p:attrName>style.visibility</p:attrName></p:attrNameLst>
+                          </p:cBhvr>
+                          <p:to><p:strVal val="visible"/></p:to>
+                        </p:set>
+                        <p:animEffect transition="in" filter="${effectFilter}">
+                          <p:cBhvr>
+                            <p:cTn id="${cTn4}" dur="600"/>
+                            <p:tgtEl><p:spTgt spid="${spId}"/></p:tgtEl>
+                          </p:cBhvr>
+                        </p:animEffect>
+                      </p:childTnLst>
+                    </p:cTn>
+                  </p:par>
+                </p:childTnLst>
+              </p:cTn>
+            </p:par>
+          `;
+        });
+
+        const timingXml = `<p:timing><p:tnLst><p:par><p:cTn id="${idCounter++}" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst><p:seq concurrent="1" nextAc="seek"><p:cTn id="${idCounter++}" dur="indefinite" nodeType="mainSeq"><p:childTnLst>${childTnLst}</p:childTnLst></p:cTn></p:seq></p:childTnLst></p:cTn></p:par></p:tnLst></p:timing>`;
+        slideXml = slideXml.replace("</p:sld>", timingXml + "</p:sld>");
+        zip.file(slidePath, slideXml);
+      }
+
+      return await zip.generateAsync({ type: "blob" });
+    } catch (e) {
+      console.warn("Timing injection error:", e);
+      return arrayBuffer;
     }
+  }
 
-    const pptx = new PptxGenJS();
-    pptx.layout = "LAYOUT_16x9";
-
-    const paletteKey = data.palette || "executive_blueprint";
-    const C = (typeof PALETTES !== "undefined" && PALETTES[paletteKey]) ? PALETTES[paletteKey] : {
-      canvas_bg: "#F7F6F3",
-      hdr_bg: "#1A1A2E",
-      stripe: "#E8734A",
-      card_bg: "#FFFFFF",
-      card_bd: "#E0DDD7",
-      text_primary: "#1A1A2E",
-      text_secondary: "#3D3D50",
-      text_muted: "#6B6B7B",
-      blue_accent: "#2D3B4E",
-      blue_bg: "#F0EFEB",
-      blue_border: "#D5D2CB",
-      amber_accent: "#C4621A",
-      amber_bg: "#FBF3EC",
-      amber_border: "#EDCFB3",
-      teal_accent: "#1A7A6D",
-      teal_border: "#B3D9D3",
-      rose_accent: "#B5395A",
-      rose_bg: "#FBF0F3",
-      rose_border: "#E8BFC9",
-      red_accent: "#C42B2B",
-      red_bg: "#FBF0F0",
-      red_border: "#E8C0C0",
-      purple_accent: "#5A4E8C",
-      dashed_border: "#D4D0C8"
-    };
-
-    const stageNames = [
-      "Stage 1: Ingestion & Scope Validation",
-      "Stage 2: Open-Item Delta & Filter",
-      "Stage 3: 3-Track Root Cause Taxonomy",
-      "Stage 4: Action & Remediation Execution",
-      "Stage 5: Closed-Loop Governance Gate & SLA"
-    ];
-
-    for (let s = 1; s <= 5; s++) {
-      const slideData = JSON.parse(JSON.stringify(data));
-      slideData.header = slideData.header || {};
-      slideData.header.subtitle = `PHILIPS EXECUTIVE SUITE  •  ${stageNames[s - 1].toUpperCase()}`;
-      this.buildProcessFlow(pptx, slideData, C, s);
+  static buildTemplate(pptx, templateId, data, C, stageLimit = 5) {
+    switch (templateId) {
+      case "strategic_roadmap":
+        this.buildStrategicRoadmap(pptx, data, C, stageLimit);
+        break;
+      case "operating_model":
+        this.buildOperatingModel(pptx, data, C, stageLimit);
+        break;
+      case "data_pipeline":
+        this.buildDataPipeline(pptx, data, C, stageLimit);
+        break;
+      case "kpi_scorecard":
+        this.buildKpiScorecard(pptx, data, C, stageLimit);
+        break;
+      case "financial_close":
+        this.buildFinancialClose(pptx, data, C, stageLimit);
+        break;
+      case "vendor_p2p":
+        this.buildVendorP2P(pptx, data, C, stageLimit);
+        break;
+      case "it_service":
+        this.buildITService(pptx, data, C, stageLimit);
+        break;
+      case "risk_compliance":
+        this.buildRiskCompliance(pptx, data, C, stageLimit);
+        break;
+      case "customer_journey":
+        this.buildCustomerJourney(pptx, data, C, stageLimit);
+        break;
+      case "change_mgmt":
+        this.buildChangeMgmt(pptx, data, C, stageLimit);
+        break;
+      case "swot_analysis":
+        this.buildSwotAnalysis(pptx, data, C, stageLimit);
+        break;
+      case "project_timeline":
+        this.buildProjectTimeline(pptx, data, C, stageLimit);
+        break;
+      case "org_chart":
+        this.buildOrgChart(pptx, data, C, stageLimit);
+        break;
+      case "budget_waterfall":
+        this.buildBudgetWaterfall(pptx, data, C, stageLimit);
+        break;
+      case "process_flow":
+      default:
+        this.buildProcessFlow(pptx, data, C, stageLimit);
+        break;
     }
+  }
 
-    return pptx.writeFile({ fileName: "Philips_ICA_Executive_Progressive_Morph_Deck.pptx" });
+  static getStageNamesForTemplate(templateId) {
+    switch (templateId) {
+      case "financial_close":
+        return [
+          "Stage 1: Close Phases & Ingestion Timeline",
+          "Stage 2: Reconciliation & 3-Way Matching Runbook",
+          "Stage 3: Auto-Clearing & Exception Handling",
+          "Stage 4: Settlement Velocity & Performance Speed",
+          "Stage 5: Close Governance & Materiality SLA Gateways"
+        ];
+      case "vendor_p2p":
+        return [
+          "Stage 1: Purchase Requisition & PO Issuance",
+          "Stage 2: Logistics & Goods Receipt (GR) Tracking",
+          "Stage 3: SAP 3-Way Matching Pipeline (PO vs GR vs IR)",
+          "Stage 4: Invoice Clearance & Variance Tolerance",
+          "Stage 5: Vendor Scorecard & Automated Payment Gateways"
+        ];
+      case "strategic_roadmap":
+        return [
+          "Horizon 1: Immediate Core Platform Modernization",
+          "Horizon 2: Next-Gen Scaled Enterprise Expansion",
+          "Horizon 3: Disruptive Vision & Autonomous Moonshots",
+          "Strategic Enablers: Architecture & Org Alignment",
+          "Enterprise Governance: Capital Allocation & Milestones"
+        ];
+      case "operating_model":
+        return [
+          "Tier 1: Strategic Governance & Executive Steering",
+          "Tier 2: Business Unit Delivery & Execution Engines",
+          "Tier 3: Platform Architecture & Global Shared Services",
+          "Cross-Functional Handshakes & Decision Gates",
+          "Master TOM Operating Model & Value Stream Realization"
+        ];
+      case "data_pipeline":
+        return [
+          "Layer 1: Multi-Modal Ingestion (EHR, Telemetry, DICOM)",
+          "Layer 2: Compliance Normalization & HIPAA Boundary",
+          "Layer 3: Enterprise Lakehouse & Storage Engine",
+          "Layer 4: Agentic AI Inference & ML Orchestration",
+          "Layer 5: Clinical Action Gateways & Executive Analytics"
+        ];
+      case "kpi_scorecard":
+        return [
+          "Dimension 1: Financial Performance & Margin Growth",
+          "Dimension 2: Operational Velocity & Quality SLAs",
+          "Dimension 3: Patient Experience & Customer Satisfaction",
+          "Dimension 4: Innovation & Digital Platform Maturity",
+          "Executive Board KPI Dashboard & Governance Review"
+        ];
+      case "it_service":
+        return [
+          "Tier 1: Service Desk Ingestion & Rapid Triage",
+          "Tier 2: Technical Deep-Dive & SLA Escalation",
+          "Tier 3: Problem Management & Root Cause Remediation",
+          "Tier 4: Platform Reliability & Continuous Engineering",
+          "ITIL Governance Matrix & MTTR Performance Gate"
+        ];
+      case "risk_compliance":
+        return [
+          "Dimension 1: Risk Identification & Taxonomy Ingestion",
+          "Dimension 2: 5x5 Impact vs Likelihood Heatmap Matrix",
+          "Dimension 3: Internal Control & Mitigation Workflows",
+          "Dimension 4: SOX Compliance & Regulatory Safeguards",
+          "Executive Risk Committee Audit Trail & Sign-Off"
+        ];
+      case "customer_journey":
+        return [
+          "Phase 1: Discovery, Onboarding & Eligibility Verification",
+          "Phase 2: Clinical Diagnostic Assessment & Consultation",
+          "Phase 3: Personalized Treatment Delivery & Intervention",
+          "Phase 4: Post-Procedure Monitoring & Recovery Protocol",
+          "Phase 5: Longitudinal Patient Outcomes & Brand Loyalty"
+        ];
+      case "change_mgmt":
+        return [
+          "ADKAR Stage 1: Awareness of Business Imperative",
+          "ADKAR Stage 2: Desire to Support & Participate",
+          "ADKAR Stage 3: Knowledge & Training Architecture",
+          "ADKAR Stage 4: Ability to Execute & Adopt New Ways of Working",
+          "ADKAR Stage 5: Reinforcement & Long-Term Institutionalization"
+        ];
+      case "swot_analysis":
+        return [
+          "Quadrant 1: Core Competitive Strengths & Differentiators",
+          "Quadrant 2: Internal Vulnerabilities & Operational Weaknesses",
+          "Quadrant 3: Market Expansion & Emerging Opportunities",
+          "Quadrant 4: External Threats & Macro Volatility",
+          "Executive Strategic Synthesis & Capital Prioritization"
+        ];
+      case "budget_waterfall":
+        return [
+          "Step 1: Baseline Operating Budget Allocation",
+          "Step 2: Organic Revenue & Commercial Growth Variances",
+          "Step 3: Strategic Synergies & Operational Cost Takeout",
+          "Step 4: Strategic Capex & Digital Transformation Reinvestment",
+          "Step 5: Net Final Operating EBITDA & Executive Margin Walk"
+        ];
+      case "project_timeline":
+        return [
+          "Quarter 1: Foundation Architecture & Discovery Alignment",
+          "Quarter 2: Core Platform Development & Sprint Delivery",
+          "Quarter 3: System Integration & Pilot Operational Validation",
+          "Quarter 4: Global Cutover, Deployment & Rollout Scaling",
+          "Program Governance, Steering Milestones & Critical Path"
+        ];
+      case "org_chart":
+        return [
+          "Level 1: Executive Board & Supervisory Committee",
+          "Level 2: Function & Business Unit Executive Leadership",
+          "Level 3: Strategic Operations & Program Engineering Directors",
+          "Level 4: Cross-Functional Councils & Global Practice Leads",
+          "Enterprise Governance & Accountability Matrix"
+        ];
+      case "process_flow":
+      default:
+        return [
+          "Stage 1: Ingestion & Scope Validation Pipeline",
+          "Stage 2: Open-Item Delta & Filter Governance",
+          "Stage 3: 3-Track Root Cause Taxonomy & Decision Routing",
+          "Stage 4: Action Execution & Remediation Pipeline",
+          "Stage 5: Master Process Flow Architecture & SLA Governance"
+        ];
+    }
+  }
+
+  static getFilenameForTemplate(templateId) {
+    switch (templateId) {
+      case "financial_close": return "Philips_Month_End_Financial_Close_Animated.pptx";
+      case "vendor_p2p": return "Philips_Procure_To_Pay_P2P_Animated.pptx";
+      case "strategic_roadmap": return "Philips_Strategic_Transformation_Roadmap_Animated.pptx";
+      case "operating_model": return "Philips_Target_Operating_Model_TOM_Animated.pptx";
+      case "data_pipeline": return "Philips_HealthSuite_AI_Data_Pipeline_Animated.pptx";
+      case "kpi_scorecard": return "Royal_Philips_Executive_KPI_Scorecard_Animated.pptx";
+      case "it_service": return "Philips_ITIL_Service_Architecture_Animated.pptx";
+      case "risk_compliance": return "Philips_Enterprise_Risk_Compliance_5x5_Animated.pptx";
+      case "customer_journey": return "Philips_Clinical_Customer_Journey_Animated.pptx";
+      case "change_mgmt": return "Philips_Change_Management_ADKAR_Animated.pptx";
+      case "swot_analysis": return "Philips_Executive_SWOT_Matrix_Animated.pptx";
+      case "project_timeline": return "Philips_Project_Gantt_Timeline_Animated.pptx";
+      case "org_chart": return "Philips_Executive_Org_Hierarchy_Animated.pptx";
+      case "budget_waterfall": return "Philips_Financial_Budget_Waterfall_Animated.pptx";
+      case "process_flow":
+      default: return "Philips_ICA_Executive_Blueprint_Animated.pptx";
+    }
   }
 
   static h(colorStr) {
@@ -507,7 +696,7 @@ class ClientPptxGenerator {
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 2: STRATEGIC ROADMAP (3 HORIZONS)
   // ══════════════════════════════════════════════════════════════════════════
-  static buildStrategicRoadmap(pptx, data, C) {
+  static buildStrategicRoadmap(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
 
@@ -519,8 +708,12 @@ class ClientPptxGenerator {
 
     this.addHeader(slide, pptx, h, b, C);
 
+    // Horizon visible limit based on stageLimit
+    const maxHorizonIdx = stageLimit <= 1 ? 0 : (stageLimit === 2 ? 1 : 2);
+
     // Horizon Headers
     horizons.forEach((hz, i) => {
+      if (i > maxHorizonIdx) return;
       const x = 3.20 + i * 3.24;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: x,
@@ -537,6 +730,17 @@ class ClientPptxGenerator {
         ],
         { x: x + 0.14, y: 0.82, w: 2.80, h: 0.38, fontFace: "Calibri", margin: 0 }
       );
+
+      if (i < maxHorizonIdx) {
+        slide.addShape(pptx.ShapeType.rightArrow, {
+          x: x + 3.12,
+          y: 0.95,
+          w: 0.10,
+          h: 0.12,
+          fill: { color: this.h(C.blue_accent) },
+          line: { width: 0 }
+        });
+      }
     });
 
     // Workstreams
@@ -553,6 +757,7 @@ class ClientPptxGenerator {
       slide.addText(ws.name, { x: 0.54, y: y + 0.36, w: 2.20, h: 0.34, bold: true, fontSize: 11, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0 });
 
       [ws.h1, ws.h2, ws.h3].forEach((htxt, hidx) => {
+        if (hidx > maxHorizonIdx) return;
         const x = 3.20 + hidx * 3.24;
         slide.addShape(pptx.ShapeType.roundRect, {
           x: x,
@@ -566,32 +771,34 @@ class ClientPptxGenerator {
       });
     });
 
-    // Metrics
-    slide.addShape(pptx.ShapeType.roundRect, {
-      x: 0.40,
-      y: 6.26,
-      w: 12.53,
-      h: 0.90,
-      fill: { color: this.h(C.card_bg) },
-      line: { color: this.h(C.blue_accent), width: 1 }
-    });
-    metrics.forEach((m, i) => {
-      const x = 1.20 + i * 4.00;
-      slide.addText(
-        [
-          { text: m.label + "\n", options: { bold: true, fontSize: 9, color: this.h(C.text_muted) } },
-          { text: m.value + "  ", options: { bold: true, fontSize: 24, color: this.h(C.blue_accent) } },
-          { text: m.sub, options: { fontSize: 8.5, color: this.h(C.text_secondary) } }
-        ],
-        { x: x, y: 6.36, w: 3.50, h: 0.70, fontFace: "Calibri", margin: 0 }
-      );
-    });
+    // Metrics (Stages 4 and 5)
+    if (stageLimit >= 4) {
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 0.40,
+        y: 6.26,
+        w: 12.53,
+        h: 0.90,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.blue_accent), width: 1 }
+      });
+      metrics.forEach((m, i) => {
+        const x = 1.20 + i * 4.00;
+        slide.addText(
+          [
+            { text: m.label + "\n", options: { bold: true, fontSize: 9, color: this.h(C.text_muted) } },
+            { text: m.value + "  ", options: { bold: true, fontSize: 24, color: this.h(C.blue_accent) } },
+            { text: m.sub, options: { fontSize: 8.5, color: this.h(C.text_secondary) } }
+          ],
+          { x: x, y: 6.36, w: 3.50, h: 0.70, fontFace: "Calibri", margin: 0 }
+        );
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 3: TARGET OPERATING MODEL (TOM)
   // ══════════════════════════════════════════════════════════════════════════
-  static buildOperatingModel(pptx, data, C) {
+  static buildOperatingModel(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
 
@@ -602,7 +809,8 @@ class ClientPptxGenerator {
 
     this.addHeader(slide, pptx, h, b, C);
 
-    tiers.forEach((t, i) => {
+    const maxTier = Math.min(stageLimit, 3);
+    tiers.slice(0, maxTier).forEach((t, i) => {
       const y = 0.84 + i * 2.00;
       slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: y, w: 7.50, h: 1.86, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
       slide.addShape(pptx.ShapeType.roundRect, { x: 0.56, y: y + 0.16, w: 2.20, h: 0.26, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
@@ -610,28 +818,35 @@ class ClientPptxGenerator {
       slide.addText(t.title, { x: 0.56, y: y + 0.50, w: 5.50, h: 0.35, bold: true, fontSize: 13, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0 });
       slide.addText("Leadership: " + t.owner, { x: 0.56, y: y + 0.85, w: 5.50, h: 0.25, bold: true, fontSize: 9, color: this.h(C.amber_accent), fontFace: "Calibri", margin: 0 });
       slide.addText(t.mandate, { x: 0.56, y: y + 1.15, w: 5.50, h: 0.55, fontSize: 8.5, color: this.h(C.text_secondary), fontFace: "Calibri", margin: 0 });
+
+      if (i < maxTier - 1) {
+        slide.addShape(pptx.ShapeType.downArrow, { x: 4.05, y: y + 1.88, w: 0.20, h: 0.10, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+      }
     });
 
-    slide.addShape(pptx.ShapeType.roundRect, { x: 8.20, y: 0.84, w: 4.73, h: 5.86, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-    slide.addShape(pptx.ShapeType.roundRect, { x: 8.40, y: 1.04, w: 2.20, h: 0.28, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
-    slide.addText("GOVERNANCE RACI MATRIX", { x: 8.40, y: 1.04, w: 2.20, h: 0.28, bold: true, fontSize: 8.5, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0 });
+    if (stageLimit >= 4) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 8.20, y: 0.84, w: 4.73, h: 5.86, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+      slide.addShape(pptx.ShapeType.roundRect, { x: 8.40, y: 1.04, w: 2.20, h: 0.28, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+      slide.addText("GOVERNANCE RACI MATRIX", { x: 8.40, y: 1.04, w: 2.20, h: 0.28, bold: true, fontSize: 8.5, color: "FFFFFF", align: "center", fontFace: "Calibri", margin: 0 });
 
-    raci.forEach((r, idx) => {
-      const ry = 1.60 + idx * 0.70;
-      slide.addText(
-        [
-          { text: r.activity + "\n", options: { bold: true, fontSize: 9.5, color: this.h(C.text_primary) } },
-          { text: `Tier 1: ${r.s}   •   Tier 2: ${r.c}   •   Tier 3: ${r.h}`, options: { bold: true, fontSize: 8.5, color: this.h(C.amber_accent) } }
-        ],
-        { x: 8.40, y: ry, w: 4.33, h: 0.55, fontFace: "Calibri", margin: 0 }
-      );
-    });
+      const raciItems = stageLimit === 4 ? raci.slice(0, 3) : raci;
+      raciItems.forEach((r, idx) => {
+        const ry = 1.60 + idx * 0.70;
+        slide.addText(
+          [
+            { text: r.activity + "\n", options: { bold: true, fontSize: 9.5, color: this.h(C.text_primary) } },
+            { text: `Tier 1: ${r.s}   •   Tier 2: ${r.c}   •   Tier 3: ${r.h}`, options: { bold: true, fontSize: 8.5, color: this.h(C.amber_accent) } }
+          ],
+          { x: 8.40, y: ry, w: 4.33, h: 0.55, fontFace: "Calibri", margin: 0 }
+        );
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 4: DATA PIPELINE
   // ══════════════════════════════════════════════════════════════════════════
-  static buildDataPipeline(pptx, data, C) {
+  static buildDataPipeline(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
 
@@ -642,7 +857,8 @@ class ClientPptxGenerator {
 
     this.addHeader(slide, pptx, h, b, C);
 
-    stages.forEach((st, i) => {
+    const maxStages = Math.min(stageLimit, 4);
+    stages.slice(0, maxStages).forEach((st, i) => {
       const x = 0.40 + i * 3.16;
       slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.90, w: 2.92, h: 4.20, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
       slide.addShape(pptx.ShapeType.roundRect, { x: x + 0.20, y: 1.12, w: 0.48, h: 0.32, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
@@ -651,26 +867,32 @@ class ClientPptxGenerator {
       slide.addText(st.tech, { x: x + 0.20, y: 2.10, w: 2.52, h: 0.50, fontSize: 9, color: this.h(C.text_muted), fontFace: "Calibri", margin: 0 });
       slide.addShape(pptx.ShapeType.roundRect, { x: x + 0.20, y: 4.30, w: 2.52, h: 0.42, fill: { color: this.h(C.blue_bg) }, line: { width: 0 } });
       slide.addText(st.sla, { x: x + 0.20, y: 4.30, w: 2.52, h: 0.42, bold: true, fontSize: 9, color: this.h(C.blue_accent), align: "center", fontFace: "Calibri", margin: 0 });
+
+      if (i < maxStages - 1) {
+        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.94, y: 2.95, w: 0.20, h: 0.16, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+      }
     });
 
-    slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 5.34, w: 12.53, h: 1.76, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-    slide.addText("ENTERPRISE GOVERNANCE & COMPLIANCE GUARDRAILS", { x: 0.64, y: 5.50, w: 10.00, h: 0.30, bold: true, fontSize: 10, color: this.h(C.blue_accent), fontFace: "Calibri", margin: 0 });
-    guardrails.forEach((g, i) => {
-      const gx = 0.64 + i * 4.00;
-      slide.addText(
-        [
-          { text: g.title + "\n", options: { bold: true, fontSize: 9.5, color: this.h(C.text_primary) } },
-          { text: g.detail, options: { fontSize: 8, color: this.h(C.text_muted) } }
-        ],
-        { x: gx, y: 5.90, w: 3.60, h: 0.80, fontFace: "Calibri", margin: 0 }
-      );
-    });
+    if (stageLimit >= 5) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 5.34, w: 12.53, h: 1.76, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+      slide.addText("ENTERPRISE GOVERNANCE & COMPLIANCE GUARDRAILS", { x: 0.64, y: 5.50, w: 10.00, h: 0.30, bold: true, fontSize: 10, color: this.h(C.blue_accent), fontFace: "Calibri", margin: 0 });
+      guardrails.forEach((g, i) => {
+        const gx = 0.64 + i * 4.00;
+        slide.addText(
+          [
+            { text: g.title + "\n", options: { bold: true, fontSize: 9.5, color: this.h(C.text_primary) } },
+            { text: g.detail, options: { fontSize: 8, color: this.h(C.text_muted) } }
+          ],
+          { x: gx, y: 5.90, w: 3.60, h: 0.80, fontFace: "Calibri", margin: 0 }
+        );
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 5: KPI SCORECARD
   // ══════════════════════════════════════════════════════════════════════════
-  static buildKpiScorecard(pptx, data, C) {
+  static buildKpiScorecard(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
 
@@ -681,7 +903,8 @@ class ClientPptxGenerator {
 
     this.addHeader(slide, pptx, h, b, C);
 
-    kpis.forEach((k, i) => {
+    const visibleKpiCount = stageLimit === 1 ? 1 : (stageLimit === 2 ? 2 : (stageLimit === 3 ? 3 : 4));
+    kpis.slice(0, visibleKpiCount).forEach((k, i) => {
       const x = 0.40 + i * 3.16;
       const ragColor = k.rag === "green" ? "10B981" : (k.rag === "amber" ? "F59E0B" : "EF4444");
       slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.86, w: 2.92, h: 1.90, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
@@ -691,115 +914,245 @@ class ClientPptxGenerator {
       slide.addText(k.delta + " • " + k.note, { x: x + 0.20, y: 2.05, w: 2.50, h: 0.45, bold: true, fontSize: 8.5, color: ragColor, fontFace: "Calibri", margin: 0 });
     });
 
-    pillars.forEach((p, i) => {
-      const y = 3.00 + i * 1.34;
-      slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: y, w: 12.53, h: 1.14, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-      slide.addText(p.name, { x: 0.64, y: y + 0.25, w: 10.00, h: 0.35, bold: true, fontSize: 13, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0 });
-      slide.addText(p.detail, { x: 0.64, y: y + 0.60, w: 10.00, h: 0.35, fontSize: 9.5, color: this.h(C.text_muted), fontFace: "Calibri", margin: 0 });
-      slide.addShape(pptx.ShapeType.roundRect, { x: 11.00, y: y + 0.36, w: 1.50, h: 0.44, fill: { color: this.h(C.blue_bg) }, line: { width: 0 } });
-      slide.addText(p.score, { x: 11.00, y: y + 0.36, w: 1.50, h: 0.44, bold: true, fontSize: 15, color: this.h(C.blue_accent), align: "center", fontFace: "Calibri", margin: 0 });
-    });
+    if (stageLimit >= 4) {
+      const visiblePillars = stageLimit === 4 ? pillars.slice(0, 2) : pillars;
+      visiblePillars.forEach((p, i) => {
+        const y = 3.00 + i * 1.34;
+        slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: y, w: 12.53, h: 1.14, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+        slide.addText(p.name, { x: 0.64, y: y + 0.25, w: 10.00, h: 0.35, bold: true, fontSize: 13, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0 });
+        slide.addText(p.detail, { x: 0.64, y: y + 0.60, w: 10.00, h: 0.35, fontSize: 9.5, color: this.h(C.text_muted), fontFace: "Calibri", margin: 0 });
+        slide.addShape(pptx.ShapeType.roundRect, { x: 11.00, y: y + 0.36, w: 1.50, h: 0.44, fill: { color: this.h(C.blue_bg) }, line: { width: 0 } });
+        slide.addText(p.score, { x: 11.00, y: y + 0.36, w: 1.50, h: 0.44, bold: true, fontSize: 15, color: this.h(C.blue_accent), align: "center", fontFace: "Calibri", margin: 0 });
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 6: FINANCIAL CLOSE PIPELINE
   // ══════════════════════════════════════════════════════════════════════════
-  static buildFinancialClose(pptx, data, C) {
+  static buildFinancialClose(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
     const phases = data.phases || [];
+    // Stage 1: Top 4 Close Phases Ribbon with connectors
     phases.forEach((p, i) => {
       const x = 0.40 + i * 3.16;
       slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.76, w: 2.92, h: 0.60, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1 } });
       slide.addText(`${p.phase} • ${p.days}\n${p.title}`, { x: x + 0.10, y: 0.82, w: 2.70, h: 0.48, bold: true, fontSize: 9, color: this.h(C.text_primary), fontFace: "Calibri", margin: 0 });
+      if (i < 3) {
+        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.95, y: 0.98, w: 0.18, h: 0.16, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+      }
     });
 
     slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 1.52, w: 8.70, h: 4.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.dashed_border), width: 1.5, dashType: "dash" } });
     slide.addText("SUB-LEDGER SETTLEMENT RUNBOOK", { x: 0.56, y: 1.60, w: 3.50, h: 0.25, bold: true, fontSize: 10, color: this.h(C.blue_accent), fontFace: "Calibri" });
 
-    (data.nodes || []).forEach((n, idx) => {
-      const row = idx < 3 ? 0 : 1;
-      const col = idx % 3;
-      const x = 0.70 + col * 2.60;
-      const y = row === 0 ? 2.00 : 3.80;
-      slide.addShape(pptx.ShapeType.roundRect, { x: x, y: y, w: 2.30, h: 1.20, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.blue_border), width: 1 } });
-      slide.addText(`[${n.badge}] ${n.title}\n${n.desc}`, { x: x + 0.12, y: y + 0.12, w: 2.06, h: 0.96, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
-    });
+    // Stage 2: Nodes Row 1
+    if (stageLimit >= 2) {
+      (data.nodes || []).slice(0, 3).forEach((n, idx) => {
+        const x = 0.70 + idx * 2.60;
+        const y = 2.00;
+        slide.addShape(pptx.ShapeType.roundRect, { x: x, y: y, w: 2.30, h: 1.20, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.blue_border), width: 1 } });
+        slide.addText(`[${n.badge}] ${n.title}\n${n.desc}`, { x: x + 0.12, y: y + 0.12, w: 2.06, h: 0.96, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+        if (idx < 2) {
+          slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.33, y: y + 0.52, w: 0.22, h: 0.16, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+        }
+      });
+    }
 
-    // Governance Right Box
-    slide.addShape(pptx.ShapeType.roundRect, { x: 9.30, y: 1.52, w: 3.63, h: 4.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-    slide.addText("GOVERNANCE GATEWAYS & MATERIALITY", { x: 9.50, y: 1.70, w: 3.20, h: 0.30, bold: true, fontSize: 11, color: this.h(C.rose_accent), fontFace: "Calibri" });
+    // Stage 3: Nodes Row 2 & Lower Spine Connectors
+    if (stageLimit >= 3) {
+      (data.nodes || []).slice(3, 6).forEach((n, idx) => {
+        const x = 0.70 + idx * 2.60;
+        const y = 3.80;
+        slide.addShape(pptx.ShapeType.roundRect, { x: x, y: y, w: 2.30, h: 1.20, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+        slide.addText(`[${n.badge}] ${n.title}\n${n.desc}`, { x: x + 0.12, y: y + 0.12, w: 2.06, h: 0.96, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+        if (idx < 2) {
+          slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.33, y: y + 0.52, w: 0.22, h: 0.16, fill: { color: this.h(C.teal_accent) }, line: { width: 0 } });
+        }
+      });
+    }
+
+    // Stage 4: Speed Metric Banner
+    if (stageLimit >= 4) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 0.70, y: 5.30, w: 8.10, h: 0.42, fill: { color: this.h(C.blue_bg) }, line: { width: 0 } });
+      slide.addText("AUTO-RECONCILIATION SPEED: 94.8% Same-Day Bilateral Settlement • Zero Manual Journal Overrides", { x: 0.90, y: 5.38, w: 7.70, h: 0.26, bold: true, fontSize: 10, color: this.h(C.blue_accent), fontFace: "Calibri" });
+    }
+
+    // Stage 5: Governance Gateways & Materiality Dock
+    if (stageLimit >= 5) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 9.30, y: 1.52, w: 3.63, h: 4.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+      slide.addText("GOVERNANCE GATEWAYS & MATERIALITY", { x: 9.50, y: 1.70, w: 3.20, h: 0.30, bold: true, fontSize: 11, color: this.h(C.rose_accent), fontFace: "Calibri" });
+      const gws = [
+        { title: "Materiality Threshold", val: "€25,000 Delta Limit", desc: "Variances below €25K auto-expensed" },
+        { title: "Escalation SLA", val: "4-Hour Critical SLA", desc: "Immediate Slack & SAP notification" },
+        { title: "Authorized Sign-Off", val: "VP Group Accounting", desc: "Two-person cryptographic sign-off" }
+      ];
+      gws.forEach((g, i) => {
+        const gy = 2.20 + i * 1.15;
+        slide.addShape(pptx.ShapeType.roundRect, { x: 9.50, y: gy, w: 3.23, h: 0.95, fill: { color: this.h(C.rose_bg || C.card_bg) }, line: { color: this.h(C.rose_border || C.card_bd), width: 1 } });
+        slide.addText(`${g.title}\n${g.val} • ${g.desc}`, { x: 9.65, y: gy + 0.12, w: 2.93, h: 0.70, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 7: PROCURE-TO-PAY (P2P)
   // ══════════════════════════════════════════════════════════════════════════
-  static buildVendorP2P(pptx, data, C) {
+  static buildVendorP2P(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
     (data.steps || []).forEach((st, i) => {
+      if (stageLimit < (i + 1) && stageLimit < 2) return;
       const x = 0.40 + i * 2.53;
       slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.80, w: 2.35, h: 1.50, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1 } });
       slide.addText(`${st.num}. ${st.title}\n${st.sub}`, { x: x + 0.14, y: 0.94, w: 2.07, h: 1.20, bold: true, fontSize: 9.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      if (i < 4 && stageLimit >= (i + 2)) {
+        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.37, y: 1.45, w: 0.14, h: 0.14, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+      }
     });
 
-    slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 2.50, w: 7.90, h: 3.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.dashed_border), width: 1.5, dashType: "dash" } });
-    slide.addText("SAP 3-WAY MATCHING PIPELINE (PO vs GR vs IR)", { x: 0.60, y: 2.70, w: 5.00, h: 0.30, bold: true, fontSize: 11, color: this.h(C.amber_accent), fontFace: "Calibri" });
+    if (stageLimit >= 2) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 2.50, w: 7.90, h: 3.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.dashed_border), width: 1.5, dashType: "dash" } });
+      slide.addText("SAP 3-WAY MATCHING PIPELINE (PO vs GR vs IR)", { x: 0.60, y: 2.70, w: 5.00, h: 0.30, bold: true, fontSize: 11, color: this.h(C.amber_accent), fontFace: "Calibri" });
 
-    slide.addShape(pptx.ShapeType.roundRect, { x: 8.50, y: 2.50, w: 4.43, h: 3.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-    slide.addText("VENDOR PERFORMANCE & RISK SCORECARD", { x: 8.70, y: 2.70, w: 4.00, h: 0.30, bold: true, fontSize: 11, color: this.h(C.teal_accent), fontFace: "Calibri" });
+      const pillars = [
+        { name: "Purchase Order (PO)", desc: "Contract terms, unit pricing, delivery schedules & entity code." },
+        { name: "Goods Receipt (GR)", desc: "Physical barcode scan, accepted quantity & warehouse stamp." },
+        { name: "Vendor Invoice (IR)", desc: "Tax details, payment terms, net delta & banking verification." }
+      ];
+      pillars.forEach((p, idx) => {
+        const px = 0.70 + idx * 2.50;
+        slide.addShape(pptx.ShapeType.roundRect, { x: px, y: 3.20, w: 2.30, h: 1.20, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.blue_border), width: 1 } });
+        slide.addText(`${p.name}\n${p.desc}`, { x: px + 0.12, y: 3.32, w: 2.06, h: 0.96, fontSize: 8.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+        if (idx < 2) {
+          slide.addShape(pptx.ShapeType.rightArrow, { x: px + 2.33, y: 3.72, w: 0.15, h: 0.15, fill: { color: this.h(C.amber_accent) }, line: { width: 0 } });
+        }
+      });
+    }
+
+    if (stageLimit >= 4) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 0.70, y: 4.80, w: 7.30, h: 0.80, fill: { color: this.h(C.amber_bg || C.card_bg) }, line: { color: this.h(C.amber_border || C.card_bd), width: 1 } });
+      slide.addText("MATCHING VERIFICATION ENGINE: Automated Price Variance < 1.0% Auto-Cleared • Exception Hand-Off", { x: 0.85, y: 5.00, w: 7.00, h: 0.40, bold: true, fontSize: 9.5, color: this.h(C.amber_accent), fontFace: "Calibri" });
+    }
+
+    if (stageLimit >= 5) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 8.50, y: 2.50, w: 4.43, h: 3.40, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+      slide.addText("VENDOR PERFORMANCE & RISK SCORECARD", { x: 8.70, y: 2.70, w: 4.00, h: 0.30, bold: true, fontSize: 11, color: this.h(C.teal_accent), fontFace: "Calibri" });
+      const kpis = [
+        { label: "On-Time Delivery", score: "97.4%", status: "OPTIMAL" },
+        { label: "Price Variance SLA", score: "0.42%", status: "PASS" },
+        { label: "Duplicate Invoice Risk", score: "0.00%", status: "ZERO" }
+      ];
+      kpis.forEach((k, i) => {
+        const ky = 3.30 + i * 0.75;
+        slide.addShape(pptx.ShapeType.roundRect, { x: 8.70, y: ky, w: 4.03, h: 0.60, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.card_bd), width: 0.75 } });
+        slide.addText(`${k.label}: ${k.score}  [${k.status}]`, { x: 8.85, y: ky + 0.15, w: 3.73, h: 0.35, bold: true, fontSize: 9.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 8: IT SERVICE DELIVERY ARCHITECTURE
   // ══════════════════════════════════════════════════════════════════════════
-  static buildITService(pptx, data, C) {
+  static buildITService(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
     (data.tiers || []).forEach((t, i) => {
+      if (stageLimit < (i + 1)) return;
       const x = 0.40 + i * 2.15;
       slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.80, w: 2.00, h: 4.90, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
       slide.addText(`${t.level}: ${t.name}\n\n${t.desc}\n\nSLA: ${t.sla}`, { x: x + 0.14, y: 0.95, w: 1.72, h: 4.60, fontSize: 9.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      if (i < 3 && stageLimit >= (i + 2)) {
+        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.02, y: 3.00, w: 0.12, h: 0.16, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+      }
     });
 
-    slide.addShape(pptx.ShapeType.roundRect, { x: 9.15, y: 0.80, w: 3.78, h: 2.30, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.red_border), width: 1.5 } });
-    slide.addText("MAJOR INCIDENT MANAGEMENT (MIM)\nP1 Critical HealthSuite Cloud Outage Bridge", { x: 9.30, y: 0.95, w: 3.48, h: 1.00, bold: true, fontSize: 11, color: this.h(C.red_accent), fontFace: "Calibri" });
+    if (stageLimit >= 5) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 9.15, y: 0.80, w: 3.78, h: 4.90, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.red_border), width: 1.5 } });
+      slide.addText("MAJOR INCIDENT MANAGEMENT (MIM)\nP1 Critical HealthSuite Cloud Outage Bridge\n\n• War Room Mobilization < 5 min\n• Executive Status Broadcast < 15 min\n• MTTR Target < 60 min\n• Post-Mortem Root Cause Analysis SLA < 48h", { x: 9.30, y: 0.95, w: 3.48, h: 4.50, bold: true, fontSize: 10.5, color: this.h(C.red_accent), fontFace: "Calibri" });
+    }
   }
-
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 9: RISK & COMPLIANCE 5x5 MATRIX
   // ══════════════════════════════════════════════════════════════════════════
-  static buildRiskCompliance(pptx, data, C) {
+  static buildRiskCompliance(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
+    // 5x5 Heat Map
     slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 0.80, w: 7.00, h: 4.90, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
     slide.addText("5x5 ENTERPRISE RISK HEAT MAP (Likelihood x Impact)", { x: 0.60, y: 1.00, w: 6.50, h: 0.30, bold: true, fontSize: 11, color: this.h(C.text_primary), fontFace: "Calibri" });
 
-    slide.addShape(pptx.ShapeType.roundRect, { x: 7.60, y: 0.80, w: 5.33, h: 4.90, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
-    slide.addText("SOX CONTROL TESTING FRAMEWORK", { x: 7.80, y: 1.00, w: 4.80, h: 0.30, bold: true, fontSize: 11, color: this.h(C.blue_accent), fontFace: "Calibri" });
+    // Matrix Risk Cards revealed across Stages 1 to 3
+    const riskCells = [
+      { row: 1, col: 4, label: "R-01: Cyber Cloud Breach", rag: "EF4444", stage: 1 },
+      { row: 2, col: 5, label: "R-02: Medical Device MDR Recall", rag: "EF4444", stage: 1 },
+      { row: 3, col: 3, label: "R-03: Supply Chain Microchip Delay", rag: "F59E0B", stage: 2 },
+      { row: 4, col: 2, label: "R-04: FX Currency Exposure", rag: "10B981", stage: 2 },
+      { row: 2, col: 2, label: "R-05: Talent Retention / AI Skills", rag: "F59E0B", stage: 3 }
+    ];
+
+    riskCells.forEach(rc => {
+      if (stageLimit < rc.stage) return;
+      const cx = 0.80 + (rc.col - 1) * 1.20;
+      const cy = 1.40 + (rc.row - 1) * 0.70;
+      slide.addShape(pptx.ShapeType.roundRect, { x: cx, y: cy, w: 1.15, h: 0.62, fill: { color: rc.rag }, line: { width: 0 } });
+      slide.addText(rc.label, { x: cx + 0.05, y: cy + 0.05, w: 1.05, h: 0.52, bold: true, fontSize: 7, color: "FFFFFF", align: "center", fontFace: "Calibri" });
+    });
+
+    if (stageLimit >= 4) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 7.60, y: 0.80, w: 5.33, h: 4.90, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+      slide.addText("SOX CONTROL TESTING & MITIGATION", { x: 7.80, y: 1.00, w: 4.80, h: 0.30, bold: true, fontSize: 11, color: this.h(C.blue_accent), fontFace: "Calibri" });
+
+      const controls = [
+        { id: "SOX-01", title: "Automated Segregation of Duties (SoD)", status: "EFFECTIVE (100%)", rag: "10B981" },
+        { id: "SOX-02", title: "Cryptographic Sub-Ledger Approval Gate", status: "TESTED PASS", rag: "10B981" },
+        { id: "SOX-03", title: "Continuous Vulnerability Scanning SLA", status: "AUDITED", rag: "10B981" }
+      ];
+      controls.forEach((c, idx) => {
+        const cty = 1.50 + idx * 1.10;
+        slide.addShape(pptx.ShapeType.roundRect, { x: 7.80, y: cty, w: 4.93, h: 0.90, fill: { color: this.h(C.blue_bg) }, line: { color: this.h(C.blue_border), width: 1 } });
+        slide.addText(`${c.id}: ${c.title}\nStatus: ${c.status}`, { x: 7.95, y: cty + 0.15, w: 4.60, h: 0.60, bold: true, fontSize: 9.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      });
+    }
+
+    if (stageLimit >= 5) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 5.90, w: 12.53, h: 1.20, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1 } });
+      slide.addText("EXECUTIVE AUDIT COMMITTEE VERDICT: Enterprise Risk Profile Moderate • Zero Critical Un-Mitigated SOX Violations", { x: 0.60, y: 6.30, w: 12.00, h: 0.40, bold: true, fontSize: 11, color: this.h(C.teal_accent), fontFace: "Calibri" });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 10: CUSTOMER & CLINICAL JOURNEY
   // ══════════════════════════════════════════════════════════════════════════
-  static buildCustomerJourney(pptx, data, C) {
+  static buildCustomerJourney(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
-    (data.stages || []).forEach((st, i) => {
+    const stages = data.stages || [];
+    const maxStages = Math.min(stageLimit, stages.length);
+    stages.slice(0, maxStages).forEach((st, i) => {
       const x = 0.40 + i * 2.10;
       slide.addShape(pptx.ShapeType.roundRect, { x: x, y: 0.80, w: 1.98, h: 4.80, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
       slide.addText(`${st.phase}\n${st.title}\n\n${st.action}\n\nScore: ${st.score}`, { x: x + 0.12, y: 0.95, w: 1.74, h: 4.50, fontSize: 9.5, color: this.h(C.text_primary), fontFace: "Calibri" });
+      if (i < maxStages - 1) {
+        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.00, y: 3.00, w: 0.08, h: 0.14, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
+      }
     });
+
+    if (stageLimit >= 5) {
+      slide.addShape(pptx.ShapeType.roundRect, { x: 0.40, y: 5.80, w: 12.53, h: 1.30, fill: { color: this.h(C.card_bg) }, line: { color: this.h(C.card_bd), width: 1.2 } });
+      slide.addText("CLINICAL EXPERIENCE SYNTHESIS: NPS 72+ Across Digital Touchpoints • Patient Protocol Adherence 98.4%", { x: 0.60, y: 6.20, w: 12.00, h: 0.40, bold: true, fontSize: 11, color: this.h(C.teal_accent), fontFace: "Calibri" });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -964,13 +1317,14 @@ class ClientPptxGenerator {
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 11: CHANGE MANAGEMENT (ADKAR)
   // ══════════════════════════════════════════════════════════════════════════
-  static buildChangeMgmt(pptx, data, C) {
+  static buildChangeMgmt(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
     const phases = data.phases || [];
-    phases.forEach((p, idx) => {
+    const maxPhases = Math.min(stageLimit, phases.length);
+    phases.slice(0, maxPhases).forEach((p, idx) => {
       const x = 0.40 + idx * 2.52;
       const isComplete = p.status === "COMPLETE";
       const accent = isComplete ? C.teal_accent : C.amber_accent;
@@ -996,15 +1350,14 @@ class ClientPptxGenerator {
         x: x + 0.50, y: 0.90, w: 1.50, h: 0.18,
         fontSize: 8, color: this.h(C.text_muted)
       });
-      if (p.emote) {
-        try {
-          slide.addImage({ path: this.getEmotePath(p.emote), x: x + 2.08, y: 0.80, w: 0.24, h: 0.24 });
-        } catch(e) {}
+      if (idx < maxPhases - 1) {
+        slide.addShape(pptx.ShapeType.rightArrow, { x: x + 2.46, y: 0.88, w: 0.08, h: 0.10, fill: { color: this.h(C.blue_accent) }, line: { width: 0 } });
       }
     });
 
     const workstreams = data.workstreams || [];
-    workstreams.forEach((ws, wIdx) => {
+    const maxWs = stageLimit >= 3 ? workstreams.length : 1;
+    workstreams.slice(0, maxWs).forEach((ws, wIdx) => {
       const y = 1.26 + wIdx * 1.58;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: 0.40, y: y, w: 2.60, h: 1.42,
@@ -1015,13 +1368,8 @@ class ClientPptxGenerator {
         x: 0.40, y: y, w: 0.06, h: 1.42,
         fill: { color: this.h(C.stripe) }
       });
-      if (ws.emote) {
-        try {
-          slide.addImage({ path: this.getEmotePath(ws.emote), x: 0.58, y: y + 0.16, w: 0.34, h: 0.34 });
-        } catch(e) {}
-      }
       slide.addText(ws.lane || "", {
-        x: 1.00, y: y + 0.20, w: 1.85, h: 0.30,
+        x: 0.58, y: y + 0.20, w: 2.20, h: 0.30,
         fontSize: 11, bold: true, color: this.h(C.canvas_bg)
       });
       slide.addText("CROSS-FUNCTIONAL WORKSTREAM\nAdoption & Governance Lead", {
@@ -1056,43 +1404,46 @@ class ClientPptxGenerator {
       });
     });
 
-    const gov = data.governance || {};
-    slide.addShape(pptx.ShapeType.roundRect, {
-      x: 0.40, y: 6.16, w: 12.53, h: 0.98,
-      fill: { color: this.h(C.card_bg) },
-      line: { color: this.h(C.card_bd), width: 1.0 }
-    });
-    const govMetrics = [
-      { label: "READINESS INDEX", val: gov.readiness_score || "88.4%", sub: "Target: > 85%", color: C.teal_accent },
-      { label: "STAFF CERTIFIED", val: gov.trained_staff || "1,420 / 1,600", sub: "88.8% Coverage", color: C.text_primary },
-      { label: "ACTIVE SUPERUSERS", val: gov.superusers_active || "64 Leads", sub: "Deployed Across 48 Entities", color: C.amber_accent },
-      { label: "USER SENTIMENT", val: gov.sentiment_index || "+74 NPS", sub: "Top Decile Adoption", color: C.text_primary }
-    ];
-    govMetrics.forEach((m, idx) => {
-      const gx = 0.70 + idx * 3.10;
-      slide.addText(m.label, { x: gx, y: 6.26, w: 2.80, h: 0.20, fontSize: 9, bold: true, color: this.h(C.text_muted) });
-      slide.addText(m.val, { x: gx, y: 6.48, w: 2.80, h: 0.36, fontSize: 20, bold: true, color: this.h(m.color) });
-      slide.addText(m.sub, { x: gx, y: 6.84, w: 2.80, h: 0.20, fontSize: 9, color: this.h(C.text_secondary) });
-    });
+    if (stageLimit >= 5) {
+      const gov = data.governance || {};
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 0.40, y: 6.16, w: 12.53, h: 0.98,
+        fill: { color: this.h(C.card_bg) },
+        line: { color: this.h(C.card_bd), width: 1.0 }
+      });
+      const govMetrics = [
+        { label: "READINESS INDEX", val: gov.readiness_score || "88.4%", sub: "Target: > 85%", color: C.teal_accent },
+        { label: "STAFF CERTIFIED", val: gov.trained_staff || "1,420 / 1,600", sub: "88.8% Coverage", color: C.text_primary },
+        { label: "ACTIVE SUPERUSERS", val: gov.superusers_active || "64 Leads", sub: "Deployed Across 48 Entities", color: C.amber_accent },
+        { label: "USER SENTIMENT", val: gov.sentiment_index || "+74 NPS", sub: "Top Decile Adoption", color: C.text_primary }
+      ];
+      govMetrics.forEach((m, idx) => {
+        const gx = 0.70 + idx * 3.10;
+        slide.addText(m.label, { x: gx, y: 6.26, w: 2.80, h: 0.20, fontSize: 9, bold: true, color: this.h(C.text_muted) });
+        slide.addText(m.val, { x: gx, y: 6.48, w: 2.80, h: 0.36, fontSize: 20, bold: true, color: this.h(m.color) });
+        slide.addText(m.sub, { x: gx, y: 6.84, w: 2.80, h: 0.20, fontSize: 9, color: this.h(C.text_secondary) });
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 12: STRATEGIC SWOT MATRIX
   // ══════════════════════════════════════════════════════════════════════════
-  static buildSwotAnalysis(pptx, data, C) {
+  static buildSwotAnalysis(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
 
     const quads = data.quadrants || {};
     const quadConfigs = [
-      { d: quads.strengths || {}, x: 0.40, y: 0.72, color: "#10B981" },
-      { d: quads.weaknesses || {}, x: 6.76, y: 0.72, color: "#F59E0B" },
-      { d: quads.opportunities || {}, x: 0.40, y: 3.86, color: "#E8734A" },
-      { d: quads.threats || {}, x: 6.76, y: 3.86, color: "#EF4444" }
+      { d: quads.strengths || {}, x: 0.40, y: 0.72, color: "#10B981", stage: 1 },
+      { d: quads.weaknesses || {}, x: 6.76, y: 0.72, color: "#F59E0B", stage: 2 },
+      { d: quads.opportunities || {}, x: 0.40, y: 3.86, color: "#E8734A", stage: 3 },
+      { d: quads.threats || {}, x: 6.76, y: 3.86, color: "#EF4444", stage: 4 }
     ];
 
     quadConfigs.forEach(qc => {
+      if (stageLimit < qc.stage) return;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: qc.x, y: qc.y, w: 6.16, h: 3.00,
         fill: { color: this.h(C.blue_bg) },
@@ -1115,11 +1466,6 @@ class ClientPptxGenerator {
         fontSize: 9, bold: true, color: "FFFFFF", align: "center",
         fill: { color: this.h(qc.color) }
       });
-      if (qc.d.emote) {
-        try {
-          slide.addImage({ path: this.getEmotePath(qc.d.emote), x: qc.x + 5.80, y: qc.y + 0.08, w: 0.24, h: 0.24 });
-        } catch(e) {}
-      }
 
       (qc.d.items || []).forEach((item, idx) => {
         const iy = qc.y + 0.56 + idx * 0.78;
@@ -1152,25 +1498,27 @@ class ClientPptxGenerator {
       });
     });
 
-    const sum = data.strategic_summary || {};
-    slide.addShape(pptx.ShapeType.roundRect, {
-      x: 0.40, y: 6.98, w: 12.52, h: 0.42,
-      fill: { color: this.h(C.hdr_bg) }
-    });
-    slide.addText(`EXECUTIVE STRATEGIC VERDICT:  ${sum.core_verdict || ""}`, {
-      x: 0.60, y: 7.04, w: 9.50, h: 0.30,
-      fontSize: 9, color: this.h(C.canvas_bg)
-    });
-    slide.addText(sum.priority_focus || "", {
-      x: 10.20, y: 7.04, w: 2.50, h: 0.30,
-      fontSize: 9, bold: true, color: this.h(C.teal_accent), align: "right"
-    });
+    if (stageLimit >= 5) {
+      const sum = data.strategic_summary || {};
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 0.40, y: 6.98, w: 12.52, h: 0.42,
+        fill: { color: this.h(C.hdr_bg) }
+      });
+      slide.addText(`EXECUTIVE STRATEGIC VERDICT:  ${sum.core_verdict || ""}`, {
+        x: 0.60, y: 7.04, w: 9.50, h: 0.30,
+        fontSize: 9, color: this.h(C.canvas_bg)
+      });
+      slide.addText(sum.priority_focus || "", {
+        x: 10.20, y: 7.04, w: 2.50, h: 0.30,
+        fontSize: 9, bold: true, color: this.h(C.teal_accent), align: "right"
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 13: PROJECT GANTT TIMELINE
   // ══════════════════════════════════════════════════════════════════════════
-  static buildProjectTimeline(pptx, data, C) {
+  static buildProjectTimeline(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
@@ -1185,7 +1533,8 @@ class ClientPptxGenerator {
     });
 
     const quarters = data.quarters || [];
-    quarters.forEach((q, idx) => {
+    const maxQuarters = Math.min(stageLimit, 4);
+    quarters.slice(0, maxQuarters).forEach((q, idx) => {
       const x = 3.20 + idx * 2.40;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: x, y: 0.72, w: 2.34, h: 0.48,
@@ -1204,7 +1553,8 @@ class ClientPptxGenerator {
     });
 
     const lanes = data.lanes || [];
-    lanes.forEach((lane, lIdx) => {
+    const maxLanes = Math.min(stageLimit, lanes.length);
+    lanes.slice(0, maxLanes).forEach((lane, lIdx) => {
       const y = 1.32 + lIdx * 1.18;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: 0.40, y: y, w: 2.68, h: 1.06,
@@ -1215,13 +1565,8 @@ class ClientPptxGenerator {
         x: 0.40, y: y, w: 0.05, h: 1.06,
         fill: { color: this.h(C.stripe) }
       });
-      if (lane.emote) {
-        try {
-          slide.addImage({ path: this.getEmotePath(lane.emote), x: 0.56, y: y + 0.16, w: 0.30, h: 0.30 });
-        } catch(e) {}
-      }
       slide.addText(lane.name || "", {
-        x: 0.94, y: y + 0.20, w: 2.05, h: 0.40,
+        x: 0.58, y: y + 0.20, w: 2.40, h: 0.40,
         fontSize: 10, bold: true, color: this.h(C.text_primary)
       });
 
@@ -1246,28 +1591,30 @@ class ClientPptxGenerator {
       });
     });
 
-    const milestones = data.milestones || [];
-    milestones.forEach(m => {
-      const mx = 3.60 + m.pos * 9.00;
-      slide.addShape(pptx.ShapeType.diamond, {
-        x: mx - 0.14, y: 6.20, w: 0.28, h: 0.28,
-        fill: { color: this.h(m.rag === 'green' ? C.teal_accent : C.amber_accent) }
+    if (stageLimit >= 5) {
+      const milestones = data.milestones || [];
+      milestones.forEach(m => {
+        const mx = 3.60 + m.pos * 9.00;
+        slide.addShape(pptx.ShapeType.diamond, {
+          x: mx - 0.14, y: 6.20, w: 0.28, h: 0.28,
+          fill: { color: this.h(m.rag === 'green' ? C.teal_accent : C.amber_accent) }
+        });
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: mx - 0.70, y: 6.54, w: 1.40, h: 0.48,
+          fill: { color: this.h(C.hdr_bg) }
+        });
+        slide.addText(`${m.title}\n${m.date}`, {
+          x: mx - 0.70, y: 6.58, w: 1.40, h: 0.40,
+          fontSize: 8, bold: true, color: this.h(C.canvas_bg), align: "center"
+        });
       });
-      slide.addShape(pptx.ShapeType.roundRect, {
-        x: mx - 0.70, y: 6.54, w: 1.40, h: 0.48,
-        fill: { color: this.h(C.hdr_bg) }
-      });
-      slide.addText(`${m.title}\n${m.date}`, {
-        x: mx - 0.70, y: 6.58, w: 1.40, h: 0.40,
-        fontSize: 8, bold: true, color: this.h(C.canvas_bg), align: "center"
-      });
-    });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 14: EXECUTIVE ORGANIZATION HIERARCHY
   // ══════════════════════════════════════════════════════════════════════════
-  static buildOrgChart(pptx, data, C) {
+  static buildOrgChart(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
@@ -1282,120 +1629,105 @@ class ClientPptxGenerator {
       x: 4.66, y: 0.76, w: 0.06, h: 0.92,
       fill: { color: this.h(C.stripe) }
     });
-    if (leader.emote) {
-      try {
-        slide.addImage({ path: this.getEmotePath(leader.emote), x: 4.86, y: 0.94, w: 0.44, h: 0.44 });
-      } catch(e) {}
-    }
     slide.addText(leader.role || "", {
-      x: 5.42, y: 0.86, w: 3.10, h: 0.26,
+      x: 5.00, y: 0.86, w: 3.50, h: 0.26,
       fontSize: 12, bold: true, color: this.h(C.canvas_bg)
     });
     slide.addText(leader.name || "", {
-      x: 5.42, y: 1.10, w: 3.10, h: 0.22,
+      x: 5.00, y: 1.10, w: 3.50, h: 0.22,
       fontSize: 10, bold: true, color: this.h(C.stripe)
     });
     slide.addText(leader.mandate || "", {
-      x: 5.42, y: 1.30, w: 3.10, h: 0.28,
+      x: 5.00, y: 1.30, w: 3.50, h: 0.28,
       fontSize: 8, color: this.h(C.text_muted)
     });
 
-    this.addArrowDown(slide, 6.66, 1.68, 2.00, this.h(C.stripe));
-    slide.addShape(pptx.ShapeType.line, {
-      x: 2.40, y: 2.00, w: 8.52, h: 0,
-      line: { color: this.h(C.stripe), width: 2.0 }
-    });
-    this.addArrowDown(slide, 2.40, 2.00, 2.20, this.h(C.stripe));
-    this.addArrowDown(slide, 6.66, 2.00, 2.20, this.h(C.stripe));
-    this.addArrowDown(slide, 10.92, 2.00, 2.20, this.h(C.stripe));
+    if (stageLimit >= 2) {
+      this.addArrowDown(slide, 6.66, 1.68, 2.00, this.h(C.stripe));
+      slide.addShape(pptx.ShapeType.line, {
+        x: 2.40, y: 2.00, w: 8.52, h: 0,
+        line: { color: this.h(C.stripe), width: 2.0 }
+      });
+      this.addArrowDown(slide, 2.40, 2.00, 2.20, this.h(C.stripe));
+      this.addArrowDown(slide, 6.66, 2.00, 2.20, this.h(C.stripe));
+      this.addArrowDown(slide, 10.92, 2.00, 2.20, this.h(C.stripe));
 
-    const divisions = data.divisions || [];
-    divisions.forEach((div, idx) => {
-      const dx = 0.40 + idx * 4.26;
-      slide.addShape(pptx.ShapeType.roundRect, {
-        x: dx, y: 2.20, w: 4.00, h: 1.10,
-        fill: { color: this.h(C.card_bg) },
-        line: { color: this.h(C.card_bd), width: 1.0 }
-      });
-      slide.addShape(pptx.ShapeType.rect, {
-        x: dx, y: 2.20, w: 0.05, h: 1.10,
-        fill: { color: this.h(div.color || C.stripe) }
-      });
-      if (div.emote) {
-        try {
-          slide.addImage({ path: this.getEmotePath(div.emote), x: dx + 0.16, y: 2.36, w: 0.36, h: 0.36 });
-        } catch(e) {}
-      }
-      slide.addText(div.title || "", {
-        x: dx + 0.60, y: 2.32, w: 2.30, h: 0.26,
-        fontSize: 11, bold: true, color: this.h(C.text_primary)
-      });
-      slide.addText(div.owner || "", {
-        x: dx + 0.60, y: 2.54, w: 2.30, h: 0.20,
-        fontSize: 9, bold: true, color: this.h(div.color || C.stripe)
-      });
-      slide.addText(div.mandate || "", {
-        x: dx + 0.16, y: 2.80, w: 3.68, h: 0.40,
-        fontSize: 8, color: this.h(C.text_secondary)
-      });
-      slide.addText(div.hc || "", {
-        x: dx + 2.90, y: 2.34, w: 0.94, h: 0.20,
-        fontSize: 8, bold: true, color: this.h(C.canvas_bg), align: "center",
-        fill: { color: this.h(C.hdr_bg) }
-      });
-
-      this.addArrowDown(slide, dx + 2.00, 3.30, 3.70, this.h(div.color || C.stripe));
-
-      (div.teams || []).forEach((tm, tIdx) => {
-        const ty = 3.70 + tIdx * 1.02;
+      const divisions = data.divisions || [];
+      const maxDivisions = stageLimit === 2 ? 1 : (stageLimit === 3 ? 2 : 3);
+      divisions.slice(0, maxDivisions).forEach((div, idx) => {
+        const dx = 0.40 + idx * 4.26;
         slide.addShape(pptx.ShapeType.roundRect, {
-          x: dx, y: ty, w: 4.00, h: 0.88,
+          x: dx, y: 2.20, w: 4.00, h: 1.10,
           fill: { color: this.h(C.card_bg) },
           line: { color: this.h(C.card_bd), width: 1.0 }
         });
         slide.addShape(pptx.ShapeType.rect, {
-          x: dx, y: ty, w: 0.04, h: 0.88,
+          x: dx, y: 2.20, w: 0.05, h: 1.10,
           fill: { color: this.h(div.color || C.stripe) }
         });
-        if (tm.emote) {
-          try {
-            slide.addImage({ path: this.getEmotePath(tm.emote), x: dx + 0.16, y: ty + 0.16, w: 0.32, h: 0.32 });
-          } catch(e) {}
-        }
-        slide.addText(tm.name || "", {
-          x: dx + 0.58, y: ty + 0.18, w: 2.30, h: 0.24,
+        slide.addText(div.title || "", {
+          x: dx + 0.20, y: 2.32, w: 2.70, h: 0.26,
           fontSize: 11, bold: true, color: this.h(C.text_primary)
         });
-        slide.addText(tm.lead || "", {
-          x: dx + 0.58, y: ty + 0.42, w: 2.30, h: 0.22,
-          fontSize: 9, color: this.h(C.text_secondary)
+        slide.addText(div.owner || "", {
+          x: dx + 0.20, y: 2.54, w: 2.70, h: 0.20,
+          fontSize: 9, bold: true, color: this.h(div.color || C.stripe)
         });
-        slide.addText(tm.hc || "", {
-          x: dx + 2.90, y: ty + 0.18, w: 0.94, h: 0.20,
-          fontSize: 8, bold: true, color: this.h(C.text_secondary), align: "center",
-          fill: { color: this.h(C.blue_bg) }
+        slide.addText(div.mandate || "", {
+          x: dx + 0.16, y: 2.80, w: 3.68, h: 0.40,
+          fontSize: 8, color: this.h(C.text_secondary)
         });
-      });
-    });
 
-    const kpis = data.summary_kpis || [];
-    kpis.forEach((k, idx) => {
-      const kx = 0.40 + idx * 4.26;
-      slide.addShape(pptx.ShapeType.roundRect, {
-        x: kx, y: 5.96, w: 4.00, h: 0.68,
-        fill: { color: this.h(C.card_bg) },
-        line: { color: this.h(C.card_bd), width: 1.0 }
+        this.addArrowDown(slide, dx + 2.00, 3.30, 3.70, this.h(div.color || C.stripe));
+
+        (div.teams || []).forEach((tm, tIdx) => {
+          const ty = 3.70 + tIdx * 1.02;
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: dx, y: ty, w: 4.00, h: 0.88,
+            fill: { color: this.h(C.card_bg) },
+            line: { color: this.h(C.card_bd), width: 1.0 }
+          });
+          slide.addShape(pptx.ShapeType.rect, {
+            x: dx, y: ty, w: 0.04, h: 0.88,
+            fill: { color: this.h(div.color || C.stripe) }
+          });
+          slide.addText(tm.name || "", {
+            x: dx + 0.20, y: ty + 0.18, w: 2.70, h: 0.24,
+            fontSize: 11, bold: true, color: this.h(C.text_primary)
+          });
+          slide.addText(tm.lead || "", {
+            x: dx + 0.20, y: ty + 0.42, w: 2.70, h: 0.22,
+            fontSize: 9, color: this.h(C.text_secondary)
+          });
+          slide.addText(tm.hc || "", {
+            x: dx + 2.90, y: ty + 0.18, w: 0.94, h: 0.20,
+            fontSize: 8, bold: true, color: this.h(C.text_secondary), align: "center",
+            fill: { color: this.h(C.blue_bg) }
+          });
+        });
       });
-      slide.addText(k.label, { x: kx + 0.20, y: 6.04, w: 3.60, h: 0.20, fontSize: 9, bold: true, color: this.h(C.text_muted) });
-      slide.addText(k.val, { x: kx + 0.20, y: 6.26, w: 1.80, h: 0.30, fontSize: 18, bold: true, color: this.h(C.text_primary) });
-      slide.addText(k.sub, { x: kx + 2.00, y: 6.28, w: 1.80, h: 0.24, fontSize: 9, color: this.h(C.teal_accent) });
-    });
+    }
+
+    if (stageLimit >= 5) {
+      const kpis = data.summary_kpis || [];
+      kpis.forEach((k, idx) => {
+        const kx = 0.40 + idx * 4.26;
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: kx, y: 5.96, w: 4.00, h: 0.68,
+          fill: { color: this.h(C.card_bg) },
+          line: { color: this.h(C.card_bd), width: 1.0 }
+        });
+        slide.addText(k.label, { x: kx + 0.20, y: 6.04, w: 3.60, h: 0.20, fontSize: 9, bold: true, color: this.h(C.text_muted) });
+        slide.addText(k.val, { x: kx + 0.20, y: 6.26, w: 1.80, h: 0.30, fontSize: 18, bold: true, color: this.h(C.text_primary) });
+        slide.addText(k.sub, { x: kx + 2.00, y: 6.28, w: 1.80, h: 0.24, fontSize: 9, color: this.h(C.teal_accent) });
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 15: FINANCIAL BUDGET WATERFALL
   // ══════════════════════════════════════════════════════════════════════════
-  static buildBudgetWaterfall(pptx, data, C) {
+  static buildBudgetWaterfall(pptx, data, C, stageLimit = 5) {
     const slide = pptx.addSlide();
     slide.background = { color: this.h(C.canvas_bg) };
     this.addHeader(slide, pptx, data.header || {}, data.branding || {}, C);
@@ -1429,7 +1761,8 @@ class ClientPptxGenerator {
       fontSize: 9, bold: true, color: this.h(C.canvas_bg), align: "center"
     });
 
-    drivers.forEach((drv, idx) => {
+    const maxDrivers = stageLimit === 1 ? 0 : (stageLimit === 2 ? 2 : (stageLimit === 3 ? 4 : drivers.length));
+    drivers.slice(0, maxDrivers).forEach((drv, idx) => {
       const x = 0.40 + (idx + 1) * (colW + colGap);
       const isIncrease = drv.val > 0;
       const prevVal = runningVal;
@@ -1464,32 +1797,36 @@ class ClientPptxGenerator {
       });
     });
 
-    const targetX = 0.40 + 6 * (colW + colGap);
-    const targetY = chartBottomY - (target.val - 35) * scale;
-    const targetH = chartBottomY - targetY;
-    slide.addShape(pptx.ShapeType.roundRect, {
-      x: targetX, y: targetY, w: colW, h: targetH,
-      fill: { color: this.h(C.stripe) }
-    });
-    slide.addText(target.amount || "", {
-      x: targetX, y: targetY - 0.28, w: colW, h: 0.26,
-      fontSize: 14, bold: true, color: this.h(C.stripe), align: "center"
-    });
-    slide.addText("FY26 TARGET\nNet Savings", {
-      x: targetX, y: targetY + 0.20, w: colW, h: 0.40,
-      fontSize: 9, bold: true, color: "FFFFFF", align: "center"
-    });
-
-    scorecards.forEach((sc, idx) => {
-      const scX = 0.40 + idx * 4.26;
+    if (stageLimit >= 4) {
+      const targetX = 0.40 + 6 * (colW + colGap);
+      const targetY = chartBottomY - (target.val - 35) * scale;
+      const targetH = chartBottomY - targetY;
       slide.addShape(pptx.ShapeType.roundRect, {
-        x: scX, y: 6.70, w: 4.00, h: 0.56,
-        fill: { color: this.h(C.card_bg) },
-        line: { color: this.h(C.card_bd), width: 1.0 }
+        x: targetX, y: targetY, w: colW, h: targetH,
+        fill: { color: this.h(C.stripe) }
       });
-      slide.addText(sc.label, { x: scX + 0.20, y: 6.74, w: 2.00, h: 0.18, fontSize: 8, bold: true, color: this.h(C.text_muted) });
-      slide.addText(sc.val, { x: scX + 0.20, y: 6.92, w: 2.00, h: 0.28, fontSize: 15, bold: true, color: this.h(C.text_primary) });
-      slide.addText(sc.sub, { x: scX + 2.10, y: 6.94, w: 1.80, h: 0.22, fontSize: 9, color: this.h(C.teal_accent) });
-    });
+      slide.addText(target.amount || "", {
+        x: targetX, y: targetY - 0.28, w: colW, h: 0.26,
+        fontSize: 14, bold: true, color: this.h(C.stripe), align: "center"
+      });
+      slide.addText("FY26 TARGET\nNet Savings", {
+        x: targetX, y: targetY + 0.20, w: colW, h: 0.40,
+        fontSize: 9, bold: true, color: "FFFFFF", align: "center"
+      });
+    }
+
+    if (stageLimit >= 5) {
+      scorecards.forEach((sc, idx) => {
+        const scX = 0.40 + idx * 4.26;
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: scX, y: 6.70, w: 4.00, h: 0.56,
+          fill: { color: this.h(C.card_bg) },
+          line: { color: this.h(C.card_bd), width: 1.0 }
+        });
+        slide.addText(sc.label, { x: scX + 0.20, y: 6.74, w: 2.00, h: 0.18, fontSize: 8, bold: true, color: this.h(C.text_muted) });
+        slide.addText(sc.val, { x: scX + 0.20, y: 6.92, w: 2.00, h: 0.28, fontSize: 15, bold: true, color: this.h(C.text_primary) });
+        slide.addText(sc.sub, { x: scX + 2.10, y: 6.94, w: 1.80, h: 0.22, fontSize: 9, color: this.h(C.teal_accent) });
+      });
+    }
   }
 }

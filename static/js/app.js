@@ -39,8 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnStepAnim = document.getElementById("btnStepAnim");
   const btnResetAnim = document.getElementById("btnResetAnim");
   const animPhaseIndicator = document.getElementById("animPhaseIndicator");
-  const btnDownloadPptx = document.getElementById("btnDownloadPptx");
-  const btnDownloadPng = document.getElementById("btnDownloadPng");
+  const btnDownloadPptx = document.getElementById("btnDownloadPptxDirect") || document.getElementById("btnDownloadPptx");
+  const btnDownloadPng = document.getElementById("btnDownloadPngDirect") || document.getElementById("btnDownloadPng");
   const btnFullscreen = document.getElementById("btnFullscreen");
 
   // Containers
@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!TEMPLATES_CONFIG[templateId]) return;
     state.activeTemplateId = templateId;
     state.currentData = JSON.parse(JSON.stringify(TEMPLATES_CONFIG[templateId].defaultData));
+    state.currentData.template_id = templateId;
 
     const cfg = TEMPLATES_CONFIG[templateId];
     if (activeTemplateBadge) {
@@ -89,6 +90,9 @@ document.addEventListener("DOMContentLoaded", () => {
     syncInputsFromData();
     buildDynamicForm();
     renderer.render(state.currentData);
+    if (state.resetFlow) {
+      state.resetFlow();
+    }
     saveToLocalStorage();
     showNotification(`Switched to: ${cfg.name}`);
   }
@@ -1190,12 +1194,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // PPTX & PNG EXPORT ENGINES
   // ══════════════════════════════════════════════════════════════════════════
   async function downloadPresentation() {
-    const originalText = btnDownloadPptx.innerHTML;
-    btnDownloadPptx.disabled = true;
-    btnDownloadPptx.innerHTML = `
-      <span class="spinner"></span>
-      <span>Compiling DrawingML .PPTX...</span>
-    `;
+    state.currentData.template_id = state.activeTemplateId;
+    const btn = document.getElementById("btnDownloadPptxDirect") || document.getElementById("btnDownloadPptx");
+    const originalText = btn ? btn.innerHTML : "Download Animated PPTX";
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `
+        <span class="spinner"></span>
+        <span>Compiling 5-Stage Animated Deck...</span>
+      `;
+    }
 
     try {
       if (state.isLocalBackendAvailable) {
@@ -1210,25 +1218,30 @@ document.addEventListener("DOMContentLoaded", () => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `${state.currentData.template_id || 'presentation'}.pptx`;
+            const tId = state.currentData.template_id || 'presentation';
+            const fName = ClientPptxGenerator.getFilenameForTemplate ? ClientPptxGenerator.getFilenameForTemplate(tId) : `${tId}.pptx`;
+            a.download = fName;
             document.body.appendChild(a);
             a.click();
             a.remove();
             window.URL.revokeObjectURL(url);
-            showNotification("Compiled native DrawingML 2.0 pt presentation!");
+            showNotification(`Compiled ${fName} with native DrawingML!`);
             return;
           }
         } catch (e) {}
       }
 
-      // Standalone client generation via PptxGenJS
+      // Standalone client generation via PptxGenJS + JSZip timing injection
       await ClientPptxGenerator.generate(state.currentData);
-      showNotification("Presentation compiled directly in browser via client engine!");
+      const fName = ClientPptxGenerator.getFilenameForTemplate ? ClientPptxGenerator.getFilenameForTemplate(state.currentData.template_id) : "presentation.pptx";
+      showNotification(`Downloaded ${fName} with 5 progressive flow stages & timing animations!`);
     } catch (err) {
       alert("Error compiling presentation: " + err.message);
     } finally {
-      btnDownloadPptx.disabled = false;
-      btnDownloadPptx.innerHTML = originalText;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
     }
   }
 
@@ -1539,65 +1552,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initExportMenu() {
-    const btnExportMenu = document.getElementById("btnExportMenu");
-    const exportDropdownMenu = document.getElementById("exportDropdownMenu");
-    const btnDownloadPptx = document.getElementById("btnDownloadPptx");
-    const btnDownloadMorphPptx = document.getElementById("btnDownloadMorphPptx");
-    const btnDownloadBenchmarkPptx = document.getElementById("btnDownloadBenchmarkPptx");
-    const btnDownloadPng = document.getElementById("btnDownloadPng");
+    const btnDownloadPptxDirect = document.getElementById("btnDownloadPptxDirect") || document.getElementById("btnDownloadPptx");
+    const btnDownloadPngDirect = document.getElementById("btnDownloadPngDirect") || document.getElementById("btnDownloadPng");
 
-    if (btnExportMenu && exportDropdownMenu) {
-      btnExportMenu.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isOpen = exportDropdownMenu.style.display !== "none";
-        exportDropdownMenu.style.display = isOpen ? "none" : "flex";
-      });
-
-      document.addEventListener("click", () => {
-        exportDropdownMenu.style.display = "none";
-      });
-    }
-
-    // 1. Download Master PPTX (Unscrambled single text frame)
-    if (btnDownloadPptx) {
-      btnDownloadPptx.addEventListener("click", () => {
-        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
+    // 1. Download Master Animated Presentation (.pptx) - Direct 1-Click
+    if (btnDownloadPptxDirect) {
+      btnDownloadPptxDirect.addEventListener("click", () => {
         downloadPresentation();
       });
     }
 
-    // 2. Download 5-Stage Morph Deck
-    if (btnDownloadMorphPptx) {
-      btnDownloadMorphPptx.addEventListener("click", async () => {
-        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
-        try {
-          if (state.activeTemplateId === "process_flow") {
-            triggerDirectDownload("exports/ICA_Reconciliation_Executive_Cinematic_Morph.pptx", "Philips_ICA_Executive_Cinematic_Morph.pptx");
-            showNotification("Downloaded 5-Stage Morph Deck (.pptx)!");
-          } else {
-            showNotification("Generating 5-Stage Progressive Deck...");
-            await ClientPptxGenerator.generateProgressiveDeck(state.currentData);
-            showNotification("Progressive build deck exported cleanly!");
-          }
-        } catch (e) {
-          alert("Error downloading morph deck: " + e.message);
-        }
-      });
-    }
-
-    // 3. Download Flagship Benchmark Deck (5.2 MB)
-    if (btnDownloadBenchmarkPptx) {
-      btnDownloadBenchmarkPptx.addEventListener("click", () => {
-        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
-        triggerDirectDownload("exports/ICA_Executive_Blueprint.pptx", "Philips_ICA_Executive_Blueprint_Benchmark.pptx");
-        showNotification("Downloaded Flagship Benchmark Deck (5.2 MB) with 502 timing nodes!");
-      });
-    }
-
-    // 4. Download 1080p PNG
-    if (btnDownloadPng) {
-      btnDownloadPng.addEventListener("click", () => {
-        if (exportDropdownMenu) exportDropdownMenu.style.display = "none";
+    // 2. Download 1080p PNG - Direct 1-Click
+    if (btnDownloadPngDirect) {
+      btnDownloadPngDirect.addEventListener("click", () => {
         exportSlidePng();
       });
     }
@@ -1619,14 +1586,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnFlowSpeed = document.getElementById("btnFlowSpeed");
     const btnFlowReset = document.getElementById("btnFlowReset");
 
-    const stageLabels = [
-      "All Stages Active",
-      "Stage 1: Ingestion & Extract",
-      "Stage 2: Filter & Delta",
-      "Stage 3: Decision & Root Causes",
-      "Stage 4: Action & Remediation",
-      "Stage 5: Governance & SLA Gate"
-    ];
+    function getStageTitle(stageNum) {
+      if (stageNum === 0) return "All Stages Active (Master Blueprint)";
+      if (typeof ClientPptxGenerator !== "undefined" && typeof ClientPptxGenerator.getStageNamesForTemplate === "function") {
+        const names = ClientPptxGenerator.getStageNamesForTemplate(state.activeTemplateId);
+        if (names && names[stageNum - 1]) return names[stageNum - 1];
+      }
+      const fallback = [
+        "Stage 1: Ingestion & Extract",
+        "Stage 2: Filter & Delta",
+        "Stage 3: Decision & Root Causes",
+        "Stage 4: Action & Remediation",
+        "Stage 5: Governance & SLA Gate"
+      ];
+      return fallback[stageNum - 1] || `Stage ${stageNum}`;
+    }
 
     let currentStageIndex = 0;
     const speeds = [1.0, 1.5, 2.0, 0.5];
@@ -1645,7 +1619,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (flowStageNameBadge) {
-        flowStageNameBadge.textContent = stageLabels[stageNum] || `Stage ${stageNum}`;
+        flowStageNameBadge.textContent = getStageTitle(stageNum);
       }
 
       if (flowScrubber) {
@@ -1656,6 +1630,13 @@ document.addEventListener("DOMContentLoaded", () => {
         animPhaseIndicator.textContent = stageNum === 0 ? "Phase: All Visible" : `Phase: ${stageNum} / 5`;
       }
     }
+
+    state.resetFlow = () => {
+      renderer.resetAnimation();
+      setPlayButtonState(false);
+      updateFlowUI(0);
+    };
+    state.updateFlowUI = updateFlowUI;
 
     function setPlayButtonState(isPlaying) {
       if (iconFlowPlay) iconFlowPlay.style.display = isPlaying ? "none" : "inline-block";
@@ -1853,6 +1834,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initWorkspaceControls();
   initExportMenu();
   initFlowControlDeck();
+  if (state.updateFlowUI) state.updateFlowUI(0);
   if (sidebarEmoteGrid) buildEmoteGrid(sidebarEmoteGrid, "");
 });
 

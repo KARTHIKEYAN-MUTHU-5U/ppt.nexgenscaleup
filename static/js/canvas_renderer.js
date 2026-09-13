@@ -548,10 +548,13 @@ class SlideCanvasRenderer {
 
           ${horizons.map((hz, i) => {
             const x = 320 + i * 324;
+            const stageId = i + 1;
             return `
-              <rect x="${x}" y="78" width="310" height="46" rx="6" fill="${C.card_bg}" stroke="${hz.color}" stroke-width="1.5" />
-              <text x="${x + 14}" y="98" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${hz.color}">${this.escape(hz.title)}</text>
-              <text x="${x + 14}" y="114" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">${this.escape(hz.sub)}</text>
+              <g data-stage="${stageId}">
+                <rect x="${x}" y="78" width="310" height="46" rx="6" fill="${C.card_bg}" stroke="${hz.color}" stroke-width="1.5" />
+                <text x="${x + 14}" y="98" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${hz.color}">${this.escape(hz.title)}</text>
+                <text x="${x + 14}" y="114" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">${this.escape(hz.sub)}</text>
+              </g>
             `;
           }).join("")}
         </g>
@@ -562,28 +565,36 @@ class SlideCanvasRenderer {
             const y = 138 + i * 118;
             return `
               <!-- Workstream Title Box -->
-              <rect x="40" y="${y}" width="260" height="106" rx="6" fill="${C.card_bg}" stroke="${C.blue_accent}" stroke-width="0.75" />
-              <text x="54" y="${y + 36}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">${this.escape(ws.name)}</text>
-              <circle cx="260" cy="${y + 53}" r="22" fill="${C.blue_bg}" />
-              <image href="emotes/${ws.emote || 'tb_robot'}.gif" x="240" y="${y + 33}" width="40" height="40" />
+              <g data-stage="4">
+                <rect x="40" y="${y}" width="260" height="106" rx="6" fill="${C.card_bg}" stroke="${C.blue_accent}" stroke-width="0.75" />
+                <text x="54" y="${y + 36}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">${this.escape(ws.name)}</text>
+                <circle cx="260" cy="${y + 53}" r="22" fill="${C.blue_bg}" />
+                <image href="emotes/${ws.emote || 'tb_robot'}.gif" x="240" y="${y + 33}" width="40" height="40" />
+              </g>
 
               <!-- Horizon 1 Milestone -->
-              <rect x="320" y="${y}" width="310" height="106" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="0.75" />
-              <text x="334" y="${y + 30}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(ws.h1)}</text>
+              <g data-stage="1">
+                <rect x="320" y="${y}" width="310" height="106" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="0.75" />
+                <text x="334" y="${y + 30}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(ws.h1)}</text>
+              </g>
 
               <!-- Horizon 2 Milestone -->
-              <rect x="644" y="${y}" width="310" height="106" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="0.75" />
-              <text x="658" y="${y + 30}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(ws.h2)}</text>
+              <g data-stage="2">
+                <rect x="644" y="${y}" width="310" height="106" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="0.75" />
+                <text x="658" y="${y + 30}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(ws.h2)}</text>
+              </g>
 
               <!-- Horizon 3 Milestone -->
-              <rect x="968" y="${y}" width="310" height="106" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="0.75" />
-              <text x="982" y="${y + 30}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(ws.h3)}</text>
+              <g data-stage="3">
+                <rect x="968" y="${y}" width="310" height="106" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="0.75" />
+                <text x="982" y="${y + 30}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(ws.h3)}</text>
+              </g>
             `;
           }).join("")}
         </g>
 
         <!-- Strategic ROI Metrics Bar (Bottom) -->
-        <g class="anim-grp anim-p3">
+        <g class="anim-grp anim-p3" data-stage="5">
           <rect x="40" y="626" width="1253" height="90" rx="8" fill="${C.card_bg}" stroke="${C.blue_accent}" stroke-width="1" />
           ${metrics.map((m, i) => {
             const x = 120 + i * 400;
@@ -593,6 +604,16 @@ class SlideCanvasRenderer {
               <text x="${x + 120}" y="688" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(m.sub)}</text>
             `;
           }).join("")}
+        </g>
+
+        <!-- Flow Tracer Connectors Across Horizons -->
+        <g class="flow-tracers-layer" pointer-events="none">
+          <line x1="630" y1="190" x2="644" y2="190" stroke="${C.blue_accent}" stroke-width="2" class="flow-tracer-line" />
+          <line x1="954" y1="190" x2="968" y2="190" stroke="${C.purple_accent}" stroke-width="2" class="flow-tracer-line" />
+          <line x1="630" y1="308" x2="644" y2="308" stroke="${C.blue_accent}" stroke-width="2" class="flow-tracer-line" />
+          <line x1="954" y1="308" x2="968" y2="308" stroke="${C.purple_accent}" stroke-width="2" class="flow-tracer-line" />
+          <line x1="630" y1="426" x2="644" y2="426" stroke="${C.blue_accent}" stroke-width="2" class="flow-tracer-line" />
+          <line x1="954" y1="426" x2="968" y2="426" stroke="${C.purple_accent}" stroke-width="2" class="flow-tracer-line" />
         </g>
       </svg>
     `;
@@ -619,15 +640,18 @@ class SlideCanvasRenderer {
         <g class="anim-grp anim-p2">
           ${tiers.map((t, i) => {
             const y = 84 + i * 200;
+            const stageId = i + 1;
             return `
-              <rect x="40" y="${y}" width="750" height="186" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-              <rect x="56" y="${y + 16}" width="220" height="26" rx="4" fill="${C.blue_accent}" />
-              <text x="66" y="${y + 33}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF">${this.escape(t.level)}</text>
-              <text x="56" y="${y + 70}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="16" font-weight="bold" fill="${C.text_primary}">${this.escape(t.title)}</text>
-              <text x="56" y="${y + 95}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10.5" font-weight="bold" fill="${C.amber_accent}">Leadership: ${this.escape(t.owner)}</text>
-              <text x="56" y="${y + 122}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(t.mandate)}</text>
-              <circle cx="730" cy="${y + 90}" r="32" fill="${C.blue_bg}" />
-              <image href="emotes/${t.emote || 'spec'}.gif" x="702" y="${y + 62}" width="56" height="56" />
+              <g data-stage="${stageId}">
+                <rect x="40" y="${y}" width="750" height="186" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
+                <rect x="56" y="${y + 16}" width="220" height="26" rx="4" fill="${C.blue_accent}" />
+                <text x="66" y="${y + 33}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF">${this.escape(t.level)}</text>
+                <text x="56" y="${y + 70}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="16" font-weight="bold" fill="${C.text_primary}">${this.escape(t.title)}</text>
+                <text x="56" y="${y + 95}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10.5" font-weight="bold" fill="${C.amber_accent}">Leadership: ${this.escape(t.owner)}</text>
+                <text x="56" y="${y + 122}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" fill="${C.text_secondary}">${this.escape(t.mandate)}</text>
+                <circle cx="730" cy="${y + 90}" r="32" fill="${C.blue_bg}" />
+                <image href="emotes/${t.emote || 'spec'}.gif" x="702" y="${y + 62}" width="56" height="56" />
+              </g>
             `;
           }).join("")}
         </g>
@@ -639,12 +663,22 @@ class SlideCanvasRenderer {
           <text x="850" y="123" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" font-weight="bold" fill="#FFFFFF">GOVERNANCE RACI MATRIX</text>
           ${raci.map((r, idx) => {
             const ry = 160 + idx * 70;
+            const stageId = idx < 2 ? 4 : 5;
             return `
-              <rect x="840" y="${ry}" width="433" height="55" rx="6" fill="${C.blue_bg}" stroke="${C.card_bd}" stroke-width="0.5" />
-              <text x="854" y="${ry + 22}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">${this.escape(r.activity)}</text>
-              <text x="854" y="${ry + 42}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" fill="${C.amber_accent}">Tier 1: ${r.s}   •   Tier 2: ${r.c}   •   Tier 3: ${r.h}</text>
+              <g data-stage="${stageId}">
+                <rect x="840" y="${ry}" width="433" height="55" rx="6" fill="${C.blue_bg}" stroke="${C.card_bd}" stroke-width="0.5" />
+                <text x="854" y="${ry + 22}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">${this.escape(r.activity)}</text>
+                <text x="854" y="${ry + 42}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" fill="${C.amber_accent}">Tier 1: ${r.s}   •   Tier 2: ${r.c}   •   Tier 3: ${r.h}</text>
+              </g>
             `;
           }).join("")}
+        </g>
+
+        <!-- Flow Tracer Connectors Between Tiers & RACI -->
+        <g class="flow-tracers-layer" pointer-events="none">
+          <line x1="415" y1="270" x2="415" y2="284" stroke="${C.blue_accent}" stroke-width="2.5" class="flow-tracer-line" />
+          <line x1="415" y1="470" x2="415" y2="484" stroke="${C.teal_accent}" stroke-width="2.5" class="flow-tracer-line" />
+          <line x1="790" y1="377" x2="820" y2="377" stroke="${C.amber_accent}" stroke-width="2" class="flow-tracer-line" />
         </g>
       </svg>
     `;
@@ -671,22 +705,25 @@ class SlideCanvasRenderer {
         <g class="anim-grp anim-p2">
           ${stages.map((st, i) => {
             const x = 40 + i * 316;
+            const stageId = i + 1;
             return `
-              <rect x="${x}" y="90" width="292" height="420" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-              <rect x="${x + 20}" y="112" width="48" height="32" rx="4" fill="${C.blue_accent}" />
-              <text x="${x + 44}" y="133" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(st.num)}</text>
-              <text x="${x + 20}" y="180" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="17" font-weight="bold" fill="${C.text_primary}">${this.escape(st.name)}</text>
-              <text x="${x + 20}" y="215" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" fill="${C.text_muted}">${this.escape(st.tech)}</text>
-              <circle cx="${x + 146}" cy="310" r="48" fill="${C.blue_bg}" />
-              <image href="emotes/${st.emote || 'tb_robot'}.gif" x="${x + 106}" y="270" width="80" height="80" />
-              <rect x="${x + 20}" y="430" width="252" height="42" rx="6" fill="${C.blue_bg}" />
-              <text x="${x + 146}" y="456" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.blue_accent}" text-anchor="middle">${this.escape(st.sla)}</text>
+              <g data-stage="${stageId}">
+                <rect x="${x}" y="90" width="292" height="420" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
+                <rect x="${x + 20}" y="112" width="48" height="32" rx="4" fill="${C.blue_accent}" />
+                <text x="${x + 44}" y="133" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(st.num)}</text>
+                <text x="${x + 20}" y="180" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="17" font-weight="bold" fill="${C.text_primary}">${this.escape(st.name)}</text>
+                <text x="${x + 20}" y="215" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" fill="${C.text_muted}">${this.escape(st.tech)}</text>
+                <circle cx="${x + 146}" cy="310" r="48" fill="${C.blue_bg}" />
+                <image href="emotes/${st.emote || 'tb_robot'}.gif" x="${x + 106}" y="270" width="80" height="80" />
+                <rect x="${x + 20}" y="430" width="252" height="42" rx="6" fill="${C.blue_bg}" />
+                <text x="${x + 146}" y="456" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.blue_accent}" text-anchor="middle">${this.escape(st.sla)}</text>
+              </g>
             `;
           }).join("")}
         </g>
 
         <!-- Bottom Security Guardrails -->
-        <g class="anim-grp anim-p3">
+        <g class="anim-grp anim-p3" data-stage="5">
           <rect x="40" y="534" width="1253" height="176" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <text x="64" y="566" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="14" font-weight="bold" fill="${C.blue_accent}">ENTERPRISE GOVERNANCE &amp; COMPLIANCE GUARDRAILS</text>
           ${guardrails.map((g, i) => {
@@ -700,6 +737,13 @@ class SlideCanvasRenderer {
               </g>
             `;
           }).join("")}
+        </g>
+
+        <!-- Flow Tracer Connectors Across Stages -->
+        <g class="flow-tracers-layer" pointer-events="none">
+          <line x1="332" y1="300" x2="356" y2="300" stroke="${C.blue_accent}" stroke-width="2.5" class="flow-tracer-line" />
+          <line x1="648" y1="300" x2="672" y2="300" stroke="${C.teal_accent}" stroke-width="2.5" class="flow-tracer-line" />
+          <line x1="964" y1="300" x2="988" y2="300" stroke="${C.purple_accent}" stroke-width="2.5" class="flow-tracer-line" />
         </g>
       </svg>
     `;
@@ -726,17 +770,20 @@ class SlideCanvasRenderer {
         <g class="anim-grp anim-p2">
           ${kpis.map((k, i) => {
             const x = 40 + i * 316;
+            const stageId = i < 2 ? 1 : 2;
             const ragColor = k.rag === "green" ? "#10B981" : (k.rag === "amber" ? "#F59E0B" : "#EF4444");
             return `
-              <rect x="${x}" y="86" width="292" height="190" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-              <rect x="${x}" y="86" width="6" height="190" fill="${ragColor}" />
-              <text x="${x + 20}" y="118" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_muted}">${this.escape(k.label)}</text>
-              <text x="${x + 20}" y="166" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="36" font-weight="bold" fill="${C.text_primary}">${this.escape(k.value)}</text>
-              <rect x="${x + 20}" y="186" width="90" height="24" rx="4" fill="${ragColor}20" />
-              <text x="${x + 65}" y="202" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${ragColor}" text-anchor="middle">${this.escape(k.delta)}</text>
-              <text x="${x + 20}" y="244" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" fill="${C.text_muted}">${this.escape(k.note)}</text>
-              <circle cx="${x + 242}" cy="130" r="26" fill="${C.blue_bg}" />
-              <image href="emotes/${k.emote || 'tb_robot'}.gif" x="${x + 218}" y="106" width="48" height="48" />
+              <g data-stage="${stageId}">
+                <rect x="${x}" y="86" width="292" height="190" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
+                <rect x="${x}" y="86" width="6" height="190" fill="${ragColor}" />
+                <text x="${x + 20}" y="118" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_muted}">${this.escape(k.label)}</text>
+                <text x="${x + 20}" y="166" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="36" font-weight="bold" fill="${C.text_primary}">${this.escape(k.value)}</text>
+                <rect x="${x + 20}" y="186" width="90" height="24" rx="4" fill="${ragColor}20" />
+                <text x="${x + 65}" y="202" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${ragColor}" text-anchor="middle">${this.escape(k.delta)}</text>
+                <text x="${x + 20}" y="244" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" fill="${C.text_muted}">${this.escape(k.note)}</text>
+                <circle cx="${x + 242}" cy="130" r="26" fill="${C.blue_bg}" />
+                <image href="emotes/${k.emote || 'tb_robot'}.gif" x="${x + 218}" y="106" width="48" height="48" />
+              </g>
             `;
           }).join("")}
         </g>
@@ -745,14 +792,21 @@ class SlideCanvasRenderer {
         <g class="anim-grp anim-p3">
           ${pillars.map((p, i) => {
             const y = 300 + i * 134;
+            const stageId = 3 + i;
             return `
-              <rect x="40" y="${y}" width="1253" height="114" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-              <text x="64" y="${y + 40}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="16" font-weight="bold" fill="${C.text_primary}">${this.escape(p.name)}</text>
-              <text x="64" y="${y + 76}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12.5" fill="${C.text_muted}">${this.escape(p.detail)}</text>
-              <rect x="1100" y="${y + 36}" width="150" height="44" rx="6" fill="${C.blue_bg}" />
-              <text x="1175" y="${y + 65}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="20" font-weight="bold" fill="${C.blue_accent}" text-anchor="middle">${this.escape(p.score)}</text>
+              <g data-stage="${stageId}">
+                <rect x="40" y="${y}" width="1253" height="114" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
+                <text x="64" y="${y + 40}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="16" font-weight="bold" fill="${C.text_primary}">${this.escape(p.name)}</text>
+                <text x="64" y="${y + 76}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12.5" fill="${C.text_muted}">${this.escape(p.detail)}</text>
+                <rect x="1100" y="${y + 36}" width="150" height="44" rx="6" fill="${C.blue_bg}" />
+                <text x="1175" y="${y + 65}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="20" font-weight="bold" fill="${C.blue_accent}" text-anchor="middle">${this.escape(p.score)}</text>
+              </g>
             `;
           }).join("")}
+        </g>
+
+        <g class="flow-tracers-layer" pointer-events="none">
+          <line x1="40" y1="288" x2="1293" y2="288" stroke="${C.blue_accent}" stroke-width="2" class="flow-tracer-line" />
         </g>
       </svg>
     `;
@@ -777,7 +831,7 @@ class SlideCanvasRenderer {
         ${this.renderHeader(h, b, C, paletteKey)}
 
         <!-- Top 4 Close Phases Ribbon -->
-        <g class="anim-grp anim-p1">
+        <g class="anim-grp anim-p1" data-stage="1">
           ${phases.map((p, i) => {
             const x = 40 + i * 316;
             return `
@@ -788,7 +842,7 @@ class SlideCanvasRenderer {
               <text x="${x + 10}" y="124" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(p.title)}</text>
               <circle cx="${x + 260}" cy="106" r="18" fill="${C.blue_bg}" />
               <image href="emotes/${p.emote || 'calc'}.gif" x="${x + 244}" y="90" width="32" height="32" />
-              ${i < 3 ? `<line x1="${x + 292}" y1="106" x2="${x + 316}" y2="106" stroke="${C.blue_accent}" stroke-width="2" marker-end="url(#arr-blu)" />` : ''}
+              ${i < 3 ? `<line x1="${x + 292}" y1="106" x2="${x + 316}" y2="106" stroke="${C.blue_accent}" stroke-width="2" marker-end="url(#arr-blu)" class="flow-tracer-line" />` : ''}
             `;
           }).join("")}
         </g>
@@ -800,50 +854,54 @@ class SlideCanvasRenderer {
           <text x="176" y="157" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" font-weight="bold" fill="#FFFFFF" text-anchor="middle">SUB-LEDGER SETTLEMENT RUNBOOK</text>
 
           <!-- Nodes Row 1 -->
-          ${nodes.slice(0, 3).map((n, idx) => {
-            const x = 70 + idx * 260;
-            return `
-              <g class="interactive-card" data-node-id="${n.id}" cursor="pointer">
-                <rect x="${x}" y="190" width="220" height="110" rx="8" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
-                <rect x="${x + 12}" y="202" width="60" height="18" rx="3" fill="${C.amber_accent}" />
-                <text x="${x + 42}" y="215" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(n.badge)}</text>
-                <text x="${x + 12}" y="242" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(n.title)}</text>
-                <text x="${x + 12}" y="262" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(n.desc)}</text>
-                <circle cx="${x + 188}" cy="245" r="20" fill="${C.card_bg}" />
-                <image href="emotes/${n.emote || 'calc'}.gif" x="${x + 168}" y="225" width="40" height="40" />
-              </g>
-              ${idx < 2 ? `<line x1="${x + 220}" y1="245" x2="${x + 260}" y2="245" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" />` : ''}
-            `;
-          }).join("")}
+          <g data-stage="2">
+            ${nodes.slice(0, 3).map((n, idx) => {
+              const x = 70 + idx * 260;
+              return `
+                <g class="interactive-card" data-node-id="${n.id}" cursor="pointer">
+                  <rect x="${x}" y="190" width="220" height="110" rx="8" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
+                  <rect x="${x + 12}" y="202" width="60" height="18" rx="3" fill="${C.amber_accent}" />
+                  <text x="${x + 42}" y="215" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(n.badge)}</text>
+                  <text x="${x + 12}" y="242" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(n.title)}</text>
+                  <text x="${x + 12}" y="262" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(n.desc)}</text>
+                  <circle cx="${x + 188}" cy="245" r="20" fill="${C.card_bg}" />
+                  <image href="emotes/${n.emote || 'calc'}.gif" x="${x + 168}" y="225" width="40" height="40" />
+                </g>
+                ${idx < 2 ? `<line x1="${x + 220}" y1="245" x2="${x + 260}" y2="245" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" class="flow-tracer-line" />` : ''}
+              `;
+            }).join("")}
+          </g>
 
           <!-- Connector Spine to Lower Row -->
-          <line x1="720" y1="300" x2="720" y2="360" stroke="${C.purple_accent}" stroke-width="2.5" />
-          <line x1="720" y1="360" x2="180" y2="360" stroke="${C.purple_accent}" stroke-width="2.5" />
-          <line x1="180" y1="360" x2="180" y2="390" stroke="${C.purple_accent}" stroke-width="2.5" marker-end="url(#arr-pur)" />
+          <line x1="720" y1="300" x2="720" y2="360" stroke="${C.purple_accent}" stroke-width="2.5" class="flow-tracer-line" />
+          <line x1="720" y1="360" x2="180" y2="360" stroke="${C.purple_accent}" stroke-width="2.5" class="flow-tracer-line" />
+          <line x1="180" y1="360" x2="180" y2="390" stroke="${C.purple_accent}" stroke-width="2.5" marker-end="url(#arr-pur)" class="flow-tracer-line" />
 
           <!-- Nodes Row 2 -->
-          ${nodes.slice(3, 6).map((n, idx) => {
-            const x = 70 + idx * 260;
-            return `
-              <g class="interactive-card" data-node-id="${n.id}" cursor="pointer">
-                <rect x="${x}" y="400" width="220" height="110" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-                <rect x="${x + 12}" y="412" width="75" height="18" rx="3" fill="${C.teal_accent}" />
-                <text x="${x + 49}" y="425" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(n.badge)}</text>
-                <text x="${x + 12}" y="452" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(n.title)}</text>
-                <text x="${x + 12}" y="472" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(n.desc)}</text>
-                <circle cx="${x + 188}" cy="455" r="20" fill="${C.blue_bg}" />
-                <image href="emotes/${n.emote || 'ledger'}.gif" x="${x + 168}" y="435" width="40" height="40" />
-              </g>
-              ${idx < 2 ? `<line x1="${x + 220}" y1="455" x2="${x + 260}" y2="455" stroke="${C.teal_accent}" stroke-width="2.5" marker-end="url(#arr-tea)" />` : ''}
-            `;
-          }).join("")}
+          <g data-stage="3">
+            ${nodes.slice(3, 6).map((n, idx) => {
+              const x = 70 + idx * 260;
+              return `
+                <g class="interactive-card" data-node-id="${n.id}" cursor="pointer">
+                  <rect x="${x}" y="400" width="220" height="110" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
+                  <rect x="${x + 12}" y="412" width="75" height="18" rx="3" fill="${C.teal_accent}" />
+                  <text x="${x + 49}" y="425" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(n.badge)}</text>
+                  <text x="${x + 12}" y="452" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(n.title)}</text>
+                  <text x="${x + 12}" y="472" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(n.desc)}</text>
+                  <circle cx="${x + 188}" cy="455" r="20" fill="${C.blue_bg}" />
+                  <image href="emotes/${n.emote || 'ledger'}.gif" x="${x + 168}" y="435" width="40" height="40" />
+                </g>
+                ${idx < 2 ? `<line x1="${x + 220}" y1="455" x2="${x + 260}" y2="455" stroke="${C.teal_accent}" stroke-width="2.5" marker-end="url(#arr-tea)" class="flow-tracer-line" />` : ''}
+              `;
+            }).join("")}
+          </g>
 
           <rect x="70" y="530" width="810" height="42" rx="6" fill="${C.blue_bg}" />
           <text x="90" y="556" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.blue_accent}">AUTO-RECONCILIATION SPEED: 94.8% Same-Day Bilateral Settlement • Zero Manual Journal Overrides</text>
         </g>
 
         <!-- Right Side: Close Governance & Materiality Dock -->
-        <g class="anim-grp anim-p3">
+        <g class="anim-grp anim-p3" data-stage="4">
           <rect x="930" y="152" width="363" height="440" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <rect x="950" y="172" width="160" height="24" rx="4" fill="${C.rose_accent}" />
           <text x="1030" y="188" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">GOVERNANCE GATEWAYS</text>
@@ -877,7 +935,7 @@ class SlideCanvasRenderer {
         </g>
 
         <!-- Bottom Summary Ribbon -->
-        <g class="anim-grp anim-p4">
+        <g class="anim-grp anim-p4" data-stage="5">
           <rect x="40" y="612" width="1253" height="100" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <text x="64" y="642" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}">PHILIPS GLOBAL BUSINESS SERVICES  •  FINANCE CLOSE VELOCITY</text>
           <text x="64" y="682" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.blue_accent}">1.8 DAYS</text>
@@ -910,7 +968,7 @@ class SlideCanvasRenderer {
         ${this.renderHeader(h, b, C, paletteKey)}
 
         <!-- Top 5 P2P Sequential Steps -->
-        <g class="anim-grp anim-p2">
+        <g class="anim-grp anim-p2" data-stage="1">
           ${steps.map((st, i) => {
             const x = 40 + i * 253;
             return `
@@ -921,7 +979,7 @@ class SlideCanvasRenderer {
               <image href="emotes/${st.emote || 'po_doc'}.gif" x="${x + 175}" y="95" width="40" height="40" />
               <text x="${x + 14}" y="152" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">${this.escape(st.title)}</text>
               <text x="${x + 14}" y="174" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(st.sub)}</text>
-              ${i < 4 ? `<line x1="${x + 235}" y1="155" x2="${x + 253}" y2="155" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" />` : ''}
+              ${i < 4 ? `<line x1="${x + 235}" y1="155" x2="${x + 253}" y2="155" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" class="flow-tracer-line" />` : ''}
             `;
           }).join("")}
         </g>
@@ -933,48 +991,52 @@ class SlideCanvasRenderer {
           <text x="166" y="255" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" font-weight="bold" fill="#FFFFFF" text-anchor="middle">SAP 3-WAY MATCHING PIPELINE</text>
 
           <!-- 3 Inbound Match Pillars -->
-          <g transform="translate(68, 280)">
-            <rect x="0" y="0" width="220" height="100" rx="6" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
-            <text x="14" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.blue_accent}">Purchase Order (PO)</text>
-            <text x="14" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">Contract terms, unit pricing,</text>
-            <text x="14" y="60" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">delivery schedules &amp; entity code.</text>
-          </g>
-          <g transform="translate(325, 280)">
-            <rect x="0" y="0" width="220" height="100" rx="6" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
-            <text x="14" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.teal_accent}">Goods Receipt (GR)</text>
-            <text x="14" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">Physical barcode scan,</text>
-            <text x="14" y="60" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">accepted quantity &amp; warehouse stamp.</text>
-          </g>
-          <g transform="translate(582, 280)">
-            <rect x="0" y="0" width="220" height="100" rx="6" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
-            <text x="14" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.rose_accent}">Vendor Invoice (IR)</text>
-            <text x="14" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">OCR extracted tax, currency,</text>
-            <text x="14" y="60" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">IBAN bank details &amp; line items.</text>
+          <g data-stage="2">
+            <g transform="translate(68, 280)">
+              <rect x="0" y="0" width="220" height="100" rx="6" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
+              <text x="14" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.blue_accent}">Purchase Order (PO)</text>
+              <text x="14" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">Contract terms, unit pricing,</text>
+              <text x="14" y="60" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">delivery schedules &amp; entity code.</text>
+            </g>
+            <g transform="translate(325, 280)">
+              <rect x="0" y="0" width="220" height="100" rx="6" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
+              <text x="14" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.teal_accent}">Goods Receipt (GR)</text>
+              <text x="14" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">Physical barcode scan,</text>
+              <text x="14" y="60" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">accepted quantity &amp; warehouse stamp.</text>
+            </g>
+            <g transform="translate(582, 280)">
+              <rect x="0" y="0" width="220" height="100" rx="6" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
+              <text x="14" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.rose_accent}">Vendor Invoice (IR)</text>
+              <text x="14" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">OCR extracted tax, currency,</text>
+              <text x="14" y="60" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">IBAN bank details &amp; line items.</text>
+            </g>
+
+            <!-- Arrows converging into Match Decision -->
+            <line x1="178" y1="380" x2="435" y2="420" stroke="${C.blue_accent}" stroke-width="2" class="flow-tracer-line" />
+            <line x1="435" y1="380" x2="435" y2="420" stroke="${C.teal_accent}" stroke-width="2" class="flow-tracer-line" />
+            <line x1="692" y1="380" x2="435" y2="420" stroke="${C.rose_accent}" stroke-width="2" class="flow-tracer-line" />
           </g>
 
-          <!-- Arrows converging into Match Decision -->
-          <line x1="178" y1="380" x2="435" y2="420" stroke="${C.blue_accent}" stroke-width="2" />
-          <line x1="435" y1="380" x2="435" y2="420" stroke="${C.teal_accent}" stroke-width="2" />
-          <line x1="692" y1="380" x2="435" y2="420" stroke="${C.rose_accent}" stroke-width="2" />
+          <!-- Decision Diamond / Card & Exception Track -->
+          <g data-stage="3">
+            <g transform="translate(240, 420)">
+              <rect x="0" y="0" width="390" height="70" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1.5" />
+              <circle cx="36" cy="35" r="20" fill="${C.amber_bg}" />
+              <image href="emotes/gear.gif" x="20" y="19" width="32" height="32" />
+              <text x="70" y="28" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.amber_accent}">3-Way Matching Algorithm</text>
+              <text x="70" y="48" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" fill="${C.text_secondary}">Automated line tolerance tolerance check within +/- 1.5% delta.</text>
+            </g>
 
-          <!-- Decision Diamond / Card -->
-          <g transform="translate(240, 420)">
-            <rect x="0" y="0" width="390" height="70" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1.5" />
-            <circle cx="36" cy="35" r="20" fill="${C.amber_bg}" />
-            <image href="emotes/gear.gif" x="20" y="19" width="32" height="32" />
-            <text x="70" y="28" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.amber_accent}">3-Way Matching Algorithm</text>
-            <text x="70" y="48" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" fill="${C.text_secondary}">Automated line tolerance tolerance check within +/- 1.5% delta.</text>
-          </g>
-
-          <g transform="translate(68, 510)">
-            <rect x="0" y="0" width="734" height="60" rx="6" fill="${C.rose_bg}" stroke="${C.rose_border}" stroke-width="1" />
-            <text x="20" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.rose_accent}">EXCEPTION TRACK: ${this.escape(ef.title)}</text>
-            <text x="20" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">Trigger: ${this.escape(ef.trigger)} • Resolution: ${this.escape(ef.resolution)}</text>
+            <g transform="translate(68, 510)">
+              <rect x="0" y="0" width="734" height="60" rx="6" fill="${C.rose_bg}" stroke="${C.rose_border}" stroke-width="1" />
+              <text x="20" y="26" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.rose_accent}">EXCEPTION TRACK: ${this.escape(ef.title)}</text>
+              <text x="20" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_secondary}">Trigger: ${this.escape(ef.trigger)} • Resolution: ${this.escape(ef.resolution)}</text>
+            </g>
           </g>
         </g>
 
         <!-- Right Side: Vendor Scorecard -->
-        <g class="anim-grp anim-p4">
+        <g class="anim-grp anim-p4" data-stage="4">
           <rect x="850" y="250" width="443" height="340" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <rect x="870" y="270" width="180" height="24" rx="4" fill="${C.teal_accent}" />
           <text x="960" y="286" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">VENDOR RISK SCORECARD</text>
@@ -1002,7 +1064,7 @@ class SlideCanvasRenderer {
         </g>
 
         <!-- Bottom Banner -->
-        <g class="anim-grp anim-p4">
+        <g class="anim-grp anim-p4" data-stage="5">
           <rect x="40" y="610" width="1253" height="105" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <text x="64" y="640" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}">GLOBAL SUPPLY CHAIN PROCUREMENT KPI BENCHMARKS</text>
           <text x="64" y="682" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.teal_accent}">€1.2B+</text>
@@ -1015,8 +1077,6 @@ class SlideCanvasRenderer {
       </svg>
     `;
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
   // TEMPLATE 8: ITIL SERVICE MANAGEMENT & INCIDENT RESOLUTION
   // ══════════════════════════════════════════════════════════════════════════
   renderITService(data) {
@@ -1038,18 +1098,21 @@ class SlideCanvasRenderer {
         <g class="anim-grp anim-p2">
           ${tiers.map((t, i) => {
             const x = 40 + i * 215;
+            const stageId = i < 2 ? 1 : (i === 2 ? 2 : 3);
             return `
-              <rect x="${x}" y="80" width="200" height="490" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-              <rect x="${x + 14}" y="95" width="45" height="26" rx="4" fill="${C.blue_accent}" />
-              <text x="${x + 36}" y="113" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(t.level)}</text>
-              <circle cx="${x + 155}" cy="115" r="22" fill="${C.blue_bg}" />
-              <image href="emotes/${t.emote || 'ticket'}.gif" x="${x + 135}" y="95" width="40" height="40" />
+              <g data-stage="${stageId}">
+                <rect x="${x}" y="80" width="200" height="490" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
+                <rect x="${x + 14}" y="95" width="45" height="26" rx="4" fill="${C.blue_accent}" />
+                <text x="${x + 36}" y="113" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(t.level)}</text>
+                <circle cx="${x + 155}" cy="115" r="22" fill="${C.blue_bg}" />
+                <image href="emotes/${t.emote || 'ticket'}.gif" x="${x + 135}" y="95" width="40" height="40" />
 
-              <text x="${x + 14}" y="160" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">${this.escape(t.name)}</text>
-              <text x="${x + 14}" y="185" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" fill="${C.text_muted}">${this.escape(t.desc)}</text>
+                <text x="${x + 14}" y="160" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">${this.escape(t.name)}</text>
+                <text x="${x + 14}" y="185" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" fill="${C.text_muted}">${this.escape(t.desc)}</text>
 
-              <rect x="${x + 14}" y="490" width="172" height="45" rx="6" fill="${C.blue_bg}" />
-              <text x="${x + 100}" y="518" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.blue_accent}" text-anchor="middle">SLA: ${this.escape(t.sla)}</text>
+                <rect x="${x + 14}" y="490" width="172" height="45" rx="6" fill="${C.blue_bg}" />
+                <text x="${x + 100}" y="518" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.blue_accent}" text-anchor="middle">SLA: ${this.escape(t.sla)}</text>
+              </g>
             `;
           }).join("")}
         </g>
@@ -1057,7 +1120,7 @@ class SlideCanvasRenderer {
         <!-- Right Side: Major Incident Management & SLA Table -->
         <g class="anim-grp anim-p3">
           <!-- Major Incident Card -->
-          <g transform="translate(915, 80)">
+          <g data-stage="5" transform="translate(915, 80)">
             <rect x="0" y="0" width="378" height="230" rx="8" fill="${C.card_bg}" stroke="${C.red_border}" stroke-width="1.5" />
             <rect x="16" y="16" width="170" height="24" rx="4" fill="${C.red_accent}" />
             <text x="101" y="32" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">MAJOR INCIDENT MGMT</text>
@@ -1073,7 +1136,7 @@ class SlideCanvasRenderer {
           </g>
 
           <!-- SLA Matrix Table -->
-          <g transform="translate(915, 330)">
+          <g data-stage="4" transform="translate(915, 330)">
             <rect x="0" y="0" width="378" height="240" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
             <text x="16" y="32" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">SERVICE LEVEL AGREEMENTS (SLA)</text>
 
@@ -1090,7 +1153,7 @@ class SlideCanvasRenderer {
         </g>
 
         <!-- Bottom Telemetry Banner -->
-        <g class="anim-grp anim-p4">
+        <g class="anim-grp anim-p4" data-stage="5">
           <rect x="40" y="590" width="1253" height="120" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <text x="64" y="620" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}">PHILIPS HEALTHSUITE CLOUD TELEMETRY &amp; OPERATIONAL METRICS</text>
           <text x="64" y="668" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.teal_accent}">99.99%</text>
@@ -1099,6 +1162,10 @@ class SlideCanvasRenderer {
           <text x="610" y="660" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_secondary}">Mean API Gateway Latency</text>
           <text x="890" y="668" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.amber_accent}">0 DEFECTS</text>
           <text x="1040" y="660" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_secondary}">Clinical Audit Security Breaches</text>
+        </g>
+
+        <g class="flow-tracers-layer" pointer-events="none">
+          <line x1="240" y1="325" x2="885" y2="325" stroke="${C.blue_accent}" stroke-width="2" class="flow-tracer-line" />
         </g>
       </svg>
     `;
@@ -1130,33 +1197,35 @@ class SlideCanvasRenderer {
           <text x="25" y="340" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}" transform="rotate(-90 25,340)" text-anchor="middle">LIKELIHOOD (1 TO 5)</text>
 
           <!-- 5x5 Grid Cells -->
-          ${Array.from({ length: 5 }).map((_, r) => {
-            return Array.from({ length: 5 }).map((__, c) => {
-              const gx = 100 + c * 115;
-              const gy = 130 + (4 - r) * 75;
-              // Risk score warmth color: Green -> Amber -> Dark Coral -> Ruby (NO BLUE!)
-              const score = (r + 1) * (c + 1);
-              let cellColor = "#34D39918";
-              if (score >= 15) cellColor = "#C42B2B28";
-              else if (score >= 10) cellColor = "#E8734A25";
-              else if (score >= 6) cellColor = "#E0A03020";
+          <g data-stage="3">
+            ${Array.from({ length: 5 }).map((_, r) => {
+              return Array.from({ length: 5 }).map((__, c) => {
+                const gx = 100 + c * 115;
+                const gy = 130 + (4 - r) * 75;
+                const score = (r + 1) * (c + 1);
+                let cellColor = "#34D39918";
+                if (score >= 15) cellColor = "#C42B2B28";
+                else if (score >= 10) cellColor = "#E8734A25";
+                else if (score >= 6) cellColor = "#E0A03020";
 
-              return `
-                <rect x="${gx}" y="${gy}" width="108" height="68" rx="4" fill="${cellColor}" stroke="${C.card_bd}" stroke-width="0.75" />
-                <text x="${gx + 8}" y="${gy + 18}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">L${r+1}-I${c+1}</text>
-              `;
-            }).join("");
-          }).join("")}
+                return `
+                  <rect x="${gx}" y="${gy}" width="108" height="68" rx="4" fill="${cellColor}" stroke="${C.card_bd}" stroke-width="0.75" />
+                  <text x="${gx + 8}" y="${gy + 18}" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">L${r+1}-I${c+1}</text>
+                `;
+              }).join("");
+            }).join("")}
+          </g>
 
           <!-- X-axis Label -->
           <text x="390" y="545" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}" text-anchor="middle">IMPACT SEVERITY (1 TO 5)</text>
 
           <!-- Plotted Risk Vectors -->
-          ${vectors.map(rv => {
+          ${vectors.map((rv, idx) => {
             const vx = 100 + (rv.x - 1) * 115 + 40;
             const vy = 130 + (5 - rv.y) * 75 + 25;
+            const stageId = idx < 2 ? 1 : 2;
             return `
-              <g transform="translate(${vx}, ${vy})" cursor="pointer">
+              <g data-stage="${stageId}" transform="translate(${vx}, ${vy})" cursor="pointer">
                 <circle cx="16" cy="16" r="16" fill="${C.red_accent}" />
                 <text x="16" y="21" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${rv.id}</text>
                 <circle cx="36" cy="4" r="12" fill="${C.card_bg}" />
@@ -1167,7 +1236,7 @@ class SlideCanvasRenderer {
         </g>
 
         <!-- Right Side: SOX Control Pillars & KRI Status -->
-        <g class="anim-grp anim-p3">
+        <g class="anim-grp anim-p3" data-stage="4">
           <rect x="760" y="80" width="533" height="490" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <rect x="780" y="100" width="200" height="24" rx="4" fill="${C.blue_accent}" />
           <text x="880" y="116" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">SOX CONTROL FRAMEWORK</text>
@@ -1193,7 +1262,7 @@ class SlideCanvasRenderer {
         </g>
 
         <!-- Bottom Banner -->
-        <g class="anim-grp anim-p4">
+        <g class="anim-grp anim-p4" data-stage="5">
           <rect x="40" y="590" width="1253" height="120" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <text x="64" y="620" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}">REGULATORY &amp; COMPLIANCE CERTIFICATION HEALTH</text>
           <text x="64" y="668" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.teal_accent}">100%</text>
@@ -1228,25 +1297,28 @@ class SlideCanvasRenderer {
         <g class="anim-grp anim-p2">
           ${stages.map((st, i) => {
             const x = 40 + i * 210;
+            const stageId = i < 2 ? 1 : (i === 2 ? 2 : (i === 3 ? 3 : 4));
             return `
-              <rect x="${x}" y="80" width="198" height="480" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-              <rect x="${x + 12}" y="95" width="100" height="22" rx="4" fill="${C.blue_accent}" />
-              <text x="${x + 62}" y="110" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(st.phase)}</text>
-              <circle cx="${x + 160}" cy="115" r="20" fill="${C.blue_bg}" />
-              <image href="emotes/${st.emote || 'user'}.gif" x="${x + 142}" y="97" width="36" height="36" />
+              <g data-stage="${stageId}">
+                <rect x="${x}" y="80" width="198" height="480" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
+                <rect x="${x + 12}" y="95" width="100" height="22" rx="4" fill="${C.blue_accent}" />
+                <text x="${x + 62}" y="110" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(st.phase)}</text>
+                <circle cx="${x + 160}" cy="115" r="20" fill="${C.blue_bg}" />
+                <image href="emotes/${st.emote || 'user'}.gif" x="${x + 142}" y="97" width="36" height="36" />
 
-              <text x="${x + 12}" y="152" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">${this.escape(st.title)}</text>
-              <text x="${x + 12}" y="174" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(st.action)}</text>
+                <text x="${x + 12}" y="152" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="13" font-weight="bold" fill="${C.text_primary}">${this.escape(st.title)}</text>
+                <text x="${x + 12}" y="174" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(st.action)}</text>
 
-              <rect x="${x + 12}" y="495" width="174" height="45" rx="6" fill="${C.blue_bg}" />
-              <text x="${x + 99}" y="522" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.teal_accent}" text-anchor="middle">${this.escape(st.score)}</text>
+                <rect x="${x + 12}" y="495" width="174" height="45" rx="6" fill="${C.blue_bg}" />
+                <text x="${x + 99}" y="522" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.teal_accent}" text-anchor="middle">${this.escape(st.score)}</text>
+              </g>
             `;
           }).join("")}
         </g>
 
         <!-- NPS Emotion Flow Curve Overlay spanning across columns -->
         <g class="anim-grp anim-p3">
-          <path d="M 140 380 Q 350 330, 560 360 T 980 300 T 1200 280" fill="none" stroke="${C.amber_accent}" stroke-width="4" />
+          <path d="M 140 380 Q 350 330, 560 360 T 980 300 T 1200 280" fill="none" stroke="${C.amber_accent}" stroke-width="4" class="flow-tracer-line" />
           ${stages.map((st, i) => {
             const cx = 140 + i * 210;
             const cy = 380 - (i * 18) + (i % 2 === 0 ? 10 : -10);
@@ -1257,7 +1329,7 @@ class SlideCanvasRenderer {
         </g>
 
         <!-- Bottom KPI Banner -->
-        <g class="anim-grp anim-p4">
+        <g class="anim-grp anim-p4" data-stage="5">
           <rect x="40" y="580" width="1253" height="130" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
           <text x="64" y="612" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}">CLINICAL SATISFACTION &amp; LIFECYCLE VALUE METRICS</text>
           ${kpis.map((k, idx) => {
@@ -1271,48 +1343,6 @@ class SlideCanvasRenderer {
         </g>
       </svg>
     `;
-  }
-
-  simulateAnimation() {
-    if (this.isAnimating) return;
-    this.isAnimating = true;
-
-    const phases = [".anim-p1", ".anim-p2", ".anim-p3", ".anim-p4", ".anim-p5"];
-    phases.forEach(selector => {
-      this.container.querySelectorAll(selector).forEach(el => {
-        el.style.opacity = "0";
-        el.style.transition = "none";
-        el.style.transform = "translateY(8px)";
-      });
-    });
-
-    let currentPhase = 0;
-    const interval = setInterval(() => {
-      if (currentPhase < phases.length) {
-        const els = this.container.querySelectorAll(phases[currentPhase]);
-        els.forEach(el => {
-          el.style.transition = "opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1)";
-          el.style.opacity = "1";
-          el.style.transform = "translateY(0)";
-        });
-        currentPhase++;
-      } else {
-        clearInterval(interval);
-        this.isAnimating = false;
-      }
-    }, 600);
-  }
-
-  resetAnimation() {
-    this.isAnimating = false;
-    const phases = [".anim-p1", ".anim-p2", ".anim-p3", ".anim-p4", ".anim-p5"];
-    phases.forEach(selector => {
-      this.container.querySelectorAll(selector).forEach(el => {
-        el.style.opacity = "1";
-        el.style.transition = "none";
-        el.style.transform = "translateY(0)";
-      });
-    });
   }
 
   escapeXml(str) {
@@ -1359,8 +1389,9 @@ class SlideCanvasRenderer {
       const x = 40 + idx * 252;
       const isComplete = p.status === "COMPLETE";
       const badgeBg = isComplete ? C.teal_accent : C.amber_accent;
+      const stageId = idx < 2 ? 1 : (idx < 4 ? 2 : 3);
       phasesHtml += `
-        <g class="anim-node anim-p1 interactive-card" data-node-id="phases.${idx}" transform="translate(${x}, 72)">
+        <g class="anim-node anim-p1 interactive-card" data-stage="${stageId}" data-node-id="phases.${idx}" transform="translate(${x}, 72)">
           <rect width="244" height="42" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
           <rect width="4" height="42" rx="2" fill="${badgeBg}"/>
           <rect x="10" y="8" width="34" height="26" rx="4" fill="${badgeBg}" fill-opacity="0.15"/>
@@ -1368,7 +1399,7 @@ class SlideCanvasRenderer {
           <text x="52" y="21" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">${this.escapeXml(p.title)}</text>
           <text x="52" y="33" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="9">${this.escapeXml(p.sub)}</text>
           <image href="${this.resolveEmote(p.emote)}" x="208" y="10" width="22" height="22"/>
-          ${idx < 4 ? `<path d="M 248 21 L 252 21" stroke="${C.dashed_border}" stroke-width="2"/>` : ""}
+          ${idx < 4 ? `<path d="M 248 21 L 252 21" stroke="${C.dashed_border}" stroke-width="2" class="flow-tracer-line"/>` : ""}
         </g>
       `;
     });
@@ -1380,7 +1411,7 @@ class SlideCanvasRenderer {
       (ws.initiatives || []).forEach((init, iIdx) => {
         const ix = 320 + iIdx * 480;
         initsHtml += `
-          <g class="interactive-card" data-node-id="workstreams.${wIdx}.initiatives.${iIdx}" transform="translate(${ix}, ${y})">
+          <g class="interactive-card" data-stage="4" data-node-id="workstreams.${wIdx}.initiatives.${iIdx}" transform="translate(${ix}, ${y})">
             <rect width="460" height="142" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
             <rect width="5" height="142" rx="2" fill="${C.stripe}"/>
             <text x="18" y="26" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="700">${this.escapeXml(init.title)}</text>
@@ -1394,14 +1425,14 @@ class SlideCanvasRenderer {
       });
 
       wsHtml += `
-        <g class="anim-node anim-p2" transform="translate(40, ${y})">
+        <g class="anim-node anim-p2" data-stage="4" transform="translate(40, ${y})">
           <rect width="260" height="142" rx="8" fill="${C.hdr_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
           <rect width="6" height="142" rx="2" fill="${C.stripe}"/>
           <image href="${this.resolveEmote(ws.emote)}" x="18" y="16" width="34" height="34"/>
           <text x="60" y="32" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700">${this.escapeXml(ws.lane)}</text>
           <text x="18" y="72" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10">CROSS-FUNCTIONAL WORKSTREAM</text>
           <text x="18" y="92" fill="${C.text_secondary}" font-family="Segoe UI, sans-serif" font-size="10">Adoption & Governance Lead</text>
-          <path d="M 300 71 L 320 71" stroke="${C.stripe}" stroke-width="2" marker-end="url(#arrow-head)"/>
+          <path d="M 300 71 L 320 71" stroke="${C.stripe}" stroke-width="2" marker-end="url(#arrow-head)" class="flow-tracer-line"/>
         </g>
         ${initsHtml}
       `;
@@ -1415,7 +1446,7 @@ class SlideCanvasRenderer {
         ${phasesHtml}
         ${wsHtml}
         <!-- Bottom Governance Metrics Bar -->
-        <g class="anim-node anim-p5" transform="translate(40, 616)">
+        <g class="anim-node anim-p5" data-stage="5" transform="translate(40, 616)">
           <rect width="1253" height="98" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
           <rect width="6" height="98" rx="2" fill="${C.teal_accent}"/>
           
@@ -1455,7 +1486,7 @@ class SlideCanvasRenderer {
     const quads = data.quadrants || {};
     const sum = data.strategic_summary || {};
 
-    const renderQuadrant = (qData, x, y, accentColor) => {
+    const renderQuadrant = (qData, x, y, accentColor, stageId) => {
       let itemsHtml = "";
       (qData.items || []).forEach((item, idx) => {
         const iy = 56 + idx * 78;
@@ -1474,7 +1505,7 @@ class SlideCanvasRenderer {
       });
 
       return `
-        <g transform="translate(${x}, ${y})">
+        <g data-stage="${stageId}" transform="translate(${x}, ${y})">
           <rect width="616" height="300" rx="8" fill="${C.blue_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
           <rect width="616" height="42" rx="8" fill="${C.hdr_bg}"/>
           <rect y="38" width="616" height="4" fill="${accentColor}"/>
@@ -1494,13 +1525,13 @@ class SlideCanvasRenderer {
         ${this.renderHeader(data, C)}
         <!-- 2x2 SWOT Matrix -->
         <g class="anim-node anim-p1">
-          ${renderQuadrant(quads.strengths || {}, 40, 72, "#10B981")}
-          ${renderQuadrant(quads.weaknesses || {}, 676, 72, "#F59E0B")}
-          ${renderQuadrant(quads.opportunities || {}, 40, 386, "#E8734A")}
-          ${renderQuadrant(quads.threats || {}, 676, 386, "#EF4444")}
+          ${renderQuadrant(quads.strengths || {}, 40, 72, "#10B981", 1)}
+          ${renderQuadrant(quads.weaknesses || {}, 676, 72, "#F59E0B", 2)}
+          ${renderQuadrant(quads.opportunities || {}, 40, 386, "#E8734A", 3)}
+          ${renderQuadrant(quads.threats || {}, 676, 386, "#EF4444", 4)}
         </g>
         <!-- Bottom Strategic Summary Bar -->
-        <g class="anim-node anim-p5" transform="translate(40, 698)">
+        <g class="anim-node anim-p5" data-stage="5" transform="translate(40, 698)">
           <rect width="1252" height="42" rx="6" fill="${C.hdr_bg}" stroke="${C.card_bd}" stroke-width="1"/>
           <text x="20" y="26" fill="${C.stripe}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">EXECUTIVE STRATEGIC VERDICT:</text>
           <text x="220" y="26" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="10">${this.escapeXml(sum.core_verdict || "")}</text>
@@ -1523,8 +1554,9 @@ class SlideCanvasRenderer {
     let qHtml = "";
     quarters.forEach((q, idx) => {
       const x = 320 + idx * 240;
+      const stageId = idx + 1;
       qHtml += `
-        <g transform="translate(${x}, 72)">
+        <g data-stage="${stageId}" transform="translate(${x}, 72)">
           <rect width="234" height="48" rx="6" fill="${q.highlight ? C.blue_bg : C.card_bg}" stroke="${q.highlight ? C.stripe : C.card_bd}" stroke-width="${q.highlight ? 1.5 : 1}" filter="url(#shadow-card)"/>
           <text x="18" y="22" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">${this.escapeXml(q.qtr)}</text>
           <text x="18" y="38" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="10">${this.escapeXml(q.months)}</text>
@@ -1538,13 +1570,14 @@ class SlideCanvasRenderer {
     let lanesHtml = "";
     lanes.forEach((lane, lIdx) => {
       const y = 132 + lIdx * 118;
+      const laneStage = lIdx + 1;
       let barsHtml = "";
       (lane.bars || []).forEach((bar, bIdx) => {
         const bx = 320 + bar.start * 960;
         const bw = bar.span * 960;
         const by = 16 + bIdx * 46;
         barsHtml += `
-          <g class="interactive-card" data-node-id="lanes.${lIdx}.bars.${bIdx}" transform="translate(${bx}, ${by})">
+          <g class="interactive-card" data-stage="${laneStage}" data-node-id="lanes.${lIdx}.bars.${bIdx}" transform="translate(${bx}, ${by})">
             <rect width="${bw}" height="38" rx="6" fill="${bar.color || C.stripe}" filter="url(#shadow-card)"/>
             <text x="14" y="23" fill="#FFFFFF" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">${this.escapeXml(bar.title)}</text>
             <rect x="${bw - 54}" y="9" width="44" height="20" rx="4" fill="rgba(0,0,0,0.25)"/>
@@ -1554,7 +1587,7 @@ class SlideCanvasRenderer {
       });
 
       lanesHtml += `
-        <g class="anim-node anim-p2" transform="translate(40, ${y})">
+        <g class="anim-node anim-p2" data-stage="${laneStage}" transform="translate(40, ${y})">
           <rect width="268" height="106" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
           <rect width="5" height="106" rx="2" fill="${C.stripe}"/>
           <image href="${this.resolveEmote(lane.emote)}" x="16" y="16" width="30" height="30"/>
@@ -1573,9 +1606,9 @@ class SlideCanvasRenderer {
     milestones.forEach((m, idx) => {
       const mx = 360 + m.pos * 900;
       mHtml += `
-        <g class="anim-node anim-p4 interactive-card" data-node-id="milestones.${idx}" transform="translate(${mx}, 620)">
+        <g class="anim-node anim-p4 interactive-card" data-stage="5" data-node-id="milestones.${idx}" transform="translate(${mx}, 620)">
           <path d="M 0 0 L 14 14 L 0 28 L -14 14 Z" fill="${m.rag === 'green' ? C.teal_accent : C.amber_accent}" filter="url(#shadow-card)"/>
-          <line x1="0" y1="-480" x2="0" y2="0" stroke="${m.rag === 'green' ? C.teal_accent : C.amber_accent}" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <line x1="0" y1="-480" x2="0" y2="0" stroke="${m.rag === 'green' ? C.teal_accent : C.amber_accent}" stroke-width="1.5" stroke-dasharray="3 3" class="flow-tracer-line"/>
           <rect x="-70" y="34" width="140" height="48" rx="6" fill="${C.hdr_bg}" filter="url(#shadow-card)"/>
           <text x="0" y="52" text-anchor="middle" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700">${this.escapeXml(m.title)}</text>
           <text x="0" y="68" text-anchor="middle" fill="${C.stripe}" font-family="Segoe UI, sans-serif" font-size="9">${this.escapeXml(m.date)}</text>
@@ -1589,7 +1622,7 @@ class SlideCanvasRenderer {
         <rect width="1333" height="750" fill="${C.canvas_bg}"/>
         ${this.renderHeader(data, C)}
         <!-- Timeline Lane 1 Header -->
-        <g class="anim-node anim-p1">
+        <g class="anim-node anim-p1" data-stage="1">
           <rect x="40" y="72" width="268" height="48" rx="6" fill="${C.hdr_bg}" filter="url(#shadow-card)"/>
           <text x="24" y="100" fill="${C.canvas_bg}" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">EXECUTION WORKSTREAM</text>
           ${qHtml}
@@ -1611,7 +1644,7 @@ class SlideCanvasRenderer {
 
     // Leader Box
     const leaderHtml = `
-      <g class="anim-node anim-p1 interactive-card" data-node-id="leader" transform="translate(466, 76)">
+      <g class="anim-node anim-p1 interactive-card" data-stage="1" data-node-id="leader" transform="translate(466, 76)">
         <rect width="400" height="92" rx="8" fill="${C.hdr_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
         <rect width="6" height="92" rx="2" fill="${C.stripe}"/>
         <image href="${this.resolveEmote(leader.emote)}" x="20" y="18" width="44" height="44"/>
@@ -1620,23 +1653,24 @@ class SlideCanvasRenderer {
         <text x="76" y="68" fill="${C.text_muted}" font-family="Segoe UI, sans-serif" font-size="9">${this.escapeXml(leader.mandate)}</text>
       </g>
       <!-- Trunk Line Down -->
-      <line x1="666" y1="168" x2="666" y2="200" stroke="${C.stripe}" stroke-width="2"/>
+      <line x1="666" y1="168" x2="666" y2="200" stroke="${C.stripe}" stroke-width="2" class="flow-tracer-line"/>
       <!-- Cross Bar Across 3 Divisions -->
-      <line x1="240" y1="200" x2="1092" y2="200" stroke="${C.stripe}" stroke-width="2"/>
-      <line x1="240" y1="200" x2="240" y2="220" stroke="${C.stripe}" stroke-width="2"/>
-      <line x1="666" y1="200" x2="666" y2="220" stroke="${C.stripe}" stroke-width="2"/>
-      <line x1="1092" y1="200" x2="1092" y2="220" stroke="${C.stripe}" stroke-width="2"/>
+      <line x1="240" y1="200" x2="1092" y2="200" stroke="${C.stripe}" stroke-width="2" class="flow-tracer-line"/>
+      <line x1="240" y1="200" x2="240" y2="220" stroke="${C.stripe}" stroke-width="2" class="flow-tracer-line"/>
+      <line x1="666" y1="200" x2="666" y2="220" stroke="${C.stripe}" stroke-width="2" class="flow-tracer-line"/>
+      <line x1="1092" y1="200" x2="1092" y2="220" stroke="${C.stripe}" stroke-width="2" class="flow-tracer-line"/>
     `;
 
     // 3 VP Divisions
     let divHtml = "";
     divisions.forEach((div, idx) => {
       const dx = 40 + idx * 426;
+      const stageId = idx + 2; // Divisions 1, 2, 3 map to stages 2, 3, 4
       let teamsHtml = "";
       (div.teams || []).forEach((tm, tIdx) => {
         const ty = 370 + tIdx * 102;
         teamsHtml += `
-          <g class="interactive-card" data-node-id="divisions.${idx}.teams.${tIdx}" transform="translate(${dx}, ${ty})">
+          <g class="interactive-card" data-stage="${stageId}" data-node-id="divisions.${idx}.teams.${tIdx}" transform="translate(${dx}, ${ty})">
             <line x1="200" y1="-20" x2="200" y2="0" stroke="${div.color || C.stripe}" stroke-width="1.5"/>
             <rect width="400" height="88" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
             <rect width="4" height="88" rx="2" fill="${div.color || C.stripe}"/>
@@ -1650,7 +1684,7 @@ class SlideCanvasRenderer {
       });
 
       divHtml += `
-        <g class="anim-node anim-p2" transform="translate(${dx}, 220)">
+        <g class="anim-node anim-p2" data-stage="${stageId}" transform="translate(${dx}, 220)">
           <rect width="400" height="110" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)"/>
           <rect width="5" height="110" rx="2" fill="${div.color || C.stripe}"/>
           <image href="${this.resolveEmote(div.emote)}" x="16" y="16" width="36" height="36"/>
@@ -1690,7 +1724,7 @@ class SlideCanvasRenderer {
         ${this.renderHeader(data, C)}
         ${leaderHtml}
         ${divHtml}
-        <g class="anim-node anim-p5">
+        <g class="anim-node anim-p5" data-stage="5">
           ${kpiHtml}
         </g>
       </svg>
@@ -1722,7 +1756,7 @@ class SlideCanvasRenderer {
 
     let barsHtml = `
       <!-- Base Bar -->
-      <g class="anim-node anim-p1 interactive-card" data-node-id="baseline" transform="translate(40, ${baseY})">
+      <g class="anim-node anim-p1 interactive-card" data-stage="1" data-node-id="baseline" transform="translate(40, ${baseY})">
         <rect width="${colW}" height="${baseH}" rx="6" fill="${C.hdr_bg}" filter="url(#shadow-card)"/>
         <text x="${colW/2}" y="-16" text-anchor="middle" fill="${C.text_primary}" font-family="Segoe UI, sans-serif" font-size="16" font-weight="800">${this.escapeXml(base.amount)}</text>
         <image href="${this.resolveEmote(base.emote)}" x="${colW/2 - 16}" y="16" width="32" height="32"/>
@@ -1736,6 +1770,7 @@ class SlideCanvasRenderer {
       const isIncrease = drv.val > 0;
       const prevVal = runningVal;
       runningVal += drv.val;
+      const stageId = idx < 2 ? 2 : 3;
 
       const topVal = Math.max(prevVal, runningVal);
       const botVal = Math.min(prevVal, runningVal);
@@ -1745,9 +1780,9 @@ class SlideCanvasRenderer {
 
       barsHtml += `
         <!-- Dashed connector from prev -->
-        <line x1="${x - colGap}" y1="${prevY}" x2="${x}" y2="${prevY}" stroke="${C.dashed_border}" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="${x - colGap}" y1="${prevY}" x2="${x}" y2="${prevY}" stroke="${C.dashed_border}" stroke-width="1.5" stroke-dasharray="3 3" class="flow-tracer-line"/>
         <!-- Driver Bar -->
-        <g class="anim-node anim-p2 interactive-card" data-node-id="drivers.${idx}" transform="translate(${x}, ${barY})">
+        <g class="anim-node anim-p2 interactive-card" data-stage="${stageId}" data-node-id="drivers.${idx}" transform="translate(${x}, ${barY})">
           <rect width="${colW}" height="${barH}" rx="6" fill="${drv.color || (isIncrease ? C.rose_accent : C.teal_accent)}" filter="url(#shadow-card)"/>
           <text x="${colW/2}" y="-12" text-anchor="middle" fill="${isIncrease ? C.rose_accent : C.teal_accent}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="800">${this.escapeXml(drv.amount)}</text>
           <image href="${this.resolveEmote(drv.emote)}" x="${colW/2 - 12}" y="${Math.max(6, barH/2 - 12)}" width="24" height="24"/>
@@ -1768,8 +1803,8 @@ class SlideCanvasRenderer {
     const targetY = chartBottomY - (target.val - 35) * scale;
     const targetH = chartBottomY - targetY;
     barsHtml += `
-      <line x1="${targetX - colGap}" y1="${targetY}" x2="${targetX}" y2="${targetY}" stroke="${C.dashed_border}" stroke-width="1.5" stroke-dasharray="3 3"/>
-      <g class="anim-node anim-p3 interactive-card" data-node-id="target" transform="translate(${targetX}, ${targetY})">
+      <line x1="${targetX - colGap}" y1="${targetY}" x2="${targetX}" y2="${targetY}" stroke="${C.dashed_border}" stroke-width="1.5" stroke-dasharray="3 3" class="flow-tracer-line"/>
+      <g class="anim-node anim-p3 interactive-card" data-stage="4" data-node-id="target" transform="translate(${targetX}, ${targetY})">
         <rect width="${colW}" height="${targetH}" rx="6" fill="${C.stripe}" filter="url(#shadow-card)"/>
         <text x="${colW/2}" y="-16" text-anchor="middle" fill="${C.stripe}" font-family="Segoe UI, sans-serif" font-size="16" font-weight="800">${this.escapeXml(target.amount)}</text>
         <image href="${this.resolveEmote(target.emote)}" x="${colW/2 - 16}" y="16" width="32" height="32"/>
@@ -1802,7 +1837,7 @@ class SlideCanvasRenderer {
         <!-- Axis Line -->
         <line x1="40" y1="${chartBottomY}" x2="1292" y2="${chartBottomY}" stroke="${C.card_bd}" stroke-width="2"/>
         ${barsHtml}
-        <g class="anim-node anim-p5">
+        <g class="anim-node anim-p5" data-stage="5">
           ${scHtml}
         </g>
       </svg>
