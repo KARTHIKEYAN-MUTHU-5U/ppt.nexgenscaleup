@@ -620,17 +620,18 @@ textarea.input-dark {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 24px;
+  padding: 10px 20px 84px 20px;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
 }
 
 .slide-canvas {
-  width: min(100%, calc((100vh - 120px) * 1333 / 750));
+  width: min(100%, calc((100vh - 146px) * 1333 / 750));
   height: auto;
   aspect-ratio: 1333 / 750;
   max-width: 100%;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 146px);
   position: relative;
   border-radius: 4px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -995,19 +996,9 @@ textarea.input-dark {
   text-align: center;
 }
 
-/* Stage Toolbar & Viewport Info */
+/* Stage Toolbar & Viewport Info (Collapsed to maximize canvas area) */
 .stage-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  height: 40px;
-  min-height: 40px;
-  max-height: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: #111317;
-  flex-wrap: nowrap;
-  box-sizing: border-box;
+  display: none !important;
 }
 
 .stage-info {
@@ -1296,8 +1287,9 @@ body.sidebar-collapsed .canvas-stage {
 }
 
 body.sidebar-collapsed .slide-canvas {
-  width: min(calc(100vw - 64px), calc((100vh - 120px) * 1333 / 750)) !important;
+  width: min(calc(100vw - 64px), calc((100vh - 146px) * 1333 / 750)) !important;
   max-width: calc(100vw - 64px) !important;
+  max-height: calc(100vh - 146px) !important;
   margin: 0 auto !important;
 }
 
@@ -1479,7 +1471,7 @@ body.theater-mode .btn-exit-theater {
    ========================================================================== */
 .flow-control-deck {
   position: absolute;
-  bottom: 20px;
+  bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

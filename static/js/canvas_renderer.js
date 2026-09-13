@@ -818,11 +818,19 @@ class SlideCanvasRenderer {
   renderFinancialClose(data) {
     const b = data.branding || {};
     const h = data.header || {};
-    const phases = data.phases || [];
-    const nodes = data.nodes || [];
-    const gw = data.gateways || {};
     const paletteKey = data.palette || "executive_blueprint";
     const C = PALETTES[paletteKey] || PALETTES.executive_blueprint;
+
+    const phases = data.phases || [
+      { num: "01", title: "SUB-LEDGER CUTOFF", sub: "WD -2 to WD 0: Sub-Ledger Close & Freeze", emote: "calc", badge_color: C.blue_accent },
+      { num: "02", title: "BILATERAL MATCHING", sub: "WD +1 to WD +2: Rule-Based Pairing Engine", emote: "currency", badge_color: C.amber_accent },
+      { num: "03", title: "CONSOLIDATION & ELIMS", sub: "WD +3 to WD +4: Group Elimination Postings", emote: "ledger", badge_color: C.teal_accent },
+      { num: "04", title: "CLOSE THE LOOP", sub: "WD +5 Close: CFO Sign-Off & Release", emote: "stamp", badge_color: C.rose_accent }
+    ];
+
+    const rx = [40, 340, 710, 1010];
+    const rw = [270, 340, 270, 283];
+    const rColors = [C.blue_accent, C.amber_accent, C.teal_accent, C.rose_accent];
 
     return `
       <svg class="master-blueprint-svg" viewBox="0 0 1333 750" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -830,120 +838,227 @@ class SlideCanvasRenderer {
         <rect x="0" y="0" width="1333" height="750" fill="${C.canvas_bg}" />
         ${this.renderHeader(h, b, C, paletteKey)}
 
-        <!-- Top 4 Close Phases Ribbon -->
+        <!-- 1. Top 4 Close Phases Ribbon (Exact 1333 Widescreen Proportions) -->
         <g class="anim-grp anim-p1" data-stage="1">
-          ${phases.map((p, i) => {
-            const x = 40 + i * 316;
+          ${phases.map((p, idx) => {
+            const x = rx[idx];
+            const w = rw[idx];
+            const bColor = p.badge_color || rColors[idx];
             return `
-              <rect x="${x}" y="76" width="292" height="60" rx="6" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" />
-              <rect x="${x + 10}" y="84" width="75" height="20" rx="3" fill="${C.blue_accent}" />
-              <text x="${x + 47}" y="98" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(p.phase)}</text>
-              <text x="${x + 95}" y="98" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="${C.amber_accent}">${this.escape(p.days)}</text>
-              <text x="${x + 10}" y="124" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(p.title)}</text>
-              <circle cx="${x + 260}" cy="106" r="18" fill="${C.blue_bg}" />
-              <image href="emotes/${p.emote || 'calc'}.gif" x="${x + 244}" y="90" width="32" height="32" />
-              ${i < 3 ? `<line x1="${x + 292}" y1="106" x2="${x + 316}" y2="106" stroke="${C.blue_accent}" stroke-width="2" marker-end="url(#arr-blu)" class="flow-tracer-line" />` : ''}
+              <rect x="${x}" y="71" width="${w}" height="36" rx="4" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="0.75" filter="url(#shadow-card)" />
+              <rect x="${x + 8}" y="75" width="38" height="28" rx="3" fill="${bColor}" />
+              <text x="${x + 27}" y="93" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${p.num || ('0' + (idx + 1))}</text>
+              <text x="${x + 52}" y="85" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escapeXml(p.title || '')}</text>
+              <text x="${x + 52}" y="97" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escapeXml(p.sub || '')}</text>
+              ${idx < 3 ? `<line x1="${x + w + 6}" y1="89" x2="${rx[idx + 1] - 6}" y2="89" stroke="${C.text_muted}" stroke-width="2" marker-end="url(#arr-gray)" />` : ''}
             `;
-          }).join("")}
+          }).join('')}
         </g>
 
-        <!-- Main Middle Canvas: Dual Execution Tracks with Decision Branch -->
+        <!-- 2. Main Outer Dashed Container (Exact Benchmark Proportions: y: 118 to 732, h: 614) -->
         <g class="anim-grp anim-p2">
-          <rect x="40" y="152" width="870" height="440" rx="10" fill="${C.card_bg}" stroke="${C.dashed_border}" stroke-width="1.5" stroke-dasharray="8 5" />
-          <rect x="56" y="142" width="240" height="22" rx="4" fill="${C.blue_accent}" />
-          <text x="176" y="157" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" font-weight="bold" fill="#FFFFFF" text-anchor="middle">SUB-LEDGER SETTLEMENT RUNBOOK</text>
+          <rect x="40" y="118" width="1253" height="614" rx="10" fill="${C.card_bg}" stroke="${C.dashed_border}" stroke-width="1.8" stroke-dasharray="10 6" filter="url(#shadow-card)" />
+          <rect x="52" y="108" width="280" height="24" rx="5" fill="${C.blue_accent}" />
+          <text x="192" y="124" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escapeXml(data.container_label || "PHILIPS FINANCIAL CLOSE RUNBOOK")}</text>
+        </g>
 
-          <!-- Nodes Row 1 -->
+        <!-- 3. Lane 1: Sub-Ledger Transactional Ingestion & Freeze Pipeline (x: 68, w: 200) -->
+        <g class="anim-grp anim-p2">
+          <!-- Stage 1 Nodes -->
+          <g data-stage="1">
+            <g class="interactive-card" data-node-id="fc_spec" cursor="pointer">
+              <rect x="68" y="152" width="200" height="70" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)" />
+              <text x="80" y="174" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Accounting Specialist</text>
+              <text x="80" y="190" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">Sub-Ledger Processing Lead</text>
+              <circle cx="236" cy="187" r="22" fill="${C.blue_bg}" filter="url(#shadow-halo)" />
+              <image href="emotes/calc.gif" x="214" y="165" width="44" height="44" />
+            </g>
+            <line x1="168" y1="222" x2="168" y2="258" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" />
+
+            <g class="interactive-card" data-node-id="fc_extract" cursor="pointer">
+              <rect x="68" y="258" width="200" height="126" rx="8" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
+              <rect x="68" y="258" width="6" height="126" fill="${C.blue_accent}" />
+              <text x="80" y="280" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.blue_accent}">Extract Sub-Ledgers</text>
+              <text x="80" y="298" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">SAP ECC &amp; S/4HANA lock across 48 company codes.</text>
+              <circle cx="236" cy="321" r="22" fill="${C.card_bg}" filter="url(#shadow-halo)" />
+              <image href="emotes/ledger.gif" x="214" y="299" width="44" height="44" />
+            </g>
+            <line x1="168" y1="384" x2="168" y2="422" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" />
+          </g>
+
+          <!-- Stage 2 Nodes -->
           <g data-stage="2">
-            ${nodes.slice(0, 3).map((n, idx) => {
-              const x = 70 + idx * 260;
-              return `
-                <g class="interactive-card" data-node-id="${n.id}" cursor="pointer">
-                  <rect x="${x}" y="190" width="220" height="110" rx="8" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
-                  <rect x="${x + 12}" y="202" width="60" height="18" rx="3" fill="${C.amber_accent}" />
-                  <text x="${x + 42}" y="215" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(n.badge)}</text>
-                  <text x="${x + 12}" y="242" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(n.title)}</text>
-                  <text x="${x + 12}" y="262" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(n.desc)}</text>
-                  <circle cx="${x + 188}" cy="245" r="20" fill="${C.card_bg}" />
-                  <image href="emotes/${n.emote || 'calc'}.gif" x="${x + 168}" y="225" width="40" height="40" />
-                </g>
-                ${idx < 2 ? `<line x1="${x + 220}" y1="245" x2="${x + 260}" y2="245" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" class="flow-tracer-line" />` : ''}
-              `;
-            }).join("")}
-          </g>
+            <g class="interactive-card" data-node-id="fc_accruals" cursor="pointer">
+              <rect x="68" y="422" width="200" height="64" rx="8" fill="${C.card_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
+              <text x="80" y="444" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Accruals &amp; Prepayments</text>
+              <text x="80" y="460" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">Automate recurring standard journal post</text>
+              <circle cx="236" cy="454" r="20" fill="${C.blue_bg}" />
+              <image href="emotes/currency.gif" x="216" y="434" width="40" height="40" />
+            </g>
+            <line x1="168" y1="486" x2="168" y2="524" stroke="${C.blue_accent}" stroke-width="2.5" marker-end="url(#arr-blu)" />
 
-          <!-- Connector Spine to Lower Row -->
-          <line x1="720" y1="300" x2="720" y2="360" stroke="${C.purple_accent}" stroke-width="2.5" class="flow-tracer-line" />
-          <line x1="720" y1="360" x2="180" y2="360" stroke="${C.purple_accent}" stroke-width="2.5" class="flow-tracer-line" />
-          <line x1="180" y1="360" x2="180" y2="390" stroke="${C.purple_accent}" stroke-width="2.5" marker-end="url(#arr-pur)" class="flow-tracer-line" />
-
-          <!-- Nodes Row 2 -->
-          <g data-stage="3">
-            ${nodes.slice(3, 6).map((n, idx) => {
-              const x = 70 + idx * 260;
-              return `
-                <g class="interactive-card" data-node-id="${n.id}" cursor="pointer">
-                  <rect x="${x}" y="400" width="220" height="110" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-                  <rect x="${x + 12}" y="412" width="75" height="18" rx="3" fill="${C.teal_accent}" />
-                  <text x="${x + 49}" y="425" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${this.escape(n.badge)}</text>
-                  <text x="${x + 12}" y="452" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">${this.escape(n.title)}</text>
-                  <text x="${x + 12}" y="472" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">${this.escape(n.desc)}</text>
-                  <circle cx="${x + 188}" cy="455" r="20" fill="${C.blue_bg}" />
-                  <image href="emotes/${n.emote || 'ledger'}.gif" x="${x + 168}" y="435" width="40" height="40" />
-                </g>
-                ${idx < 2 ? `<line x1="${x + 220}" y1="455" x2="${x + 260}" y2="455" stroke="${C.teal_accent}" stroke-width="2.5" marker-end="url(#arr-tea)" class="flow-tracer-line" />` : ''}
-              `;
-            }).join("")}
-          </g>
-
-          <rect x="70" y="530" width="810" height="42" rx="6" fill="${C.blue_bg}" />
-          <text x="90" y="556" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.blue_accent}">AUTO-RECONCILIATION SPEED: 94.8% Same-Day Bilateral Settlement • Zero Manual Journal Overrides</text>
-        </g>
-
-        <!-- Right Side: Close Governance & Materiality Dock -->
-        <g class="anim-grp anim-p3" data-stage="4">
-          <rect x="930" y="152" width="363" height="440" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-          <rect x="950" y="172" width="160" height="24" rx="4" fill="${C.rose_accent}" />
-          <text x="1030" y="188" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">GOVERNANCE GATEWAYS</text>
-
-          <g transform="translate(950, 216)">
-            <rect x="0" y="0" width="323" height="85" rx="6" fill="${C.rose_bg}" stroke="${C.rose_border}" stroke-width="1" />
-            <circle cx="28" cy="42" r="20" fill="${C.card_bg}" />
-            <image href="emotes/stamp.gif" x="12" y="26" width="32" height="32" />
-            <text x="60" y="28" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.5" font-weight="bold" fill="${C.rose_accent}">Materiality Threshold</text>
-            <text x="60" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" font-weight="bold" fill="${C.text_primary}">${this.escape(gw.threshold || "€25,000 Materiality Delta Limit")}</text>
-            <text x="60" y="66" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">Variances below €25K auto-expensed</text>
-          </g>
-
-          <g transform="translate(950, 318)">
-            <rect x="0" y="0" width="323" height="85" rx="6" fill="${C.amber_bg}" stroke="${C.amber_border}" stroke-width="1" />
-            <circle cx="28" cy="42" r="20" fill="${C.card_bg}" />
-            <image href="emotes/tb_ageing.gif" x="12" y="26" width="32" height="32" />
-            <text x="60" y="28" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.5" font-weight="bold" fill="${C.amber_accent}">Escalation SLA</text>
-            <text x="60" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" font-weight="bold" fill="${C.text_primary}">${this.escape(gw.sla || "4-Hour Critical Variance Escalation")}</text>
-            <text x="60" y="66" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">Immediate Slack &amp; SAP Notification</text>
-          </g>
-
-          <g transform="translate(950, 420)">
-            <rect x="0" y="0" width="323" height="85" rx="6" fill="${C.blue_bg}" stroke="${C.blue_border}" stroke-width="1" />
-            <circle cx="28" cy="42" r="20" fill="${C.card_bg}" />
-            <image href="emotes/tb_rbac.gif" x="12" y="26" width="32" height="32" />
-            <text x="60" y="28" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11.5" font-weight="bold" fill="${C.blue_accent}">Authorized Sign-Off</text>
-            <text x="60" y="46" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10" font-weight="bold" fill="${C.text_primary}">${this.escape(gw.approver || "VP Group Accounting &amp; Reporting")}</text>
-            <text x="60" y="66" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" fill="${C.text_muted}">Two-person cryptographic certification</text>
+            <g class="interactive-card" data-node-id="fc_tb" cursor="pointer">
+              <rect x="68" y="524" width="200" height="120" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1" filter="url(#shadow-card)" />
+              <text x="80" y="546" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Locked Trial Balance</text>
+              <text x="80" y="562" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" fill="${C.text_muted}">Consolidated sub-ledger delta extract ready for bilateral pairing.</text>
+              <text x="80" y="586" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="7.5" fill="${C.text_muted}">• Transactional cutoff certified across all units.</text>
+              <text x="80" y="602" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="7.5" fill="${C.text_muted}">• Accrual reconciliation variance: €0.00.</text>
+              <circle cx="236" cy="610" r="20" fill="${C.blue_bg}" />
+              <image href="emotes/chart_up.gif" x="216" y="590" width="40" height="40" />
+            </g>
           </g>
         </g>
 
-        <!-- Bottom Summary Ribbon -->
-        <g class="anim-grp anim-p4" data-stage="5">
-          <rect x="40" y="612" width="1253" height="100" rx="8" fill="${C.card_bg}" stroke="${C.card_bd}" stroke-width="1.2" />
-          <text x="64" y="642" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_muted}">PHILIPS GLOBAL BUSINESS SERVICES  •  FINANCE CLOSE VELOCITY</text>
-          <text x="64" y="682" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.blue_accent}">1.8 DAYS</text>
-          <text x="210" y="675" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.teal_accent}">Global Close Cycle (down from 4.2d)</text>
-          <text x="500" y="682" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.amber_accent}">99.8%</text>
-          <text x="610" y="675" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_secondary}">First-Pass Journal Integrity</text>
-          <text x="880" y="682" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="${C.rose_accent}">€0.00</text>
-          <text x="980" y="675" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_secondary}">Unallocated Material Balances</text>
+        <!-- 4. Lanes 2 & 3: Symmetrical Bilateral Settlement & Triage Taxonomy (Stage 3) -->
+        <g class="anim-grp anim-p3" data-stage="3">
+          <!-- Main Spine from Lane 1 to Symmetrical 3-Track Tree -->
+          <line x1="268" y1="584" x2="304" y2="584" stroke="${C.purple_accent}" stroke-width="2.5" />
+          <line x1="304" y1="258" x2="304" y2="600" stroke="${C.purple_accent}" stroke-width="2.5" />
+
+          <!-- Track 1 (Top): Automated Bilateral Invoicing & Match -->
+          <line x1="304" y1="258" x2="324" y2="258" stroke="${C.purple_accent}" stroke-width="2.5" marker-end="url(#arr-pur)" />
+          <g class="interactive-card" data-node-id="fc_pairing" cursor="pointer">
+            <rect x="324" y="214" width="180" height="88" rx="8" fill="${C.card_bg}" stroke="${C.blue_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <text x="336" y="238" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Automated Pairing Engine</text>
+            <text x="336" y="254" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">Bilateral invoice match</text>
+            <circle cx="474" cy="258" r="20" fill="${C.blue_bg}" />
+            <image href="emotes/currency.gif" x="454" y="238" width="40" height="40" />
+          </g>
+
+          <line x1="504" y1="258" x2="520" y2="258" stroke="${C.blue_accent}" stroke-width="2" />
+          <line x1="520" y1="202" x2="520" y2="314" stroke="${C.blue_accent}" stroke-width="2" />
+
+          <line x1="520" y1="202" x2="536" y2="202" stroke="${C.blue_accent}" stroke-width="2" marker-end="url(#arr-blu)" />
+          <g class="interactive-card" data-node-id="fc_sameday" cursor="pointer">
+            <rect x="536" y="158" width="150" height="88" rx="8" fill="${C.card_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
+            <text x="548" y="182" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10.5" font-weight="bold" fill="${C.text_primary}">Same-Day Invoicing</text>
+            <text x="548" y="198" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" fill="${C.text_muted}">Direct SAP clearance</text>
+            <circle cx="656" cy="202" r="18" fill="${C.card_bg}" />
+            <image href="emotes/calc.gif" x="638" y="184" width="36" height="36" />
+          </g>
+
+          <line x1="520" y1="314" x2="536" y2="314" stroke="${C.blue_accent}" stroke-width="2" marker-end="url(#arr-blu)" />
+          <g class="interactive-card" data-node-id="fc_fx" cursor="pointer">
+            <rect x="536" y="270" width="150" height="88" rx="8" fill="${C.card_bg}" stroke="${C.blue_border}" stroke-width="1" filter="url(#shadow-card)" />
+            <text x="548" y="294" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10.5" font-weight="bold" fill="${C.text_primary}">FX &amp; Currency Match</text>
+            <text x="548" y="310" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" fill="${C.text_muted}">Auto-hedging validation</text>
+            <circle cx="656" cy="314" r="18" fill="${C.card_bg}" />
+            <image href="emotes/ap_ar.gif" x="638" y="296" width="36" height="36" />
+          </g>
+
+          <!-- Step 2 Action Cards -->
+          <circle cx="704" cy="202" r="14" fill="${C.teal_accent}" />
+          <text x="704" y="206" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" font-weight="bold" fill="#FFFFFF" text-anchor="middle">&gt;</text>
+          <g class="interactive-card" data-node-id="fc_clearing" cursor="pointer">
+            <rect x="718" y="158" width="182" height="88" rx="8" fill="${C.card_bg}" stroke="${C.teal_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <text x="730" y="182" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10.5" font-weight="bold" fill="${C.text_primary}">Auto-Clearing (94.8%)</text>
+            <text x="730" y="198" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" fill="${C.text_muted}">Execute bilateral clearance</text>
+            <circle cx="870" cy="202" r="18" fill="${C.card_bg}" />
+            <image href="emotes/stamp.gif" x="852" y="184" width="36" height="36" />
+          </g>
+
+          <circle cx="704" cy="314" r="14" fill="${C.teal_accent}" />
+          <text x="704" y="318" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" font-weight="bold" fill="#FFFFFF" text-anchor="middle">&gt;</text>
+          <g class="interactive-card" data-node-id="fc_run" cursor="pointer">
+            <rect x="718" y="270" width="182" height="88" rx="8" fill="${C.card_bg}" stroke="${C.teal_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <text x="730" y="294" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="10.5" font-weight="bold" fill="${C.text_primary}">Execute Bilateral Run</text>
+            <text x="730" y="310" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" fill="${C.text_muted}">Bilateral netting journal</text>
+            <circle cx="870" cy="314" r="18" fill="${C.card_bg}" />
+            <image href="emotes/handshake.gif" x="852" y="296" width="36" height="36" />
+          </g>
+
+          <!-- Track 2 (Middle): Discrepancy Triage & Exception Routing -->
+          <line x1="304" y1="440" x2="324" y2="440" stroke="${C.purple_accent}" stroke-width="2.5" marker-end="url(#arr-pur)" />
+          <g class="interactive-card" data-node-id="fc_triage" cursor="pointer">
+            <rect x="324" y="396" width="200" height="88" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <text x="336" y="420" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Variance Delta Triage</text>
+            <text x="336" y="436" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">Route unallocated items</text>
+            <circle cx="494" cy="440" r="20" fill="${C.card_bg}" />
+            <image href="emotes/gap.gif" x="474" y="420" width="40" height="40" />
+          </g>
+
+          <circle cx="544" cy="440" r="14" fill="${C.amber_accent}" />
+          <text x="544" y="444" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" font-weight="bold" fill="#FFFFFF" text-anchor="middle">&gt;</text>
+          <g class="interactive-card" data-node-id="fc_fasttrack" cursor="pointer">
+            <rect x="558" y="396" width="248" height="88" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <text x="570" y="420" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Fast-Track Investigation</text>
+            <text x="570" y="436" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" fill="${C.text_muted}">Investigate discrepancy &lt; €25K; post clearing journal</text>
+            <circle cx="776" cy="440" r="20" fill="${C.card_bg}" />
+            <image href="emotes/tb_ageing.gif" x="756" y="420" width="40" height="40" />
+          </g>
+
+          <!-- Track 3 (Bottom): Group Consolidation & Elimination -->
+          <line x1="304" y1="600" x2="324" y2="600" stroke="${C.purple_accent}" stroke-width="2.5" marker-end="url(#arr-pur)" />
+          <g class="interactive-card" data-node-id="fc_elims" cursor="pointer">
+            <rect x="324" y="556" width="200" height="88" rx="8" fill="${C.card_bg}" stroke="${C.rose_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <text x="336" y="580" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Group Eliminations Run</text>
+            <text x="336" y="596" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">Reciprocal account offset</text>
+            <circle cx="494" cy="600" r="20" fill="${C.card_bg}" />
+            <image href="emotes/tb_rules.gif" x="474" y="580" width="40" height="40" />
+          </g>
+
+          <circle cx="544" cy="600" r="14" fill="${C.rose_accent}" />
+          <text x="544" y="604" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="9" font-weight="bold" fill="#FFFFFF" text-anchor="middle">&gt;</text>
+          <g class="interactive-card" data-node-id="fc_rollup" cursor="pointer">
+            <rect x="558" y="556" width="248" height="88" rx="8" fill="${C.card_bg}" stroke="${C.rose_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <text x="570" y="580" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.text_primary}">Trial Balance Rollup</text>
+            <text x="570" y="596" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" fill="${C.text_muted}">Automated group currency rollup; CFO audit certification</text>
+            <circle cx="776" cy="600" r="20" fill="${C.card_bg}" />
+            <image href="emotes/stamp.gif" x="756" y="580" width="40" height="40" />
+          </g>
+        </g>
+
+        <!-- 5. Lane 4: Governance Gateways & Multi-Tier Escalation Matrix (Stage 4 & 5) -->
+        <g class="anim-grp anim-p4" data-stage="4">
+          <!-- Connectors from Track ends to Governance column -->
+          <line x1="900" y1="202" x2="925" y2="202" stroke="${C.purple_accent}" stroke-width="2" />
+          <line x1="900" y1="314" x2="925" y2="314" stroke="${C.purple_accent}" stroke-width="2" />
+          <line x1="806" y1="440" x2="925" y2="440" stroke="${C.purple_accent}" stroke-width="2" />
+          <line x1="806" y1="600" x2="925" y2="600" stroke="${C.purple_accent}" stroke-width="2" />
+
+          <!-- Governance Card 1: Materiality Threshold -->
+          <g class="interactive-card" data-node-id="fc_gw_mat" cursor="pointer">
+            <rect x="925" y="152" width="345" height="114" rx="8" fill="${C.card_bg}" stroke="${C.rose_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <rect x="939" y="162" width="165" height="20" rx="3" fill="${C.rose_accent}" />
+            <text x="1021" y="176" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" font-weight="bold" fill="#FFFFFF" text-anchor="middle">MATERIALITY LIMIT (€25K)</text>
+            <text x="939" y="202" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">Materiality Threshold Gate</text>
+            <text x="939" y="222" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">Variances below €25K auto-expensed with audit certification note.</text>
+            <circle cx="1235" cy="209" r="22" fill="${C.rose_bg}" />
+            <image href="emotes/stamp.gif" x="1213" y="187" width="44" height="44" />
+          </g>
+          <line x1="1097" y1="266" x2="1097" y2="316" stroke="${C.rose_accent}" stroke-width="2.5" marker-end="url(#arr-ros)" />
+
+          <!-- Governance Card 2: Escalation SLA -->
+          <g class="interactive-card" data-node-id="fc_gw_sla" cursor="pointer">
+            <rect x="925" y="316" width="345" height="120" rx="8" fill="${C.card_bg}" stroke="${C.amber_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <rect x="939" y="326" width="145" height="20" rx="3" fill="${C.amber_accent}" />
+            <text x="1011" y="340" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8" font-weight="bold" fill="#FFFFFF" text-anchor="middle">CRITICAL SLA (4-HOUR)</text>
+            <text x="939" y="366" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="12" font-weight="bold" fill="${C.text_primary}">Escalation SLA Notification</text>
+            <text x="939" y="386" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" fill="${C.text_muted}">Structured alert sent to counterparty finance lead via Slack &amp; SAP.</text>
+            <circle cx="1235" cy="376" r="22" fill="${C.amber_bg}" />
+            <image href="emotes/tb_ageing.gif" x="1213" y="354" width="44" height="44" />
+          </g>
+          <line x1="1097" y1="436" x2="1097" y2="480" stroke="${C.red_accent}" stroke-width="2.5" marker-end="url(#arr-red)" />
+
+          <!-- Governance Card 3: Multi-Tier Escalation Matrix (Stage 5) -->
+          <g class="interactive-card" data-node-id="fc_gw_esc" cursor="pointer" data-stage="5">
+            <rect x="925" y="480" width="345" height="228" rx="8" fill="${C.red_bg}" stroke="${C.red_border}" stroke-width="1.2" filter="url(#shadow-card)" />
+            <rect x="939" y="494" width="144" height="22" rx="4" fill="${C.red_accent}" />
+            <text x="1011" y="509" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="7.5" font-weight="bold" fill="#FFFFFF" text-anchor="middle">MULTI-TIER ESCALATION</text>
+            <text x="939" y="534" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="${C.red_accent}">Inaction → Automated Executive Escalation</text>
+
+            <text x="939" y="562" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="${C.red_accent}">L1 (24h SLA): <tspan fill="${C.text_primary}">Sub-Ledger Accounting Lead</tspan></text>
+            <text x="955" y="578" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="7.5" fill="${C.text_muted}">Initial SLA alert; re-verify unmatched ledger delta.</text>
+
+            <text x="939" y="606" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="${C.red_accent}">L2 (48h SLA): <tspan fill="${C.text_primary}">FSS Shared Services Controller</tspan></text>
+            <text x="955" y="622" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="7.5" fill="${C.text_muted}">Shared services escalation; bilateral review conference.</text>
+
+            <text x="939" y="650" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="8.5" font-weight="bold" fill="${C.red_accent}">L3 (Close Day): <tspan fill="${C.text_primary}">CFO &amp; Group Finance Director</tspan></text>
+            <text x="955" y="666" font-family="'Aptos', 'Segoe UI', sans-serif" font-size="7.5" fill="${C.text_muted}">Executive sign-off; post un-cleared accrual &amp; board release.</text>
+
+            <circle cx="1235" cy="520" r="24" fill="${C.card_bg}" />
+            <image href="emotes/tb_rbac.gif" x="1211" y="496" width="48" height="48" />
+          </g>
         </g>
       </svg>
     `;
